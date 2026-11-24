@@ -137,12 +137,16 @@ def _code(notebook: nbformat.NotebookNode) -> list[str]:
 # Shape checks, on every run of the suite.
 
 
-def test_notebook_is_valid_nbformat_4_5_with_cleared_outputs():
+def test_notebook_is_valid_nbformat_4_5_and_holds_the_outputs_of_its_recorded_run():
     notebook = _load()
     nbformat.validate(notebook)
     assert (notebook.nbformat, notebook.nbformat_minor) == (4, 5)
-    assert all(c.outputs == [] for c in notebook.cells if c.cell_type == "code")
-    assert all(c.execution_count is None for c in notebook.cells if c.cell_type == "code")
+    code = [c for c in notebook.cells if c.cell_type == "code"]
+    printing = [c for c in code if "print(" in c.source]
+    assert printing and all(c.outputs for c in printing), (
+        "a printing cell lacks its recorded output"
+    )
+    assert not [o for c in code for o in c.outputs if o.output_type == "error"]
 
 
 def test_notebook_adds_cells_after_the_starters_23_and_none_before():
@@ -189,7 +193,7 @@ def test_new_markdown_types_no_number_that_a_run_could_change():
 def test_new_cells_print_counts_from_the_run_not_from_a_literal():
     notebook = _load()
     new_code = "\n".join(c.source for c in notebook.cells[STARTER_CELLS:] if c.cell_type == "code")
-    for name in ("BriefRuns", "score_summary", "records_to_section_summary", "review_request"):
+    for name in ("BriefRuns", "score_summary", "raw_summaries", "review_request"):
         assert name in new_code
 
 
@@ -251,3 +255,10 @@ def test_notebook_runs_top_to_bottom_on_replay(monkeypatch):
     ):
         assert printed.count(key) >= 2, f"{key} is not shown for both the starter and our engine"
     assert "units accounted for" in printed
+
+    committed = [_text_of(c) for c in _load().cells if c.cell_type == "code"]
+    fresh = [_text_of(c) for c in result.notebook.cells if c.cell_type == "code"]
+    drifted = [n for n, (old, new) in enumerate(zip(committed, fresh)) if old != new]
+    assert not drifted, (
+        f"the committed outputs of code cells {drifted} differ from a fresh replay run"
+    )

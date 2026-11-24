@@ -10,7 +10,7 @@ PYTEST_WORKERS ?= 3
 export LANGSMITH_TRACING = false
 export LANGCHAIN_TRACING_V2 = false
 
-.PHONY: lint test schemas-check examples-check selftest planted-faults dataset-check gate
+.PHONY: lint test schemas-check examples-check selftest planted-faults dataset-check notebook gate
 
 lint:
 	$(PYTHON) -m ruff check .
@@ -42,4 +42,8 @@ planted-faults:
 dataset-check:
 	cd 03_document_summary_agent && PYTHONPATH=../fsi_common $(abspath $(PYTHON)) -m evals.build_dataset --check
 
-gate: lint test schemas-check examples-check selftest planted-faults dataset-check
+# The notebook must run top to bottom on the recorded model calls, with no key and no live call.
+notebook:
+	NOTEBOOK_RUN=1 MODEL_BACKEND=replay $(PYTHON) -m pytest -q -o "pythonpath=fsi_common 03_document_summary_agent" 03_document_summary_agent/tests/notebook
+
+gate: lint test schemas-check examples-check selftest planted-faults dataset-check notebook

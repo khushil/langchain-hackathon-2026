@@ -1,0 +1,42 @@
+{
+ "meta": {
+  "duration_s": 3.736,
+  "init": {
+   "agents": [],
+   "apiKeySource": "none",
+   "claude_code_version": "2.1.302",
+   "mcp_servers": [],
+   "model": "claude-opus-5-5",
+   "plugins": [],
+   "skills": [],
+   "slash_commands": [],
+   "tools": []
+  },
+  "recorded_at": "2026-11-24T20:18:48.195909+00:00"
+ },
+ "request": {
+  "effort": "medium",
+  "format": 2,
+  "messages": [
+   {
+    "content": "Say hello to the compliance hackathon in one sentence.",
+    "role": "user"
+   }
+  ],
+  "model": "claude-opus-5-5",
+  "schema": null,
+  "system": ""
+ },
+ "request_sha256": "337cea0d909270d1b8f3df03debe23aa6dd36d2102d23d004f5c49b1e1caf60c",
+ "response": {
+  "content": "Hello, compliance hackathon: may your controls be tight, your audit trails spotless, and your ideas boldly innovative!",
+  "model_reported": "claude-opus-5-5",
+  "tool_calls": [],
+  "usage": {
+   "cache_creation_input_tokens": 548,
+   "cache_read_input_tokens": 0,
+   "input_tokens": 2,
+   "output_tokens": 43
+  }
+ }
+}

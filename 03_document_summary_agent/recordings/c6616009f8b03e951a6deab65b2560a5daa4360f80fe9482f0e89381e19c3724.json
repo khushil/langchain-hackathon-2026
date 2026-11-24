@@ -1,0 +1,483 @@
+{
+ "meta": {
+  "duration_s": 6.5,
+  "init": {
+   "agents": [],
+   "apiKeySource": "none",
+   "claude_code_version": "2.1.302",
+   "mcp_servers": [],
+   "model": "claude-sonnet-5-5",
+   "plugins": [],
+   "skills": [],
+   "slash_commands": [],
+   "tools": [
+    "StructuredOutput"
+   ]
+  },
+  "recorded_at": "2026-11-24T20:19:40.505349+00:00"
+ },
+ "request": {
+  "effort": "medium",
+  "format": 2,
+  "messages": [
+   {
+    "content": "Summarise ONE section of a regulatory document and extract its obligations. Analyse only; do not create files. Return a SectionSummary.\n\nDocument: PS26-4, \"Policy Statement PS26/4: Operational resilience and third-party technology risk\"\nSection number: 6\nSection title: Third-party technology providers\n\nFull text:\n6.1 Firms must maintain a register of all material third-party providers by 31 March 2027. The register must record, for each provider, the services it supports, the data it holds, its location, and the date the contract expires.\n\n6.2 Firms must notify the FSOA at least 60 days before entering into a new arrangement with a material third-party provider, or materially changing an existing one.\n\n6.3 Contracts with material third-party providers must give the firm and the FSOA rights of access and audit, require the provider to report incidents to the firm without undue delay, and set out how the service will be transferred or wound down if the arrangement ends.\n\n6.4 Firms must have a documented exit plan for each material third-party provider and must test each exit plan at least once every two years.\n\n6.5 Where a firm uses the same material third-party provider for more than one important business service, it must assess the concentration risk and explain to the board how it would manage the failure of that provider.\n\n6.6 Firms remain fully responsible for meeting their regulatory obligations when they outsource. Outsourcing a service does not transfer the firm's responsibility for it.",
+    "role": "user"
+   }
+  ],
+  "model": "claude-sonnet-5-5",
+  "schema": {
+   "additionalProperties": false,
+   "properties": {
+    "content": {
+     "description": "Text of the reply; may be empty.",
+     "type": "string"
+    },
+    "tool_calls": {
+     "items": {
+      "anyOf": [
+       {
+        "additionalProperties": false,
+        "description": "Lists all files in a directory.\n\nThis is useful for exploring the filesystem and finding the right file to read or edit.\nYou should almost ALWAYS use this tool before using the read_file or edit_file tools.",
+        "properties": {
+         "args": {
+          "properties": {
+           "path": {
+            "description": "Absolute path to the directory to list. Must be absolute, not relative.",
+            "type": "string"
+           }
+          },
+          "required": [
+           "path"
+          ],
+          "type": "object"
+         },
+         "name": {
+          "const": "ls"
+         }
+        },
+        "required": [
+         "name",
+         "args"
+        ],
+        "type": "object"
+       },
+       {
+        "additionalProperties": false,
+        "description": "Reads a file from the filesystem. Assume any path the user provides is valid; reading a missing file returns an error.\n\nUsage:\n- By default, it reads up to 100 lines starting from the beginning of the file. Use `offset`/`limit` to page through large files instead of reading them whole.\n- A status header, `@@ field | field | ... @@`, sits above the file content, and every line after it is verbatim file content. When content is truncated, there may be an explanation before the header. Never include the header when editing.\n- Speculatively batch multiple `read_file` calls in one response when several files may be useful.\n- An empty file returns a system-reminder warning in place of contents.\n- Large tool results may be offloaded to a file; the tool message gives the path. Read that path here, paging with `offset`/`limit`.\n- Images (`.png`, `.jpg`, etc.), audio, video, and PDFs return multimodal content blocks (https://docs.langchain.com/oss/python/langchain/messages#multimodal).\n- For images and PDFs, pagination via `offset`/`limit` is text-only - supply `file_path` only\n- Always read a file before editing it.",
+        "properties": {
+         "args": {
+          "properties": {
+           "file_path": {
+            "description": "Absolute path to the file to read. Must be absolute, not relative.",
+            "type": "string"
+           },
+           "limit": {
+            "default": 100,
+            "description": "Maximum number of lines to read. Use for pagination of large files.",
+            "type": "integer"
+           },
+           "offset": {
+            "default": 0,
+            "description": "Line number to start reading from (0-indexed). Use for pagination of large files.",
+            "type": "integer"
+           }
+          },
+          "required": [
+           "file_path"
+          ],
+          "type": "object"
+         },
+         "name": {
+          "const": "read_file"
+         }
+        },
+        "required": [
+         "name",
+         "args"
+        ],
+        "type": "object"
+       },
+       {
+        "additionalProperties": false,
+        "description": "Writes content to a file. Creates the file if it does not exist; replaces it entirely if it does.\n\nUsage:\n- Use this tool when you intend to create a new file or replace the whole file. You do not need to read the file first.\n- Prefer to edit existing files (with the edit_file tool) over creating new ones when possible.",
+        "properties": {
+         "args": {
+          "properties": {
+           "content": {
+            "description": "The text content to write to the file. This parameter is required.",
+            "type": "string"
+           },
+           "file_path": {
+            "description": "Absolute path where the file should be written. Must be absolute, not relative.",
+            "type": "string"
+           }
+          },
+          "required": [
+           "file_path",
+           "content"
+          ],
+          "type": "object"
+         },
+         "name": {
+          "const": "write_file"
+         }
+        },
+        "required": [
+         "name",
+         "args"
+        ],
+        "type": "object"
+       },
+       {
+        "additionalProperties": false,
+        "description": "Performs exact string replacements in files.\n\nUsage:\n- You must read the file before editing; this tool errors otherwise.\n- Preserve the exact source indentation from the read output, and never include the read status header in old_string or new_string.\n- Prefer editing an existing file over creating a new one.\n- Only use emojis if the user explicitly requests it.",
+        "properties": {
+         "args": {
+          "properties": {
+           "file_path": {
+            "description": "Absolute path to the file to edit. Must be absolute, not relative.",
+            "type": "string"
+           },
+           "new_string": {
+            "description": "The text to replace old_string with. Must be different from old_string.",
+            "type": "string"
+           },
+           "old_string": {
+            "description": "The exact text to find and replace. Must be unique in the file unless replace_all is True.",
+            "type": "string"
+           },
+           "replace_all": {
+            "default": false,
+            "description": "If True, replace all occurrences of old_string. If False (default), old_string must be unique.",
+            "type": "boolean"
+           }
+          },
+          "required": [
+           "file_path",
+           "old_string",
+           "new_string"
+          ],
+          "type": "object"
+         },
+         "name": {
+          "const": "edit_file"
+         }
+        },
+        "required": [
+         "name",
+         "args"
+        ],
+        "type": "object"
+       },
+       {
+        "additionalProperties": false,
+        "description": "Deletes a file or directory from the filesystem.\n\nUsage:\n- Permanently removes the file or directory at the given absolute path.\n- Deleting a directory removes it and everything inside it, recursively. Prefer\n  deleting a directory in one call over deleting each file individually.\n- This cannot be undone, so only delete paths you are sure are no longer needed.",
+        "properties": {
+         "args": {
+          "properties": {
+           "file_path": {
+            "description": "Absolute path to the file to delete. Must be absolute, not relative.",
+            "type": "string"
+           }
+          },
+          "required": [
+           "file_path"
+          ],
+          "type": "object"
+         },
+         "name": {
+          "const": "delete"
+         }
+        },
+        "required": [
+         "name",
+         "args"
+        ],
+        "type": "object"
+       },
+       {
+        "additionalProperties": false,
+        "description": "Find files matching a glob pattern, returning absolute paths.\n\nSupports `*` (any characters within a path segment), `**` (any directories), `?` (single character), `[abc]` (one character from a set), and `{a,b}` (alternatives), e.g. `*.py`, `src/**/*.py`, `*.{yml,yaml}`.\n\nA pattern without `/` matches the file name at any depth under the search root (`*.py` matches `src/app/main.py`). A pattern containing `/` matches the search-root-relative path (`src/**/*.py`). A leading `/` anchors to the search root (`/*.py` matches only top-level Python files).\n\nLeading-dot names are only matched when the pattern segment itself starts with `.` (use `.env`, or `.github/**/*.yml`). Because `**` will not descend into dot-directories, the bare form `*.yml` is *broader* than `**/*.yml` and is usually what you want.",
+        "properties": {
+         "args": {
+          "properties": {
+           "path": {
+            "anyOf": [
+             {
+              "type": "string"
+             },
+             {
+              "type": "null"
+             }
+            ],
+            "default": null,
+            "description": "Base directory to search from. Defaults to the backend's default root."
+           },
+           "pattern": {
+            "description": "Glob pattern to match files (e.g., '*.py', '**/*.py', '/subdir/**/*.md'). A pattern without '/' matches the file name at any depth; a pattern containing '/' matches the search-root-relative path; a leading '/' anchors to the search root ('/*.py' matches only top-level files). Leading-dot names are excluded unless the pattern segment starts with '.', so prefer the bare form '*.py' over '**/*.py' -- '**' will not descend into dot-directories like '.github'.",
+            "type": "string"
+           }
+          },
+          "required": [
+           "pattern"
+          ],
+          "type": "object"
+         },
+         "name": {
+          "const": "glob"
+         }
+        },
+        "required": [
+         "name",
+         "args"
+        ],
+        "type": "object"
+       },
+       {
+        "additionalProperties": false,
+        "description": "Search for a LITERAL text pattern across files (NOT regex).\n\nThe pattern is matched verbatim: regex metacharacters are ordinary characters, not operators. To match any of several strings, run a separate grep for each; `grep(pattern=\"foo|bar\")` searches for the literal text \"foo|bar\", and `.*` or `\\.` match those characters literally.\n\nReturns matching files or content per `output_mode`. Offloaded large tool results live under the artifacts root (`/large_tool_results/` by default); grep that directory to search them when you do not know the exact path.",
+        "properties": {
+         "args": {
+          "properties": {
+           "glob": {
+            "anyOf": [
+             {
+              "type": "string"
+             },
+             {
+              "type": "null"
+             }
+            ],
+            "default": null,
+            "description": "Glob pattern (NOT regex) limiting which files are searched (e.g. '*.py', '*.ts'). A pattern without '/' matches the file name at any depth; a pattern containing '/' matches the search-root-relative path (e.g. 'src/**/*.py'). This is an in-tool file filter, not a call to the separate glob tool. Brace expansion (e.g. '*.{ts,tsx}') is not supported on all backends; run a separate search per extension for reliable results."
+           },
+           "max_count": {
+            "anyOf": [
+             {
+              "exclusiveMinimum": 0,
+              "type": "integer"
+             },
+             {
+              "type": "null"
+             }
+            ],
+            "default": null,
+            "description": "Optional cap on the total number of matches returned across all files. Leave unset to use the configured default. When the cap is hit, results are truncated and a note says so; narrow the pattern or path to see the rest."
+           },
+           "output_mode": {
+            "default": "files_with_matches",
+            "description": "Shape of the returned text. 'files_with_matches' (default): newline-separated matching file paths. 'content': matching lines grouped by file under a '<path>:' header, each line indented and formatted '<line_number>: <line text>' (only the matched line, no surrounding context). 'count': one '<path>: <match_count>' line per file.",
+            "enum": [
+             "files_with_matches",
+             "content",
+             "count"
+            ],
+            "type": "string"
+           },
+           "path": {
+            "anyOf": [
+             {
+              "type": "string"
+             },
+             {
+              "type": "null"
+             }
+            ],
+            "default": null,
+            "description": "Directory to search in. Defaults to current working directory."
+           },
+           "pattern": {
+            "description": "Text pattern to search for (literal string, not regex).",
+            "type": "string"
+           }
+          },
+          "required": [
+           "pattern"
+          ],
+          "type": "object"
+         },
+         "name": {
+          "const": "grep"
+         }
+        },
+        "required": [
+         "name",
+         "args"
+        ],
+        "type": "object"
+       },
+       {
+        "additionalProperties": false,
+        "description": "A summary of one section of the document.",
+        "properties": {
+         "args": {
+          "properties": {
+           "number": {
+            "description": "The section number, for example '4'",
+            "type": "string"
+           },
+           "obligations": {
+            "description": "Every obligation in the section; empty if there are none",
+            "items": {
+             "description": "Something a firm must do under the document.",
+             "properties": {
+              "deadline": {
+               "anyOf": [
+                {
+                 "type": "string"
+                },
+                {
+                 "type": "null"
+                }
+               ],
+               "description": "The deadline exactly as written in the document, or null if none"
+              },
+              "evidence": {
+               "description": "A quote copied word for word from that paragraph, at most 30 words",
+               "type": "string"
+              },
+              "paragraph": {
+               "description": "The paragraph number it comes from, for example '4.2'",
+               "type": "string"
+              },
+              "requirement": {
+               "description": "What the firm must do, in plain English",
+               "type": "string"
+              }
+             },
+             "required": [
+              "requirement",
+              "paragraph",
+              "deadline",
+              "evidence"
+             ],
+             "type": "object"
+            },
+            "type": "array"
+           },
+           "summary": {
+            "description": "One to three sentences on what the section says",
+            "type": "string"
+           },
+           "title": {
+            "description": "The section title",
+            "type": "string"
+           }
+          },
+          "required": [
+           "number",
+           "title",
+           "summary",
+           "obligations"
+          ],
+          "type": "object"
+         },
+         "name": {
+          "const": "SectionSummary"
+         }
+        },
+        "required": [
+         "name",
+         "args"
+        ],
+        "type": "object"
+       }
+      ]
+     },
+     "minItems": 1,
+     "type": "array"
+    }
+   },
+   "required": [
+    "content",
+    "tool_calls"
+   ],
+   "type": "object"
+  },
+  "system": "# Section summariser agent\nYou are given one section: its number, title and text. Return a `SectionSummary` as a single JSON object, with no text before or after it:\n\n- `number`: the section number, for example `\"4\"`.\n- `title`: the section title.\n- `summary`: one to three sentences on what the section says.\n- `obligations`: every obligation in the section. Use an empty list if there are none.\n\nEach `Obligation` has four fields:\n\n- `requirement`: what the firm must do, in plain English.\n- `paragraph`: the paragraph number it comes from, for example `\"4.2\"`.\n- `deadline`: the deadline exactly as written in the document, or `null` if there is none.\n- `evidence`: a quote copied word for word from that paragraph, at most 30 words.\n\nFor example:\n\n```json\n{\n  \"number\": \"7\",\n  \"title\": \"Incident reporting\",\n  \"summary\": \"Firms must report major incidents to the regulator quickly.\",\n  \"obligations\": [\n    {\n      \"requirement\": \"Report major incidents to the regulator\",\n      \"paragraph\": \"7.1\",\n      \"deadline\": \"within 4 hours\",\n      \"evidence\": \"Firms must notify the FSOA of a major incident within 4 hours\"\n    }\n  ]\n}\n```\n\n### What counts as an obligation\n\nAn obligation is something a firm must do. Look for \"must\", \"shall\", \"is required to\" and \"will need to\".\n\n- Do not list recommendations or guidance (\"should\", \"may\", \"we expect\") as obligations.\n- Do not list things only the regulator does.\n- If one paragraph sets several separate requirements, list each one separately.\n- If the section changes a requirement or deadline from an earlier section, say so in the summary.\n\n### Rules for accuracy\n\n- Copy `evidence` word for word. Never paraphrase, correct or shorten the wording inside a quote.\n- Copy `deadline` exactly as written. Do not convert dates or durations, for example \"within 4 hours\" stays as it is.\n- Use only the section you were given. Do not use outside knowledge of the regulation.\n- Do not guess. If a paragraph is ambiguous, say so in the summary rather than inventing a requirement.\n\nThese fields are checked automatically against the source text afterwards. A quote that isn't word for word, or a\ndeadline that isn't in the section, will be flagged.\n"
+ },
+ "request_sha256": "c6616009f8b03e951a6deab65b2560a5daa4360f80fe9482f0e89381e19c3724",
+ "response": {
+  "content": "",
+  "model_reported": "claude-sonnet-5-5",
+  "tool_calls": [
+   {
+    "args": {
+     "number": "6",
+     "obligations": [
+      {
+       "deadline": "by 31 March 2027",
+       "evidence": "Firms must maintain a register of all material third-party providers by 31 March 2027.",
+       "paragraph": "6.1",
+       "requirement": "Maintain a register of all material third-party providers, recording for each the services it supports, the data it holds, its location and the contract expiry date"
+      },
+      {
+       "deadline": "at least 60 days before",
+       "evidence": "Firms must notify the FSOA at least 60 days before entering into a new arrangement with a material third-party provider",
+       "paragraph": "6.2",
+       "requirement": "Notify the FSOA before entering into a new arrangement with a material third-party provider or materially changing an existing one"
+      },
+      {
+       "deadline": null,
+       "evidence": "Contracts with material third-party providers must give the firm and the FSOA rights of access and audit",
+       "paragraph": "6.3",
+       "requirement": "Ensure contracts with material third-party providers give the firm and the FSOA rights of access and audit"
+      },
+      {
+       "deadline": "without undue delay",
+       "evidence": "require the provider to report incidents to the firm without undue delay",
+       "paragraph": "6.3",
+       "requirement": "Ensure contracts require the provider to report incidents to the firm without undue delay"
+      },
+      {
+       "deadline": null,
+       "evidence": "set out how the service will be transferred or wound down if the arrangement ends",
+       "paragraph": "6.3",
+       "requirement": "Ensure contracts set out how the service will be transferred or wound down if the arrangement ends"
+      },
+      {
+       "deadline": null,
+       "evidence": "Firms must have a documented exit plan for each material third-party provider",
+       "paragraph": "6.4",
+       "requirement": "Have a documented exit plan for each material third-party provider"
+      },
+      {
+       "deadline": "at least once every two years",
+       "evidence": "must test each exit plan at least once every two years",
+       "paragraph": "6.4",
+       "requirement": "Test each exit plan at least once every two years"
+      },
+      {
+       "deadline": null,
+       "evidence": "it must assess the concentration risk",
+       "paragraph": "6.5",
+       "requirement": "Where the same material provider supports more than one important business service, assess the concentration risk"
+      },
+      {
+       "deadline": null,
+       "evidence": "explain to the board how it would manage the failure of that provider",
+       "paragraph": "6.5",
+       "requirement": "Explain to the board how the firm would manage the failure of that shared provider"
+      },
+      {
+       "deadline": null,
+       "evidence": "Firms remain fully responsible for meeting their regulatory obligations when they outsource.",
+       "paragraph": "6.6",
+       "requirement": "Remain fully responsible for meeting regulatory obligations when outsourcing"
+      }
+     ],
+     "summary": "Firms must keep a register of material third-party providers, notify the FSOA before new or materially changed arrangements, and include specified terms in contracts. They must also have and test exit plans, assess concentration risk where one provider supports several important business services, and remain fully responsible when outsourcing.",
+     "title": "Third-party technology providers"
+    },
+    "name": "SectionSummary"
+   }
+  ],
+  "usage": {
+   "cache_creation_input_tokens": 1019,
+   "cache_read_input_tokens": 6399,
+   "input_tokens": 2,
+   "output_tokens": 1032
+  }
+ }
+}
