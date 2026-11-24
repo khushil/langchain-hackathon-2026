@@ -47,4 +47,4 @@ select = ["E", "F", "I", "N", "W", "UP"]
 "03_document_summary_agent/utils/db.py" = ["E501"]
 
 [tool.ruff.lint.isort]
-known-first-party = ["fsi_common", "agent", "agents", "sub_agent", "tools", "utils"]
+known-first-party = ["fsi_common", "agent", "agents", "sub_agent", "tools", "utils", "context", "workflow", "evals", "review_app"]

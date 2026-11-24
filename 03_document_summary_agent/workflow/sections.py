@@ -5,11 +5,11 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import Any
 
-from context.facts import read_section
-from context.reader import SectionRead, read_document
 from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import HumanMessage, SystemMessage
 
+from context.facts import read_section
+from context.reader import SectionRead, read_document
 from fsi_common.ids import digest_text
 from sub_agent import INSTRUCTIONS, SectionSummary
 from utils.models import ROLE_MODELS

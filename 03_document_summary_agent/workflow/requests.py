@@ -6,7 +6,6 @@ from collections.abc import Mapping
 from typing import Any
 
 from context.reader import DocumentRead, SectionRead
-
 from workflow.errors import InvalidRequestError, UnknownSectionError
 
 

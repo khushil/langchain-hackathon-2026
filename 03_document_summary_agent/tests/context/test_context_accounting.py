@@ -1,6 +1,7 @@
 """Tests of the unit accounting: every unit read ends with facts or with a recorded reason."""
 
 import pytest
+
 from context.accounting import (
     NO_FACT_REASON,
     TABLE_NO_FACT_REASON,
@@ -10,7 +11,6 @@ from context.accounting import (
 from context.errors import AccountingError
 from context.reader import read_document
 from context.tables import read_tables
-
 from fsi_common.records import CheckResult, Fact
 from utils.records import FACT_CONTEXT
 

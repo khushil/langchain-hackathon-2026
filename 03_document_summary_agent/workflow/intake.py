@@ -4,10 +4,10 @@ from __future__ import annotations
 
 from typing import Any
 
-from context.reader import read_document
-from context.tables import read_tables
 from langgraph.types import Send
 
+from context.reader import read_document
+from context.tables import read_tables
 from utils.records import PARAGRAPH_SCHEME
 from utils.state import fact_writes
 from workflow.checks import run_check

@@ -1,6 +1,7 @@
 """Tests for the text comparison rules the measures share."""
 
 import pytest
+
 from evals.normalise import (
     is_word_for_word,
     normalise,

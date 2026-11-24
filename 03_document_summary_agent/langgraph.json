@@ -1,7 +1,10 @@
 {
-  "dependencies": ["."],
+  "dependencies": [
+    "."
+  ],
   "graphs": {
-    "document_summary_agent": "./agent.py:agent"
+    "document_summary_agent": "./agent.py:agent",
+    "compliance_brief": "./workflow/graph.py:graph"
   },
   "env": "../.env",
   "python_version": "3.13"

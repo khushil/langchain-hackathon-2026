@@ -1,7 +1,6 @@
 """Tests of the plain-code checks run on every obligation fact."""
 
 from context.checks import DEADLINE_CHECK, QUOTE_CHECK, check_deadline, check_quote, checks_for
-
 from sub_agent import Obligation
 
 PARAGRAPH = (

@@ -4,8 +4,8 @@ import json
 from pathlib import Path
 
 import pytest
-from evals import build_dataset as bd
 
+from evals import build_dataset as bd
 from tools.documents import _split_into_sections
 
 TOPIC = Path(__file__).resolve().parents[2]

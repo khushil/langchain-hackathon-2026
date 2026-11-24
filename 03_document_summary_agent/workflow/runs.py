@@ -9,14 +9,14 @@ from collections.abc import Mapping
 from dataclasses import dataclass, field
 from typing import Any, Literal
 
-from context.reader import read_document
-from context.tables import read_tables
 from langgraph.checkpoint.base import BaseCheckpointSaver
 from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.store.base import BaseStore
 from langgraph.store.memory import InMemoryStore
 from langgraph.types import Command
 
+from context.reader import read_document
+from context.tables import read_tables
 from utils.models import MAX_CONCURRENCY
 from utils.records import FACT_CONTEXT
 from utils.state import BriefRequest, BriefState, ReviewRequest, ReviewResponse

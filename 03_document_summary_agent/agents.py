@@ -6,6 +6,7 @@ gathers every agent the topic defines so a reader finds them in one place.
 
 from agent import agent, build_agent
 from sub_agent import SectionSummary, section_summariser_subagent
+from workflow.graph import graph as compliance_brief
 
 document_summary_agent = agent
 """The main deep agent: it loads the document and firm, fans out the sections, writes the brief."""
@@ -13,11 +14,13 @@ document_summary_agent = agent
 AGENTS = {
     "document_summary_agent": document_summary_agent,
     "section-summariser": section_summariser_subagent,
+    "compliance_brief": compliance_brief,
 }
 """Every agent by the name it is registered or called under."""
 
 __all__ = [
     "AGENTS",
+    "compliance_brief",
     "SectionSummary",
     "build_agent",
     "document_summary_agent",

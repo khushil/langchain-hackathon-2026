@@ -1,10 +1,10 @@
 """Tests of reading the firm and provider tables into units and attribute facts."""
 
 import pytest
+
 from context.checks import QUOTE_CHECK
 from context.errors import FirmNotFoundError
 from context.tables import read_tables
-
 from fsi_common.ids import digest_bytes, digest_text
 from utils.db import DATA_DIR
 

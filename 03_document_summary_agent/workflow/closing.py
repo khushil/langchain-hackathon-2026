@@ -9,7 +9,6 @@ from context.accounting import account_for_units, no_fact_reason
 from context.errors import AccountingError
 from context.reader import read_document
 from context.tables import read_tables
-
 from fsi_common.records import Extractor, Fact, SourceUnit
 from utils.records import FACT_CONTEXT
 from utils.state import variant_disagreements

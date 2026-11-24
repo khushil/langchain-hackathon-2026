@@ -8,15 +8,15 @@ import time
 from collections.abc import Callable
 from typing import Any
 
-from context.reader import SectionRead, read_document
 from langchain_core.language_models import BaseChatModel
 from langchain_core.runnables import RunnableLambda
-from workflow.briefing import BriefDraft, DraftStatement
 
+from context.reader import SectionRead, read_document
 from fsi_common.examples.data import REVIEWER
 from fsi_common.records import Decision, SignOff
 from sub_agent import Obligation, SectionSummary
 from utils.state import ReviewRequest, ReviewResponse
+from workflow.briefing import BriefDraft, DraftStatement
 
 DOCUMENT = read_document("PS26-4")
 DEADLINE = re.compile(r"within \d+ (?:business )?(?:hours|days)|by \d{1,2} \w+ \d{4}")
@@ -209,6 +209,7 @@ class Harness:
     def __init__(self, models: ScriptedModels | None = None, *, store: Any = None) -> None:
         from langgraph.checkpoint.memory import InMemorySaver
         from langgraph.store.memory import InMemoryStore
+
         from workflow.graph import build_graph
 
         self.models = models or ScriptedModels()

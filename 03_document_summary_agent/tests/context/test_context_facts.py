@@ -1,10 +1,10 @@
 """Tests of turning a section's result into checked facts and open questions."""
 
 import pytest
+
 from context.errors import SectionReadError
 from context.facts import SECTION_READER, read_section, requirement_mismatches
 from context.reader import read_document
-
 from fsi_common.records import Fact
 from sub_agent import Obligation, SectionSummary
 from utils.records import FACT_CONTEXT, records_to_section_summary

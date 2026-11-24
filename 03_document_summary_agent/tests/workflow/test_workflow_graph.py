@@ -3,7 +3,6 @@
 import typing
 
 import pytest
-from context.errors import AccountingError
 from engine_fakes import (
     DOCUMENT,
     Harness,
@@ -13,6 +12,13 @@ from engine_fakes import (
     default_summary,
     ghost_summary,
 )
+
+from context.errors import AccountingError
+from fsi_common.bundle_checks import check_bundle
+from fsi_common.ids import canonical_json
+from fsi_common.records import Brief, Fact
+from sub_agent import SectionSummary
+from utils.records import FACT_CONTEXT, SectionResult, records_to_section_summary
 from workflow.briefing import BriefDraft, DraftStatement
 from workflow.engine_state import EngineState
 from workflow.errors import (
@@ -24,12 +30,6 @@ from workflow.errors import (
 from workflow.graph import NODES, build_graph
 from workflow.requests import selected_sections
 from workflow.sections import make_section_step
-
-from fsi_common.bundle_checks import check_bundle
-from fsi_common.ids import canonical_json
-from fsi_common.records import Brief, Fact
-from sub_agent import SectionSummary
-from utils.records import FACT_CONTEXT, SectionResult, records_to_section_summary
 
 
 def _checks(values, name):

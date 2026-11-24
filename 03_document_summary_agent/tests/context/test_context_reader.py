@@ -1,9 +1,9 @@
 """Tests of reading a document into a source, sections and one unit per paragraph."""
 
 import pytest
+
 from context.errors import DocumentFormatError, DocumentNotFoundError
 from context.reader import parse_paragraphs, read_document
-
 from fsi_common.ids import digest_bytes, digest_text
 from utils.db import DATA_DIR
 

@@ -1,10 +1,10 @@
 """Tests for the seven measures, on small hand-built cases and on the reference-built summaries."""
 
 import pytest
+
 from evals import evaluators as ev
 from evals.build_dataset import read_examples
 from evals.reference_summary import document_summary, section_summary
-
 from fsi_common.evals.measures import sum_measures
 
 TEXTS = {

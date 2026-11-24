@@ -10,13 +10,13 @@ from engine_fakes import (
     ghost_summary,
     respond,
 )
-from workflow.review import validate_response
 
 from fsi_common.bundle_checks import check_bundle
 from fsi_common.examples.data import REVIEWER
 from fsi_common.records import Decision, Fact, OpenQuestion, SignOff
 from utils.records import FACT_CONTEXT
 from utils.state import ReviewMismatchError, decisions_namespace, sign_offs_namespace
+from workflow.review import validate_response
 
 FIRM, DOC = "FIRM-001", "PS26-4"
 
@@ -131,7 +131,6 @@ def test_a_rerun_with_a_new_quote_is_a_fresh_fact_and_asks_without_an_earlier_de
 
 def test_a_rerun_with_another_model_and_prompt_still_carries(monkeypatch):
     import workflow.sections as sections
-
     from utils.models import RoleModel
 
     harness = Harness()

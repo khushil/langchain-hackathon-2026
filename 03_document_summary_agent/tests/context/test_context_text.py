@@ -1,6 +1,7 @@
 """Tests of the word-for-word comparison every check of the context layer shares."""
 
 import pytest
+
 from context.text import contains_word_for_word, normalise
 
 
