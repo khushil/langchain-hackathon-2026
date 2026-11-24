@@ -1,0 +1,38 @@
+{
+  "schema": "fact.v1",
+  "id": "fact:4c8642e7ce4e2b25",
+  "kind": "firm_attribute",
+  "subject": {
+    "source_id": "source:48afc74ed0bf2412",
+    "anchor": "row:FIRM-001"
+  },
+  "quote": "\"customers\": 1200000",
+  "attributes": {
+    "field": "customers",
+    "small_firm": false
+  },
+  "status": {
+    "status": "inferred",
+    "observed_at": null,
+    "rule": null,
+    "unknown_reason": null
+  },
+  "provenance": {
+    "source_id": "source:48afc74ed0bf2412",
+    "anchor": "row:FIRM-001",
+    "extractor": {
+      "name": "table-reader",
+      "version": "0.1.0"
+    },
+    "model": null,
+    "prompt_version": null,
+    "as_of": "sha256:f11d80dbdedcdd2f4fbcc8ad602692d5849887fd68a8a18aeb0a27dd29935750"
+  },
+  "checks": [
+    {
+      "check": "quote-verbatim.v1",
+      "outcome": "pass",
+      "detail": "found word for word in the unit's text"
+    }
+  ]
+}

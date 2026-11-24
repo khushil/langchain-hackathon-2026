@@ -1,0 +1,15 @@
+{
+  "schema": "decision.v1",
+  "id": "decision:2644c19546588adb",
+  "subject_id": "question:5926550a73f8c47c",
+  "seen_digest": "sha256:ccc3dff50ce8a16adfb98f8934f0deb27d1117f9d5af02c388a752fb03d15961",
+  "outcome": "answer",
+  "amendment": null,
+  "answer": "Both contracts were made in 2024, before 1 January 2027; neither renews before its end date.",
+  "reason": "Checked against our contracts register.",
+  "reviewer": {
+    "name": "Dana Whitfield",
+    "role": "Head of Compliance"
+  },
+  "date": "2026-11-25"
+}

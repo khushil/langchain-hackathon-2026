@@ -1,0 +1,150 @@
+{
+  "$defs": {
+    "SourceRef": {
+      "additionalProperties": false,
+      "description": "A place in one source: the source's id and an anchor in its own identifiers.",
+      "properties": {
+        "anchor": {
+          "description": "The place in the source, for example 'para:7.1'",
+          "pattern": "^[a-z][a-z0-9_]*:\\S+$",
+          "title": "Anchor",
+          "type": "string"
+        },
+        "source_id": {
+          "description": "The id of the source record",
+          "pattern": "^source:[0-9a-f]{16}$",
+          "title": "Source Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "source_id",
+        "anchor"
+      ],
+      "title": "SourceRef",
+      "type": "object"
+    }
+  },
+  "$id": "open_question.v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Something the sources do not settle, written as a question one named role can answer.\n\nThe id is derived from the subject and the question text, so a rebuild asks the same question\nunder the same id and an earlier answer still attaches to it.",
+  "properties": {
+    "about": {
+      "$ref": "#/$defs/SourceRef",
+      "description": "The source unit the question concerns"
+    },
+    "ask_role": {
+      "description": "The role to ask, for example 'Head of Third-Party Risk'",
+      "minLength": 1,
+      "pattern": "\\S",
+      "title": "Ask Role",
+      "type": "string"
+    },
+    "cites": {
+      "description": "The facts and units the question rests on",
+      "items": {
+        "pattern": "^[a-z][a-z_]*:[0-9a-f]{16}$",
+        "type": "string"
+      },
+      "title": "Cites",
+      "type": "array"
+    },
+    "decision_id": {
+      "anyOf": [
+        {
+          "pattern": "^decision:[0-9a-f]{16}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "The person's decision that answered or closed the question",
+      "title": "Decision Id"
+    },
+    "id": {
+      "pattern": "^question:[0-9a-f]{16}$",
+      "title": "Id",
+      "type": "string"
+    },
+    "impact": {
+      "description": "What changes with the answer",
+      "minLength": 1,
+      "pattern": "\\S",
+      "title": "Impact",
+      "type": "string"
+    },
+    "priority": {
+      "description": "The order of review; a low priority never removes a question from the register",
+      "enum": [
+        "high",
+        "medium",
+        "low"
+      ],
+      "title": "Priority",
+      "type": "string"
+    },
+    "question": {
+      "description": "The question as it would be put to the person, answerable in one reply",
+      "minLength": 1,
+      "pattern": "\\S",
+      "title": "Question",
+      "type": "string"
+    },
+    "reason": {
+      "description": "Why the question is open, from the closed list",
+      "enum": [
+        "no_source",
+        "missing_data",
+        "ambiguous_meaning",
+        "contradiction",
+        "unresolved_reference",
+        "placeholder",
+        "unreadable",
+        "inferred_only"
+      ],
+      "title": "Reason",
+      "type": "string"
+    },
+    "schema": {
+      "const": "open_question.v1",
+      "type": "string"
+    },
+    "state": {
+      "description": "Where the question stands",
+      "enum": [
+        "open",
+        "asked",
+        "answered",
+        "accepted",
+        "closed_no_answer"
+      ],
+      "title": "State",
+      "type": "string"
+    },
+    "why_unknown": {
+      "description": "What was looked for, where, and what was found",
+      "minLength": 1,
+      "pattern": "\\S",
+      "title": "Why Unknown",
+      "type": "string"
+    }
+  },
+  "required": [
+    "about",
+    "ask_role",
+    "cites",
+    "id",
+    "impact",
+    "priority",
+    "question",
+    "reason",
+    "schema",
+    "state",
+    "why_unknown"
+  ],
+  "title": "OpenQuestion",
+  "type": "object"
+}

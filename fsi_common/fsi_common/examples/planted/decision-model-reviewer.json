@@ -1,0 +1,15 @@
+{
+  "schema": "decision.v1",
+  "id": "decision:ee0c6f6c0076a118",
+  "subject_id": "fact:9ff827e1365632d7",
+  "seen_digest": "sha256:3045bd83f518be1b9034d5a2321f1b8c259af5721f4f540a58df54e596bdfad7",
+  "outcome": "accept",
+  "amendment": null,
+  "answer": null,
+  "reason": "The quote and the deadline match paragraph 7.1.",
+  "reviewer": {
+    "name": "claude-sonnet-5-5",
+    "role": "Head of Compliance"
+  },
+  "date": "2026-11-25"
+}

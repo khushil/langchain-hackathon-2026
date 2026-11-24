@@ -1,0 +1,385 @@
+[
+  {
+    "schema": "source.v1",
+    "id": "source:c9690d260c586cbb",
+    "key": "PS26-4",
+    "title": "Policy Statement PS26/4: Operational resilience and third-party technology risk",
+    "kind": "document",
+    "digest": "sha256:48e71bd7b38e8d7dcd8c5bfcfca55c0bb8d1be0a902aaea8423df52be08440a3",
+    "locator": "03_document_summary_agent/data/documents/PS26-4.md",
+    "terms": "Fictional sample data from the FSI hackathon starter (github.com/langchain-samples/fsi-hackathon-london-2026), carried with credit"
+  },
+  {
+    "schema": "source.v1",
+    "id": "source:48afc74ed0bf2412",
+    "key": "firms",
+    "title": "Firm profiles",
+    "kind": "table",
+    "digest": "sha256:f11d80dbdedcdd2f4fbcc8ad602692d5849887fd68a8a18aeb0a27dd29935750",
+    "locator": "03_document_summary_agent/data/firms.jsonl",
+    "terms": "Fictional sample data from the FSI hackathon starter (github.com/langchain-samples/fsi-hackathon-london-2026), carried with credit"
+  },
+  {
+    "schema": "source.v1",
+    "id": "source:0e6b10a049f2da9b",
+    "key": "third_party_providers",
+    "title": "Third-party providers",
+    "kind": "table",
+    "digest": "sha256:ef799080725fbe3a10238261de27ce377b00bfd1b92e25e18bb55b13aad30cea",
+    "locator": "03_document_summary_agent/data/third_party_providers.jsonl",
+    "terms": "Fictional sample data from the FSI hackathon starter (github.com/langchain-samples/fsi-hackathon-london-2026), carried with credit"
+  },
+  {
+    "schema": "source_unit.v1",
+    "id": "unit:23eecd8808c48d2c",
+    "source_id": "source:c9690d260c586cbb",
+    "anchor": "para:7.1",
+    "text_digest": "sha256:5be3614c6948b4d2582756754ce48165cb9fd63055613f5bec9f94ee5ea38f06"
+  },
+  {
+    "schema": "source_unit.v1",
+    "id": "unit:2c697051d86ff5bd",
+    "source_id": "source:c9690d260c586cbb",
+    "anchor": "para:9.3",
+    "text_digest": "sha256:23664699ddc90aa16d011fc1fd268bca6ae9b432dcad78b25eea3e2e7a40cb9f"
+  },
+  {
+    "schema": "source_unit.v1",
+    "id": "unit:3ad9f6791e610466",
+    "source_id": "source:48afc74ed0bf2412",
+    "anchor": "row:FIRM-001",
+    "text_digest": "sha256:fc96247e1f7f76ca92b688988c52be86322f30d55daddabc35f497a2f47e394b"
+  },
+  {
+    "schema": "source_unit.v1",
+    "id": "unit:3bae9d7fb92625d6",
+    "source_id": "source:0e6b10a049f2da9b",
+    "anchor": "row:PROVIDER-002",
+    "text_digest": "sha256:1431994e46078ac9cc42d54898b0c4294c901faa550ff3e8b668e467b01de431"
+  },
+  {
+    "schema": "fact.v1",
+    "id": "fact:9ff827e1365632d7",
+    "kind": "obligation",
+    "subject": {
+      "source_id": "source:c9690d260c586cbb",
+      "anchor": "para:7.1"
+    },
+    "quote": "Firms must submit an initial notification to the FSOA within 4 hours of classifying an incident as a major incident",
+    "attributes": {
+      "requirement": "Notify the regulator of a major incident",
+      "actor": "firm",
+      "deadline": "within 4 hours of classifying an incident as a major incident, and in any case no later than 24 hours after the incident is first detected"
+    },
+    "status": {
+      "status": "documented",
+      "observed_at": null,
+      "rule": null,
+      "unknown_reason": null
+    },
+    "provenance": {
+      "source_id": "source:c9690d260c586cbb",
+      "anchor": "para:7.1",
+      "extractor": {
+        "name": "section-reader",
+        "version": "0.1.0"
+      },
+      "model": "claude-sonnet-5-5",
+      "prompt_version": "1",
+      "as_of": "sha256:48e71bd7b38e8d7dcd8c5bfcfca55c0bb8d1be0a902aaea8423df52be08440a3"
+    },
+    "checks": [
+      {
+        "check": "quote-verbatim.v1",
+        "outcome": "pass",
+        "detail": "found word for word in the unit's text"
+      },
+      {
+        "check": "deadline-verbatim.v1",
+        "outcome": "pass",
+        "detail": "found word for word in the unit's text"
+      }
+    ]
+  },
+  {
+    "schema": "fact.v1",
+    "id": "fact:8b53031651720070",
+    "kind": "obligation",
+    "subject": {
+      "source_id": "source:c9690d260c586cbb",
+      "anchor": "para:9.3"
+    },
+    "quote": "must be updated to meet paragraph 6.3 at their next renewal, or by 31 December 2028, whichever is earlier",
+    "attributes": {
+      "requirement": "Update contracts with material third-party providers made before 1 January 2027 to meet paragraph 6.3",
+      "actor": "firm",
+      "deadline": "at their next renewal, or by 31 December 2028, whichever is earlier",
+      "cross_refs": [
+        "6.3"
+      ]
+    },
+    "status": {
+      "status": "documented",
+      "observed_at": null,
+      "rule": null,
+      "unknown_reason": null
+    },
+    "provenance": {
+      "source_id": "source:c9690d260c586cbb",
+      "anchor": "para:9.3",
+      "extractor": {
+        "name": "section-reader",
+        "version": "0.1.0"
+      },
+      "model": "claude-sonnet-5-5",
+      "prompt_version": "1",
+      "as_of": "sha256:48e71bd7b38e8d7dcd8c5bfcfca55c0bb8d1be0a902aaea8423df52be08440a3"
+    },
+    "checks": [
+      {
+        "check": "quote-verbatim.v1",
+        "outcome": "pass",
+        "detail": "found word for word in the unit's text"
+      },
+      {
+        "check": "deadline-verbatim.v1",
+        "outcome": "pass",
+        "detail": "found word for word in the unit's text"
+      }
+    ]
+  },
+  {
+    "schema": "fact.v1",
+    "id": "fact:89d225126d85fbc8",
+    "kind": "firm_attribute",
+    "subject": {
+      "source_id": "source:48afc74ed0bf2412",
+      "anchor": "row:FIRM-001"
+    },
+    "quote": "Mobile banking and card payments both run on NimbusCloud.",
+    "attributes": {
+      "field": "notes"
+    },
+    "status": {
+      "status": "documented",
+      "observed_at": null,
+      "rule": null,
+      "unknown_reason": null
+    },
+    "provenance": {
+      "source_id": "source:48afc74ed0bf2412",
+      "anchor": "row:FIRM-001",
+      "extractor": {
+        "name": "table-reader",
+        "version": "0.1.0"
+      },
+      "model": null,
+      "prompt_version": null,
+      "as_of": "sha256:f11d80dbdedcdd2f4fbcc8ad602692d5849887fd68a8a18aeb0a27dd29935750"
+    },
+    "checks": [
+      {
+        "check": "quote-verbatim.v1",
+        "outcome": "pass",
+        "detail": "found word for word in the unit's text"
+      }
+    ]
+  },
+  {
+    "schema": "fact.v1",
+    "id": "fact:5f5a2c5eaa938cdf",
+    "kind": "provider_attribute",
+    "subject": {
+      "source_id": "source:0e6b10a049f2da9b",
+      "anchor": "row:PROVIDER-002"
+    },
+    "quote": "\"service\": \"card processing\"",
+    "attributes": {
+      "field": "service",
+      "value": "card processing"
+    },
+    "status": {
+      "status": "documented",
+      "observed_at": null,
+      "rule": null,
+      "unknown_reason": null
+    },
+    "provenance": {
+      "source_id": "source:0e6b10a049f2da9b",
+      "anchor": "row:PROVIDER-002",
+      "extractor": {
+        "name": "table-reader",
+        "version": "0.1.0"
+      },
+      "model": null,
+      "prompt_version": null,
+      "as_of": "sha256:ef799080725fbe3a10238261de27ce377b00bfd1b92e25e18bb55b13aad30cea"
+    },
+    "checks": [
+      {
+        "check": "quote-verbatim.v1",
+        "outcome": "pass",
+        "detail": "found word for word in the unit's text"
+      }
+    ]
+  },
+  {
+    "schema": "fact.v1",
+    "id": "fact:4c8642e7ce4e2b25",
+    "kind": "firm_attribute",
+    "subject": {
+      "source_id": "source:48afc74ed0bf2412",
+      "anchor": "row:FIRM-001"
+    },
+    "quote": "\"customers\": 1200000",
+    "attributes": {
+      "field": "customers",
+      "small_firm": false
+    },
+    "status": {
+      "status": "inferred",
+      "observed_at": null,
+      "rule": {
+        "id": "small-firm-thresholds",
+        "version": "1",
+        "statement": "Paragraph 2.3: a small firm has fewer than 250,000 customers and total assets of less than £5 billion; 1,200,000 customers exceeds the first threshold",
+        "match_rate": {
+          "matched": 1,
+          "population": 1
+        }
+      },
+      "unknown_reason": null
+    },
+    "provenance": {
+      "source_id": "source:48afc74ed0bf2412",
+      "anchor": "row:FIRM-001",
+      "extractor": {
+        "name": "table-reader",
+        "version": "0.1.0"
+      },
+      "model": null,
+      "prompt_version": null,
+      "as_of": "sha256:f11d80dbdedcdd2f4fbcc8ad602692d5849887fd68a8a18aeb0a27dd29935750"
+    },
+    "checks": [
+      {
+        "check": "quote-verbatim.v1",
+        "outcome": "pass",
+        "detail": "found word for word in the unit's text"
+      }
+    ]
+  },
+  {
+    "schema": "open_question.v1",
+    "id": "question:5926550a73f8c47c",
+    "about": {
+      "source_id": "source:48afc74ed0bf2412",
+      "anchor": "row:FIRM-001"
+    },
+    "question": "Were the firm's contracts with NimbusCloud and PayCore Ltd in place before 1 January 2027, and when does each next renew?",
+    "why_unknown": "The firm table gives each contract's end date (30 June 2027 and 31 December 2029) but not when it was made or when it renews.",
+    "impact": "Sets the date by which each contract must meet paragraph 6.3 under paragraph 9.3.",
+    "ask_role": "Head of Third-Party Risk",
+    "reason": "missing_data",
+    "cites": [
+      "fact:8b53031651720070",
+      "unit:3ad9f6791e610466"
+    ],
+    "priority": "high",
+    "state": "open",
+    "decision_id": null
+  },
+  {
+    "schema": "disagreement.v1",
+    "id": "disagreement:7943a2e924c2ff5b",
+    "about": "Which provider the firm's card payments run on",
+    "claims": [
+      "fact:89d225126d85fbc8",
+      "fact:5f5a2c5eaa938cdf"
+    ],
+    "found_by": {
+      "name": "provider-cross-check",
+      "version": "0.1.0"
+    },
+    "status": "open",
+    "decision_id": null
+  },
+  {
+    "schema": "decision.v1",
+    "id": "decision:e456c83424cd0584",
+    "subject_id": "fact:9ff827e1365632d7",
+    "seen_digest": "sha256:3045bd83f518be1b9034d5a2321f1b8c259af5721f4f540a58df54e596bdfad7",
+    "outcome": "accept",
+    "amendment": null,
+    "answer": null,
+    "reason": "The quote and the deadline match paragraph 7.1.",
+    "reviewer": {
+      "name": "Dana Whitfield",
+      "role": "Head of Compliance"
+    },
+    "date": "2026-11-25"
+  },
+  {
+    "schema": "brief.v1",
+    "id": "brief:165eea84d414b35f",
+    "request": "Summarise document PS26-4 for FIRM-001",
+    "sources": [
+      "source:c9690d260c586cbb",
+      "source:48afc74ed0bf2412",
+      "source:0e6b10a049f2da9b"
+    ],
+    "statements": [
+      {
+        "id": "statement:fd27bce48cbc8dc8",
+        "heading": "Incident reporting",
+        "text": "Harbour Mutual Bank must notify the regulator of a major incident within 4 hours of classifying it, and no later than 24 hours after first detecting it.",
+        "cites": [
+          "fact:0123456789abcdef"
+        ]
+      },
+      {
+        "id": "statement:74f26e36868b1af2",
+        "heading": "Third-party contracts",
+        "text": "Contracts with material providers made before 1 January 2027 must meet paragraph 6.3 at their next renewal or by 31 December 2028, whichever is earlier.",
+        "cites": [
+          "fact:8b53031651720070"
+        ]
+      }
+    ],
+    "open_question_ids": [
+      "question:5926550a73f8c47c"
+    ],
+    "content_digest": "sha256:165eea84d414b35f70cae21759bd90a95f164e917cc5c165b3d3028ee49202de",
+    "model": "claude-opus-5-5",
+    "prompt_version": "1"
+  },
+  {
+    "schema": "signoff.v1",
+    "id": "signoff:bea150f8507a6c15",
+    "brief_id": "brief:165eea84d414b35f",
+    "brief_digest": "sha256:165eea84d414b35f70cae21759bd90a95f164e917cc5c165b3d3028ee49202de",
+    "reviewer": {
+      "name": "Dana Whitfield",
+      "role": "Head of Compliance"
+    },
+    "date": "2026-11-25",
+    "outcome": "signed",
+    "assumptions": [
+      {
+        "question_id": "question:5926550a73f8c47c",
+        "words": "Until the contracts register is checked, treat both contracts as made before 1 January 2027."
+      }
+    ],
+    "reason": null
+  },
+  {
+    "schema": "unit_accounting.v1",
+    "id": "accounting:80f0fc1a61a14dbb",
+    "source_id": "source:48afc74ed0bf2412",
+    "units_in": 1,
+    "with_facts": [
+      "row:FIRM-001"
+    ],
+    "without_facts": []
+  }
+]

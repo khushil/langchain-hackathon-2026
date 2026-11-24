@@ -1,0 +1,44 @@
+{
+  "$id": "source_unit.v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "One unit of a source, named by an anchor in the source's own identifiers.\n\nA unit is the smallest place a fact can cite: a paragraph of a document, a row of a table, a\nfield of an application, a transaction of a stream.",
+  "properties": {
+    "anchor": {
+      "description": "The unit's place in its source, for example 'para:7.1'",
+      "pattern": "^[a-z][a-z0-9_]*:\\S+$",
+      "title": "Anchor",
+      "type": "string"
+    },
+    "id": {
+      "pattern": "^unit:[0-9a-f]{16}$",
+      "title": "Id",
+      "type": "string"
+    },
+    "schema": {
+      "const": "source_unit.v1",
+      "type": "string"
+    },
+    "source_id": {
+      "description": "The id of the source the unit belongs to",
+      "pattern": "^source:[0-9a-f]{16}$",
+      "title": "Source Id",
+      "type": "string"
+    },
+    "text_digest": {
+      "description": "The digest of the unit's text as the reader split it",
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "title": "Text Digest",
+      "type": "string"
+    }
+  },
+  "required": [
+    "anchor",
+    "id",
+    "schema",
+    "source_id",
+    "text_digest"
+  ],
+  "title": "SourceUnit",
+  "type": "object"
+}

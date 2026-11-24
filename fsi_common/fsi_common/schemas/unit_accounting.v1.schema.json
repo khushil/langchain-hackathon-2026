@@ -1,0 +1,83 @@
+{
+  "$defs": {
+    "UnitWithoutFacts": {
+      "additionalProperties": false,
+      "description": "A unit that produced no fact, with the reason recorded.",
+      "properties": {
+        "anchor": {
+          "description": "The unit's anchor",
+          "pattern": "^[a-z][a-z0-9_]*:\\S+$",
+          "title": "Anchor",
+          "type": "string"
+        },
+        "reason": {
+          "description": "Why the unit holds no fact, in plain words",
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Reason",
+          "type": "string"
+        }
+      },
+      "required": [
+        "anchor",
+        "reason"
+      ],
+      "title": "UnitWithoutFacts",
+      "type": "object"
+    }
+  },
+  "$id": "unit_accounting.v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "For one source, every unit read and what became of it.\n\nThe counts close: units in equals the units with facts plus the units recorded as having none,\neach with its reason, and no unit is in both lists.",
+  "properties": {
+    "id": {
+      "pattern": "^accounting:[0-9a-f]{16}$",
+      "title": "Id",
+      "type": "string"
+    },
+    "schema": {
+      "const": "unit_accounting.v1",
+      "type": "string"
+    },
+    "source_id": {
+      "description": "The id of the source accounted for",
+      "pattern": "^source:[0-9a-f]{16}$",
+      "title": "Source Id",
+      "type": "string"
+    },
+    "units_in": {
+      "description": "The number of units the source was read into",
+      "minimum": 0,
+      "title": "Units In",
+      "type": "integer"
+    },
+    "with_facts": {
+      "description": "The anchors of the units that produced at least one fact",
+      "items": {
+        "pattern": "^[a-z][a-z0-9_]*:\\S+$",
+        "type": "string"
+      },
+      "title": "With Facts",
+      "type": "array"
+    },
+    "without_facts": {
+      "description": "The units that produced no fact, each with its reason",
+      "items": {
+        "$ref": "#/$defs/UnitWithoutFacts"
+      },
+      "title": "Without Facts",
+      "type": "array"
+    }
+  },
+  "required": [
+    "id",
+    "schema",
+    "source_id",
+    "units_in",
+    "with_facts",
+    "without_facts"
+  ],
+  "title": "UnitAccounting",
+  "type": "object"
+}

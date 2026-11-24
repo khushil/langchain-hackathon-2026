@@ -1,0 +1,69 @@
+{
+  "$id": "source.v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "One thing that was read: a document, a table, an application or a transaction stream.\n\nThe id is derived from the kind, the source's own key and the digest of its bytes, so a\nchanged file is a different source and the same bytes always give the same id.",
+  "properties": {
+    "digest": {
+      "description": "The digest of the source's bytes as read",
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "title": "Digest",
+      "type": "string"
+    },
+    "id": {
+      "pattern": "^source:[0-9a-f]{16}$",
+      "title": "Id",
+      "type": "string"
+    },
+    "key": {
+      "description": "The source's own identifier, for example 'PS26-4' or 'FIRM-001'",
+      "minLength": 1,
+      "pattern": "\\S",
+      "title": "Key",
+      "type": "string"
+    },
+    "kind": {
+      "description": "What sort of source it is, for example 'document' or 'table'",
+      "pattern": "^[a-z][a-z0-9_]*$",
+      "title": "Kind",
+      "type": "string"
+    },
+    "locator": {
+      "description": "Where the source was read from: a path in this repository or a URL",
+      "minLength": 1,
+      "pattern": "\\S",
+      "title": "Locator",
+      "type": "string"
+    },
+    "schema": {
+      "const": "source.v1",
+      "type": "string"
+    },
+    "terms": {
+      "description": "The terms on which the source may be reused, as recorded",
+      "minLength": 1,
+      "pattern": "\\S",
+      "title": "Terms",
+      "type": "string"
+    },
+    "title": {
+      "description": "The source's title as it gives it",
+      "minLength": 1,
+      "pattern": "\\S",
+      "title": "Title",
+      "type": "string"
+    }
+  },
+  "required": [
+    "digest",
+    "id",
+    "key",
+    "kind",
+    "locator",
+    "schema",
+    "terms",
+    "title"
+  ],
+  "title": "Source",
+  "type": "object"
+}

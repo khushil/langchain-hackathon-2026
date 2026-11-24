@@ -1,0 +1,10 @@
+{
+  "schema": "source.v1",
+  "id": "source:c9690d260c586cbb",
+  "key": "PS26-4",
+  "title": "Policy Statement PS26/4: Operational resilience and third-party technology risk",
+  "kind": "document",
+  "digest": "sha256:48e71bd7b38e8d7dcd8c5bfcfca55c0bb8d1be0a902aaea8423df52be08440a3",
+  "locator": "03_document_summary_agent/data/documents/PS26-4.md",
+  "terms": "Fictional sample data from the FSI hackathon starter (github.com/langchain-samples/fsi-hackathon-london-2026), carried with credit"
+}

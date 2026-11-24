@@ -1,0 +1,142 @@
+{
+  "$defs": {
+    "Assumption": {
+      "additionalProperties": false,
+      "description": "An open question the reviewer accepts as an assumption, in their own words.",
+      "properties": {
+        "question_id": {
+          "description": "The open question accepted as an assumption",
+          "pattern": "^question:[0-9a-f]{16}$",
+          "title": "Question Id",
+          "type": "string"
+        },
+        "words": {
+          "description": "The assumption as the reviewer states it",
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Words",
+          "type": "string"
+        }
+      },
+      "required": [
+        "question_id",
+        "words"
+      ],
+      "title": "Assumption",
+      "type": "object"
+    },
+    "Person": {
+      "additionalProperties": false,
+      "description": "A named person and the role in which they act; never a model, a program or a service.",
+      "properties": {
+        "name": {
+          "description": "The person's name as they give it",
+          "minLength": 1,
+          "not": {
+            "pattern": "\\b(?:[aA][gG][eE][nN][tT]|[aA][nN][tT][hH][rR][oO][pP][iI][cC]|[aA][sS][sS][iI][sS][tT][aA][nN][tT]|[aA][uU][tT][oO][mM][aA][tT][eE][dD]|[aA][uU][tT][oO][mM][aA][tT][iI][oO][nN]|[bB][oO][tT]|[cC][hH][aA][tT][gG][pP][tT]|[cC][lL][aA][uU][dD][eE]|[cC][oO][pP][iI][lL][oO][tT]|[fF][aA][bB][lL][eE]|[gG][eE][mM][iI][nN][iI]|[gG][pP][tT]|[hH][aA][iI][kK][uU]|[lL][lL][aA][mM][aA]|[lL][lL][mM]|[mM][aA][cC][hH][iI][nN][eE]|[mM][iI][sS][tT][rR][aA][lL]|[mM][oO][dD][eE][lL]|[mM][yY][tT][hH][oO][sS]|[oO][pP][eE][nN][aA][iI]|[oO][pP][uU][sS]|[sS][oO][nN][nN][eE][tT]|[sS][yY][sS][tT][eE][mM])\\b"
+          },
+          "pattern": "\\S",
+          "title": "Name",
+          "type": "string"
+        },
+        "role": {
+          "description": "The role they act in, for example 'Head of Compliance'",
+          "minLength": 1,
+          "not": {
+            "pattern": "\\b(?:[aA][gG][eE][nN][tT]|[aA][nN][tT][hH][rR][oO][pP][iI][cC]|[aA][sS][sS][iI][sS][tT][aA][nN][tT]|[aA][uU][tT][oO][mM][aA][tT][eE][dD]|[aA][uU][tT][oO][mM][aA][tT][iI][oO][nN]|[bB][oO][tT]|[cC][hH][aA][tT][gG][pP][tT]|[cC][lL][aA][uU][dD][eE]|[cC][oO][pP][iI][lL][oO][tT]|[fF][aA][bB][lL][eE]|[gG][eE][mM][iI][nN][iI]|[gG][pP][tT]|[hH][aA][iI][kK][uU]|[lL][lL][aA][mM][aA]|[lL][lL][mM]|[mM][aA][cC][hH][iI][nN][eE]|[mM][iI][sS][tT][rR][aA][lL]|[mM][oO][dD][eE][lL]|[mM][yY][tT][hH][oO][sS]|[oO][pP][eE][nN][aA][iI]|[oO][pP][uU][sS]|[sS][oO][nN][nN][eE][tT]|[sS][yY][sS][tT][eE][mM])\\b"
+          },
+          "pattern": "\\S",
+          "title": "Role",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "role"
+      ],
+      "title": "Person",
+      "type": "object"
+    }
+  },
+  "$id": "signoff.v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "A named person's signature on, or return of, one brief at the digest they read.",
+  "properties": {
+    "assumptions": {
+      "description": "Each open question the reviewer accepts as an assumption, in their words",
+      "items": {
+        "$ref": "#/$defs/Assumption"
+      },
+      "title": "Assumptions",
+      "type": "array"
+    },
+    "brief_digest": {
+      "description": "The digest of the brief's content as the person read it",
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "title": "Brief Digest",
+      "type": "string"
+    },
+    "brief_id": {
+      "description": "The brief signed or returned",
+      "pattern": "^brief:[0-9a-f]{16}$",
+      "title": "Brief Id",
+      "type": "string"
+    },
+    "date": {
+      "description": "The date of the sign-off",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+      "title": "Date",
+      "type": "string"
+    },
+    "id": {
+      "pattern": "^signoff:[0-9a-f]{16}$",
+      "title": "Id",
+      "type": "string"
+    },
+    "outcome": {
+      "description": "Signed as fit to act on, or returned",
+      "enum": [
+        "signed",
+        "returned"
+      ],
+      "title": "Outcome",
+      "type": "string"
+    },
+    "reason": {
+      "anyOf": [
+        {
+          "minLength": 1,
+          "pattern": "\\S",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "For returned: why, in the person's words",
+      "title": "Reason"
+    },
+    "reviewer": {
+      "$ref": "#/$defs/Person",
+      "description": "The person who signed or returned it"
+    },
+    "schema": {
+      "const": "signoff.v1",
+      "type": "string"
+    }
+  },
+  "required": [
+    "assumptions",
+    "brief_digest",
+    "brief_id",
+    "date",
+    "id",
+    "outcome",
+    "reviewer",
+    "schema"
+  ],
+  "title": "SignOff",
+  "type": "object"
+}

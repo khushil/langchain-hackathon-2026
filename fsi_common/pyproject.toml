@@ -1,0 +1,20 @@
+[project]
+name = "fsi-common"
+version = "0.1.0"
+description = "Shared record types for the repository's topics: sources, cited facts, open questions, decisions, briefs and sign-offs"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "pydantic>=2,<3",
+    "jsonschema>=4.20,<5",
+]
+
+[build-system]
+requires = ["setuptools>=70"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["fsi_common*"]
+
+[tool.setuptools.package-data]
+fsi_common = ["schemas/*.json", "examples/*.json", "examples/valid/*.json", "examples/planted/*.json"]

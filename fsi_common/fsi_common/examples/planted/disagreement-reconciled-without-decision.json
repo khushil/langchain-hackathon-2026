@@ -1,0 +1,15 @@
+{
+  "schema": "disagreement.v1",
+  "id": "disagreement:7943a2e924c2ff5b",
+  "about": "Which provider the firm's card payments run on",
+  "claims": [
+    "fact:89d225126d85fbc8",
+    "fact:5f5a2c5eaa938cdf"
+  ],
+  "found_by": {
+    "name": "provider-cross-check",
+    "version": "0.1.0"
+  },
+  "status": "reconciled",
+  "decision_id": null
+}

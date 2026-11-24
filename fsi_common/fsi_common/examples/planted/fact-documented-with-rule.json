@@ -1,0 +1,52 @@
+{
+  "schema": "fact.v1",
+  "id": "fact:9ff827e1365632d7",
+  "kind": "obligation",
+  "subject": {
+    "source_id": "source:c9690d260c586cbb",
+    "anchor": "para:7.1"
+  },
+  "quote": "Firms must submit an initial notification to the FSOA within 4 hours of classifying an incident as a major incident",
+  "attributes": {
+    "requirement": "Notify the regulator of a major incident",
+    "actor": "firm",
+    "deadline": "within 4 hours of classifying an incident as a major incident, and in any case no later than 24 hours after the incident is first detected"
+  },
+  "status": {
+    "status": "documented",
+    "observed_at": null,
+    "rule": {
+      "id": "small-firm-thresholds",
+      "version": "1",
+      "statement": "Paragraph 2.3: a small firm has fewer than 250,000 customers and total assets of less than £5 billion; 1,200,000 customers exceeds the first threshold",
+      "match_rate": {
+        "matched": 1,
+        "population": 1
+      }
+    },
+    "unknown_reason": null
+  },
+  "provenance": {
+    "source_id": "source:c9690d260c586cbb",
+    "anchor": "para:7.1",
+    "extractor": {
+      "name": "section-reader",
+      "version": "0.1.0"
+    },
+    "model": "claude-sonnet-5-5",
+    "prompt_version": "1",
+    "as_of": "sha256:48e71bd7b38e8d7dcd8c5bfcfca55c0bb8d1be0a902aaea8423df52be08440a3"
+  },
+  "checks": [
+    {
+      "check": "quote-verbatim.v1",
+      "outcome": "pass",
+      "detail": "found word for word in the unit's text"
+    },
+    {
+      "check": "deadline-verbatim.v1",
+      "outcome": "pass",
+      "detail": "found word for word in the unit's text"
+    }
+  ]
+}

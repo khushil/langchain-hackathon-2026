@@ -1,0 +1,133 @@
+{
+  "$defs": {
+    "Person": {
+      "additionalProperties": false,
+      "description": "A named person and the role in which they act; never a model, a program or a service.",
+      "properties": {
+        "name": {
+          "description": "The person's name as they give it",
+          "minLength": 1,
+          "not": {
+            "pattern": "\\b(?:[aA][gG][eE][nN][tT]|[aA][nN][tT][hH][rR][oO][pP][iI][cC]|[aA][sS][sS][iI][sS][tT][aA][nN][tT]|[aA][uU][tT][oO][mM][aA][tT][eE][dD]|[aA][uU][tT][oO][mM][aA][tT][iI][oO][nN]|[bB][oO][tT]|[cC][hH][aA][tT][gG][pP][tT]|[cC][lL][aA][uU][dD][eE]|[cC][oO][pP][iI][lL][oO][tT]|[fF][aA][bB][lL][eE]|[gG][eE][mM][iI][nN][iI]|[gG][pP][tT]|[hH][aA][iI][kK][uU]|[lL][lL][aA][mM][aA]|[lL][lL][mM]|[mM][aA][cC][hH][iI][nN][eE]|[mM][iI][sS][tT][rR][aA][lL]|[mM][oO][dD][eE][lL]|[mM][yY][tT][hH][oO][sS]|[oO][pP][eE][nN][aA][iI]|[oO][pP][uU][sS]|[sS][oO][nN][nN][eE][tT]|[sS][yY][sS][tT][eE][mM])\\b"
+          },
+          "pattern": "\\S",
+          "title": "Name",
+          "type": "string"
+        },
+        "role": {
+          "description": "The role they act in, for example 'Head of Compliance'",
+          "minLength": 1,
+          "not": {
+            "pattern": "\\b(?:[aA][gG][eE][nN][tT]|[aA][nN][tT][hH][rR][oO][pP][iI][cC]|[aA][sS][sS][iI][sS][tT][aA][nN][tT]|[aA][uU][tT][oO][mM][aA][tT][eE][dD]|[aA][uU][tT][oO][mM][aA][tT][iI][oO][nN]|[bB][oO][tT]|[cC][hH][aA][tT][gG][pP][tT]|[cC][lL][aA][uU][dD][eE]|[cC][oO][pP][iI][lL][oO][tT]|[fF][aA][bB][lL][eE]|[gG][eE][mM][iI][nN][iI]|[gG][pP][tT]|[hH][aA][iI][kK][uU]|[lL][lL][aA][mM][aA]|[lL][lL][mM]|[mM][aA][cC][hH][iI][nN][eE]|[mM][iI][sS][tT][rR][aA][lL]|[mM][oO][dD][eE][lL]|[mM][yY][tT][hH][oO][sS]|[oO][pP][eE][nN][aA][iI]|[oO][pP][uU][sS]|[sS][oO][nN][nN][eE][tT]|[sS][yY][sS][tT][eE][mM])\\b"
+          },
+          "pattern": "\\S",
+          "title": "Role",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "role"
+      ],
+      "title": "Person",
+      "type": "object"
+    }
+  },
+  "$id": "decision.v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "One person's decision on one record, at the digest of the record they saw.\n\n``accept``, ``amend`` and ``reject`` apply to a fact, a statement or a disagreement;\n``answer`` applies to an open question. The reviewer is always a named person, and the\nschema refuses an empty name and the name of a model or a program.",
+  "properties": {
+    "amendment": {
+      "anyOf": [
+        {
+          "minLength": 1,
+          "pattern": "\\S",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "For amend: the change, in the person's words",
+      "title": "Amendment"
+    },
+    "answer": {
+      "anyOf": [
+        {
+          "minLength": 1,
+          "pattern": "\\S",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "For answer: the answer, in the person's words",
+      "title": "Answer"
+    },
+    "date": {
+      "description": "The date of the decision",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+      "title": "Date",
+      "type": "string"
+    },
+    "id": {
+      "pattern": "^decision:[0-9a-f]{16}$",
+      "title": "Id",
+      "type": "string"
+    },
+    "outcome": {
+      "description": "What the person decided",
+      "enum": [
+        "accept",
+        "amend",
+        "reject",
+        "answer"
+      ],
+      "title": "Outcome",
+      "type": "string"
+    },
+    "reason": {
+      "description": "Why, in the person's own words",
+      "minLength": 1,
+      "pattern": "\\S",
+      "title": "Reason",
+      "type": "string"
+    },
+    "reviewer": {
+      "$ref": "#/$defs/Person",
+      "description": "The person who decided"
+    },
+    "schema": {
+      "const": "decision.v1",
+      "type": "string"
+    },
+    "seen_digest": {
+      "description": "The digest of the record as the person saw it",
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "title": "Seen Digest",
+      "type": "string"
+    },
+    "subject_id": {
+      "description": "The id of the record decided on",
+      "pattern": "^[a-z][a-z_]*:[0-9a-f]{16}$",
+      "title": "Subject Id",
+      "type": "string"
+    }
+  },
+  "required": [
+    "date",
+    "id",
+    "outcome",
+    "reason",
+    "reviewer",
+    "schema",
+    "seen_digest",
+    "subject_id"
+  ],
+  "title": "Decision",
+  "type": "object"
+}

@@ -1,0 +1,20 @@
+{
+  "schema": "open_question.v1",
+  "id": "question:b16d3b48d82946ab",
+  "about": {
+    "source_id": "source:48afc74ed0bf2412",
+    "anchor": "row:FIRM-001"
+  },
+  "question": "Were the firm's contracts with NimbusCloud and PayCore Ltd in place before 1 January 2027, and when does each next renew?",
+  "why_unknown": "The firm table gives each contract's end date (30 June 2027 and 31 December 2029) but not when it was made or when it renews.",
+  "impact": "Sets the date by which each contract must meet paragraph 6.3 under paragraph 9.3.",
+  "ask_role": "Head of Third-Party Risk",
+  "reason": "model_unsure",
+  "cites": [
+    "fact:8b53031651720070",
+    "unit:3ad9f6791e610466"
+  ],
+  "priority": "high",
+  "state": "open",
+  "decision_id": null
+}

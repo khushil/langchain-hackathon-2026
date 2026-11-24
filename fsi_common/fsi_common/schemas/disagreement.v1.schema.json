@@ -1,0 +1,97 @@
+{
+  "$defs": {
+    "Extractor": {
+      "additionalProperties": false,
+      "description": "The named, versioned code or step that produced a record.",
+      "properties": {
+        "name": {
+          "description": "The extractor's name, for example 'paragraph-splitter'",
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Name",
+          "type": "string"
+        },
+        "version": {
+          "description": "The extractor's version",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._+-]*$",
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "version"
+      ],
+      "title": "Extractor",
+      "type": "object"
+    }
+  },
+  "$id": "disagreement.v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Two or more facts that differ about the same thing, kept side by side.\n\nThe record names no winner and has no field that could: a person reconciles it by a decision,\nand the facts stay as they are.",
+  "properties": {
+    "about": {
+      "description": "What the facts disagree on, in plain words",
+      "minLength": 1,
+      "pattern": "\\S",
+      "title": "About",
+      "type": "string"
+    },
+    "claims": {
+      "description": "The differing facts, two or more",
+      "items": {
+        "pattern": "^fact:[0-9a-f]{16}$",
+        "type": "string"
+      },
+      "title": "Claims",
+      "type": "array"
+    },
+    "decision_id": {
+      "anyOf": [
+        {
+          "pattern": "^decision:[0-9a-f]{16}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "The person's decision that reconciled it",
+      "title": "Decision Id"
+    },
+    "found_by": {
+      "$ref": "#/$defs/Extractor",
+      "description": "The comparison that found the difference"
+    },
+    "id": {
+      "pattern": "^disagreement:[0-9a-f]{16}$",
+      "title": "Id",
+      "type": "string"
+    },
+    "schema": {
+      "const": "disagreement.v1",
+      "type": "string"
+    },
+    "status": {
+      "description": "Whether a person has reconciled it",
+      "enum": [
+        "open",
+        "reconciled"
+      ],
+      "title": "Status",
+      "type": "string"
+    }
+  },
+  "required": [
+    "about",
+    "claims",
+    "found_by",
+    "id",
+    "schema",
+    "status"
+  ],
+  "title": "Disagreement",
+  "type": "object"
+}

@@ -1,0 +1,50 @@
+# One environment for the repository. Run `uv sync --all-packages` here, in the repository root, to install
+# everything into .venv. Each member keeps its own pyproject.toml, which lists that member's dependencies.
+# Topics 01 and 02 have folders but are not members until they are built.
+[project]
+name = "fsi-compliance-brief"
+version = "0.1.0"
+description = "A compliance brief workflow with cited facts and a named reviewer, laid out as the FSI hackathon starter"
+requires-python = ">=3.11"
+dependencies = []
+
+[dependency-groups]
+dev = [
+    "pytest==9.2.0",
+    "pytest-xdist==3.8.0",
+    "ruff==0.17.6",
+]
+
+[tool.uv.workspace]
+members = ["fsi_common", "03_document_summary_agent"]
+
+[tool.pytest.ini_options]
+testpaths = ["fsi_common/tests", "03_document_summary_agent/tests"]
+pythonpath = ["fsi_common", "03_document_summary_agent"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+extend-exclude = ["*.ipynb"]
+
+[tool.ruff.format]
+# Files carried from the starter keep the starter's layout, so a reader can set them beside it.
+exclude = [
+    "03_document_summary_agent/agent.py",
+    "03_document_summary_agent/sub_agent.py",
+    "03_document_summary_agent/tools/*.py",
+    "03_document_summary_agent/utils/__init__.py",
+    "03_document_summary_agent/utils/db.py",
+]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP"]
+
+[tool.ruff.lint.per-file-ignores]
+"03_document_summary_agent/agent.py" = ["E501", "I001"]
+"03_document_summary_agent/sub_agent.py" = ["E501", "I001"]
+"03_document_summary_agent/tools/*.py" = ["E501", "I001", "W293"]
+"03_document_summary_agent/utils/db.py" = ["E501"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["fsi_common", "agent", "agents", "sub_agent", "tools", "utils"]

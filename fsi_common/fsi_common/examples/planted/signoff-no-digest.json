@@ -1,0 +1,18 @@
+{
+  "schema": "signoff.v1",
+  "id": "signoff:511f4cf408a23906",
+  "brief_id": "brief:61aed14b1109df80",
+  "reviewer": {
+    "name": "Dana Whitfield",
+    "role": "Head of Compliance"
+  },
+  "date": "2026-11-25",
+  "outcome": "signed",
+  "assumptions": [
+    {
+      "question_id": "question:5926550a73f8c47c",
+      "words": "Until the contracts register is checked, treat both contracts as made before 1 January 2027."
+    }
+  ],
+  "reason": null
+}

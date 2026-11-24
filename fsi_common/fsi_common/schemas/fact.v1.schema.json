@@ -1,0 +1,370 @@
+{
+  "$defs": {
+    "CheckResult": {
+      "additionalProperties": false,
+      "description": "The result of one plain-code check run on a fact, such as the quote being word for word.",
+      "properties": {
+        "check": {
+          "description": "The check's name and version, for example 'quote-verbatim.v1'",
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Check",
+          "type": "string"
+        },
+        "detail": {
+          "description": "What the check compared and what it found",
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Detail",
+          "type": "string"
+        },
+        "outcome": {
+          "description": "Whether the fact passed the check",
+          "enum": [
+            "pass",
+            "fail"
+          ],
+          "title": "Outcome",
+          "type": "string"
+        }
+      },
+      "required": [
+        "check",
+        "outcome",
+        "detail"
+      ],
+      "title": "CheckResult",
+      "type": "object"
+    },
+    "ClaimStatus": {
+      "additionalProperties": false,
+      "description": "How a fact is known: stated, observed, inferred by a named rule, or not known.",
+      "properties": {
+        "observed_at": {
+          "anyOf": [
+            {
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "For observed: the date it was read",
+          "title": "Observed At"
+        },
+        "rule": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/InferenceRule"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "For inferred: the rule it rests on"
+        },
+        "status": {
+          "description": "documented: the source says it; observed: seen in a running system on a recorded date; inferred: derived by a named rule; unknown: not settled by the sources",
+          "enum": [
+            "documented",
+            "observed",
+            "inferred",
+            "unknown"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "unknown_reason": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "pattern": "\\S",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "For unknown: what was looked for and why it is not known",
+          "title": "Unknown Reason"
+        }
+      },
+      "required": [
+        "status"
+      ],
+      "title": "ClaimStatus",
+      "type": "object"
+    },
+    "Extractor": {
+      "additionalProperties": false,
+      "description": "The named, versioned code or step that produced a record.",
+      "properties": {
+        "name": {
+          "description": "The extractor's name, for example 'paragraph-splitter'",
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Name",
+          "type": "string"
+        },
+        "version": {
+          "description": "The extractor's version",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._+-]*$",
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "version"
+      ],
+      "title": "Extractor",
+      "type": "object"
+    },
+    "InferenceRule": {
+      "additionalProperties": false,
+      "description": "The named rule an inferred claim rests on.",
+      "properties": {
+        "id": {
+          "description": "The rule's name",
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Id",
+          "type": "string"
+        },
+        "match_rate": {
+          "$ref": "#/$defs/MatchRate",
+          "description": "The rule's measured match rate"
+        },
+        "statement": {
+          "description": "What the rule infers from what, in plain words",
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Statement",
+          "type": "string"
+        },
+        "version": {
+          "description": "The rule's version",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._+-]*$",
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "statement",
+        "match_rate"
+      ],
+      "title": "InferenceRule",
+      "type": "object"
+    },
+    "MatchRate": {
+      "additionalProperties": false,
+      "description": "How often an inference rule held, measured over its whole population.",
+      "properties": {
+        "matched": {
+          "description": "Cases where the rule gave the right answer",
+          "minimum": 0,
+          "title": "Matched",
+          "type": "integer"
+        },
+        "population": {
+          "description": "Every case the rule was measured on",
+          "minimum": 1,
+          "title": "Population",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "matched",
+        "population"
+      ],
+      "title": "MatchRate",
+      "type": "object"
+    },
+    "Provenance": {
+      "additionalProperties": false,
+      "description": "Where a fact came from and what produced it.",
+      "properties": {
+        "anchor": {
+          "description": "The unit read",
+          "pattern": "^[a-z][a-z0-9_]*:\\S+$",
+          "title": "Anchor",
+          "type": "string"
+        },
+        "as_of": {
+          "description": "The digest of the source as it was when read",
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "title": "As Of",
+          "type": "string"
+        },
+        "extractor": {
+          "$ref": "#/$defs/Extractor",
+          "description": "The code or step that produced the fact"
+        },
+        "model": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "pattern": "\\S",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "The model, where a model produced it",
+          "title": "Model"
+        },
+        "prompt_version": {
+          "anyOf": [
+            {
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._+-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "The version of the prompt, where a model produced it",
+          "title": "Prompt Version"
+        },
+        "source_id": {
+          "description": "The source read",
+          "pattern": "^source:[0-9a-f]{16}$",
+          "title": "Source Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "source_id",
+        "anchor",
+        "extractor",
+        "as_of"
+      ],
+      "title": "Provenance",
+      "type": "object"
+    },
+    "SourceRef": {
+      "additionalProperties": false,
+      "description": "A place in one source: the source's id and an anchor in its own identifiers.",
+      "properties": {
+        "anchor": {
+          "description": "The place in the source, for example 'para:7.1'",
+          "pattern": "^[a-z][a-z0-9_]*:\\S+$",
+          "title": "Anchor",
+          "type": "string"
+        },
+        "source_id": {
+          "description": "The id of the source record",
+          "pattern": "^source:[0-9a-f]{16}$",
+          "title": "Source Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "source_id",
+        "anchor"
+      ],
+      "title": "SourceRef",
+      "type": "object"
+    }
+  },
+  "$id": "fact.v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "One thing a source says about one of its units, quoted word for word and checked by code.\n\n``kind`` comes from the closed list a topic supplies; ``fsi_common`` holds no list of its own.\nThe id is derived from the kind, the subject, the quote and the attributes, so a rerun that\nfinds the same thing gives the same id whatever produced it.",
+  "properties": {
+    "attributes": {
+      "description": "The fact's normalised attributes, for example a requirement and a deadline as written",
+      "patternProperties": {
+        "^[a-z][a-z0-9_]*$": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "boolean"
+            },
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "title": "Attributes",
+      "type": "object"
+    },
+    "checks": {
+      "description": "The plain-code checks run on the fact",
+      "items": {
+        "$ref": "#/$defs/CheckResult"
+      },
+      "minItems": 1,
+      "title": "Checks",
+      "type": "array"
+    },
+    "id": {
+      "pattern": "^fact:[0-9a-f]{16}$",
+      "title": "Id",
+      "type": "string"
+    },
+    "kind": {
+      "description": "The kind of fact, from the topic's closed list",
+      "pattern": "^[a-z][a-z0-9_]*$",
+      "title": "Kind",
+      "type": "string"
+    },
+    "provenance": {
+      "$ref": "#/$defs/Provenance",
+      "description": "Where the fact came from"
+    },
+    "quote": {
+      "description": "Text copied word for word from the subject unit",
+      "minLength": 1,
+      "pattern": "\\S",
+      "title": "Quote",
+      "type": "string"
+    },
+    "schema": {
+      "const": "fact.v1",
+      "type": "string"
+    },
+    "status": {
+      "$ref": "#/$defs/ClaimStatus",
+      "description": "How the fact is known"
+    },
+    "subject": {
+      "$ref": "#/$defs/SourceRef",
+      "description": "The source unit the fact is about"
+    }
+  },
+  "required": [
+    "attributes",
+    "checks",
+    "id",
+    "kind",
+    "provenance",
+    "quote",
+    "schema",
+    "status",
+    "subject"
+  ],
+  "title": "Fact",
+  "type": "object"
+}

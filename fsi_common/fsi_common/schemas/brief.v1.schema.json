@@ -1,0 +1,135 @@
+{
+  "$defs": {
+    "Statement": {
+      "additionalProperties": false,
+      "description": "One statement of a brief and the facts it cites.",
+      "properties": {
+        "cites": {
+          "description": "The facts the statement rests on, one or more",
+          "items": {
+            "pattern": "^fact:[0-9a-f]{16}$",
+            "type": "string"
+          },
+          "title": "Cites",
+          "type": "array"
+        },
+        "heading": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "pattern": "\\S",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "The part of the brief the statement sits under",
+          "title": "Heading"
+        },
+        "id": {
+          "pattern": "^statement:[0-9a-f]{16}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "text": {
+          "description": "The statement as the brief gives it",
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "text",
+        "cites"
+      ],
+      "title": "Statement",
+      "type": "object"
+    }
+  },
+  "$id": "brief.v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "A brief written for one request from facts only, with the digest the reviewer signs against.\n\nThe digest covers the request, the sources, the statements and the open questions carried, so\nany change to what the reviewer reads changes the digest; the id is the digest's first 16 hex\ncharacters. The model and prompt versions are recorded beside the content, outside the digest.",
+  "properties": {
+    "content_digest": {
+      "description": "The digest of the request, sources, statements and open questions",
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "title": "Content Digest",
+      "type": "string"
+    },
+    "id": {
+      "pattern": "^brief:[0-9a-f]{16}$",
+      "title": "Id",
+      "type": "string"
+    },
+    "model": {
+      "description": "The model that wrote the statements",
+      "minLength": 1,
+      "pattern": "\\S",
+      "title": "Model",
+      "type": "string"
+    },
+    "open_question_ids": {
+      "description": "The open questions the brief carries to the reviewer",
+      "items": {
+        "pattern": "^question:[0-9a-f]{16}$",
+        "type": "string"
+      },
+      "title": "Open Question Ids",
+      "type": "array"
+    },
+    "prompt_version": {
+      "description": "The version of the prompt it wrote them with",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._+-]*$",
+      "title": "Prompt Version",
+      "type": "string"
+    },
+    "request": {
+      "description": "The request the brief answers, as it was made",
+      "minLength": 1,
+      "pattern": "\\S",
+      "title": "Request",
+      "type": "string"
+    },
+    "schema": {
+      "const": "brief.v1",
+      "type": "string"
+    },
+    "sources": {
+      "description": "The sources the brief was written from",
+      "items": {
+        "pattern": "^source:[0-9a-f]{16}$",
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Sources",
+      "type": "array"
+    },
+    "statements": {
+      "description": "The brief's statements, in order",
+      "items": {
+        "$ref": "#/$defs/Statement"
+      },
+      "minItems": 1,
+      "title": "Statements",
+      "type": "array"
+    }
+  },
+  "required": [
+    "content_digest",
+    "id",
+    "model",
+    "open_question_ids",
+    "prompt_version",
+    "request",
+    "schema",
+    "sources",
+    "statements"
+  ],
+  "title": "Brief",
+  "type": "object"
+}

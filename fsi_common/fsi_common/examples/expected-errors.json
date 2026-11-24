@@ -1,0 +1,162 @@
+{
+  "accounting-count-as-text.json": {
+    "check": "schema.type",
+    "reason": "a count written as text"
+  },
+  "accounting-does-not-close.json": {
+    "check": "accounting.closes",
+    "reason": "48 units in, 45 with facts and 1 without"
+  },
+  "accounting-empty.json": {
+    "check": "accounting.empty",
+    "reason": "a source read into no units"
+  },
+  "brief-digest-does-not-recompute.json": {
+    "check": "digest.recompute",
+    "reason": "a brief carrying a digest of other content"
+  },
+  "brief-statement-cites-nothing.json": {
+    "check": "brief.statement-cites",
+    "reason": "a brief statement citing no fact"
+  },
+  "brief-statement-edited.json": {
+    "check": "id.recompute",
+    "reason": "a statement edited after its id and the brief's digest were derived"
+  },
+  "bundle-accounting-facts-mismatch.json": {
+    "check": "accounting.facts-match",
+    "reason": "accounting that lists a unit with facts when the facts cite another"
+  },
+  "bundle-brief-cites-failed-check.json": {
+    "check": "brief.cites-failed-check",
+    "reason": "a statement citing a fact whose deadline check failed"
+  },
+  "bundle-decision-digest-stale.json": {
+    "check": "decision.digest-stale",
+    "reason": "a fact changed after the reviewer decided on it"
+  },
+  "bundle-id-duplicate.json": {
+    "check": "id.duplicate",
+    "reason": "two different sources under one id"
+  },
+  "bundle-open-question-unrecorded.json": {
+    "check": "signoff.open-question-unrecorded",
+    "reason": "a signed brief whose open question is neither settled nor accepted as an assumption"
+  },
+  "bundle-question-decision-not-about-it.json": {
+    "check": "question.decision-matches",
+    "reason": "a question marked answered by a decision about a fact"
+  },
+  "bundle-signoff-digest-differs.json": {
+    "check": "signoff.digest-matches",
+    "reason": "a sign-off against a digest other than the brief's"
+  },
+  "bundle-statement-cites-missing-fact.json": {
+    "check": "ref.resolves",
+    "reason": "a statement citing a fact that is not there"
+  },
+  "decision-answer-on-fact.json": {
+    "check": "decision.outcome",
+    "reason": "an answer given to a fact, which is not a question"
+  },
+  "decision-date-not-a-date.json": {
+    "check": "schema.date",
+    "reason": "a date that is not in the calendar"
+  },
+  "decision-empty-reviewer.json": {
+    "check": "person.empty",
+    "reason": "a decision with an empty reviewer"
+  },
+  "decision-model-reviewer.json": {
+    "check": "person.machine",
+    "reason": "a decision whose reviewer is a model"
+  },
+  "decision-system-role.json": {
+    "check": "person.machine",
+    "reason": "a decision whose reviewer's role is the system"
+  },
+  "disagreement-one-claim.json": {
+    "check": "disagreement.claims",
+    "reason": "a disagreement holding one fact"
+  },
+  "disagreement-reconciled-without-decision.json": {
+    "check": "disagreement.status",
+    "reason": "a disagreement marked reconciled with no person's decision"
+  },
+  "fact-accepted-by-machine.json": {
+    "check": "schema.extra",
+    "reason": "a fact carrying an accepted state, which no record type allows"
+  },
+  "fact-documented-with-rule.json": {
+    "check": "status.extra",
+    "reason": "a documented fact carrying an inference rule"
+  },
+  "fact-id-does-not-recompute.json": {
+    "check": "id.recompute",
+    "reason": "the quote was changed after the id was derived"
+  },
+  "fact-inferred-without-rule.json": {
+    "check": "status.inferred",
+    "reason": "an inferred fact that names no rule"
+  },
+  "fact-kind-not-listed.json": {
+    "check": "fact.kind",
+    "reason": "a kind outside the topic's list"
+  },
+  "fact-match-rate-above-population.json": {
+    "check": "status.match-rate",
+    "reason": "a rule said to match 2 cases of 1"
+  },
+  "fact-model-without-prompt.json": {
+    "check": "provenance.model-pair",
+    "reason": "a model-produced fact with no prompt version"
+  },
+  "fact-no-quote.json": {
+    "check": "fact.quote",
+    "reason": "a fact with no quote"
+  },
+  "fact-observed-without-date.json": {
+    "check": "status.observed",
+    "reason": "an observed fact that does not say when it was read"
+  },
+  "fact-provenance-other-unit.json": {
+    "check": "fact.provenance-subject",
+    "reason": "a fact whose provenance names another paragraph"
+  },
+  "fact-unknown-without-reason.json": {
+    "check": "status.unknown",
+    "reason": "an unknown fact that does not say why"
+  },
+  "question-accepted-without-decision.json": {
+    "check": "question.state",
+    "reason": "a question marked accepted with no person's decision"
+  },
+  "question-cites-nothing.json": {
+    "check": "question.cites",
+    "reason": "a question about missing data that cites nothing"
+  },
+  "question-reason-not-listed.json": {
+    "check": "schema.enum",
+    "reason": "an open question whose reason is outside the closed list"
+  },
+  "schema-unknown.json": {
+    "check": "schema.unknown",
+    "reason": "a record whose schema this package does not define"
+  },
+  "signoff-assumption-twice.json": {
+    "check": "signoff.assumptions",
+    "reason": "the same question accepted as an assumption twice"
+  },
+  "signoff-no-digest.json": {
+    "check": "schema.required",
+    "reason": "a sign-off with no digest"
+  },
+  "signoff-returned-without-reason.json": {
+    "check": "signoff.reason",
+    "reason": "a returned brief with no reason"
+  },
+  "source-missing-digest.json": {
+    "check": "schema.required",
+    "reason": "a source with no digest of its bytes"
+  }
+}
