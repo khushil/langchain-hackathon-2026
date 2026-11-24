@@ -1,6 +1,6 @@
 {
  "meta": {
-  "duration_s": 2.634,
+  "duration_s": 5.401,
   "init": {
    "agents": [],
    "apiKeySource": "none",
@@ -14,14 +14,14 @@
     "StructuredOutput"
    ]
   },
-  "recorded_at": "2026-11-24T20:19:43.637169+00:00"
+  "recorded_at": "2026-11-24T20:52:37.738965+00:00"
  },
  "request": {
   "effort": "medium",
   "format": 2,
   "messages": [
    {
-    "content": "Summarise ONE section of a regulatory document and extract its obligations. Analyse only; do not create files. Return a SectionSummary.\n\nDocument: PS26-4, \"Policy Statement PS26/4: Operational resilience and third-party technology risk\"\nSection number: 10\nSection title: Next steps and contacts\n\nFull text:\n10.1 We will host a series of webinars for firms in the first quarter of 2027 and will publish frequently asked questions on our website.\n\n10.2 Firms with questions about this policy statement should contact their usual supervisory contact. General questions can be sent to our operational resilience team.\n\n10.3 We will consult separately in 2027 on whether to extend these requirements to insurers and investment firms.",
+    "content": "Summarise ONE section of regulatory document PS26-4 (Policy Statement PS26/4: Operational resilience and third-party technology risk) and extract its obligations. Only analyse; do not create files. Return a SectionSummary.\n\nSection number: 8\nSection title: Governance and accountability\nFull text:\n8.1 Firms must name a senior manager who is responsible for operational resilience by 31 January 2027, and must notify the FSOA of that person's name within 14 days of appointing them.\n\n8.2 Firms must complete an annual self-assessment of their operational resilience, which must be approved by the board. The first self-assessment must be completed and approved by 31 March 2028.\n\n8.3 The self-assessment must cover the firm's important business services, impact tolerances, mapping, scenario testing results, vulnerabilities and remediation actions, and its management of material third-party providers.\n\n8.4 Boards should receive regular management information on operational resilience, at least quarterly, and should challenge it.\n\n8.5 Firms must keep each self-assessment for at least 5 years and provide it to the FSOA on request.",
     "role": "user"
    }
   ],
@@ -397,26 +397,69 @@
   },
   "system": "# Section summariser agent\nYou are given one section: its number, title and text. Return a `SectionSummary` as a single JSON object, with no text before or after it:\n\n- `number`: the section number, for example `\"4\"`.\n- `title`: the section title.\n- `summary`: one to three sentences on what the section says.\n- `obligations`: every obligation in the section. Use an empty list if there are none.\n\nEach `Obligation` has four fields:\n\n- `requirement`: what the firm must do, in plain English.\n- `paragraph`: the paragraph number it comes from, for example `\"4.2\"`.\n- `deadline`: the deadline exactly as written in the document, or `null` if there is none.\n- `evidence`: a quote copied word for word from that paragraph, at most 30 words.\n\nFor example:\n\n```json\n{\n  \"number\": \"7\",\n  \"title\": \"Incident reporting\",\n  \"summary\": \"Firms must report major incidents to the regulator quickly.\",\n  \"obligations\": [\n    {\n      \"requirement\": \"Report major incidents to the regulator\",\n      \"paragraph\": \"7.1\",\n      \"deadline\": \"within 4 hours\",\n      \"evidence\": \"Firms must notify the FSOA of a major incident within 4 hours\"\n    }\n  ]\n}\n```\n\n### What counts as an obligation\n\nAn obligation is something a firm must do. Look for \"must\", \"shall\", \"is required to\" and \"will need to\".\n\n- Do not list recommendations or guidance (\"should\", \"may\", \"we expect\") as obligations.\n- Do not list things only the regulator does.\n- If one paragraph sets several separate requirements, list each one separately.\n- If the section changes a requirement or deadline from an earlier section, say so in the summary.\n\n### Rules for accuracy\n\n- Copy `evidence` word for word. Never paraphrase, correct or shorten the wording inside a quote.\n- Copy `deadline` exactly as written. Do not convert dates or durations, for example \"within 4 hours\" stays as it is.\n- Use only the section you were given. Do not use outside knowledge of the regulation.\n- Do not guess. If a paragraph is ambiguous, say so in the summary rather than inventing a requirement.\n\nThese fields are checked automatically against the source text afterwards. A quote that isn't word for word, or a\ndeadline that isn't in the section, will be flagged.\n"
  },
- "request_sha256": "685bae54ae04c827532bcba425d9ef4bb7c236bc386266a3e2b1a55292c602c4",
+ "request_sha256": "2619822fe2ebb84a8cfb9b4d89ea76b6642772cddf84d55271f8ad806d5d181e",
  "response": {
   "content": "",
   "model_reported": "claude-sonnet-5-5",
   "tool_calls": [
    {
     "args": {
-     "number": "10",
-     "obligations": [],
-     "summary": "The regulator will host webinars in the first quarter of 2027, publish FAQs, and consult separately in 2027 on extending the requirements to insurers and investment firms. Firms with questions should contact their supervisory contact or the operational resilience team. The section places no obligations on firms.",
-     "title": "Next steps and contacts"
+     "number": "8",
+     "obligations": [
+      {
+       "deadline": "by 31 January 2027",
+       "evidence": "Firms must name a senior manager who is responsible for operational resilience by 31 January 2027",
+       "paragraph": "8.1",
+       "requirement": "Name a senior manager responsible for operational resilience"
+      },
+      {
+       "deadline": "within 14 days of appointing them",
+       "evidence": "must notify the FSOA of that person's name within 14 days of appointing them",
+       "paragraph": "8.1",
+       "requirement": "Notify the FSOA of the senior manager's name after appointing them"
+      },
+      {
+       "deadline": null,
+       "evidence": "Firms must complete an annual self-assessment of their operational resilience, which must be approved by the board.",
+       "paragraph": "8.2",
+       "requirement": "Complete an annual self-assessment of operational resilience, approved by the board"
+      },
+      {
+       "deadline": "by 31 March 2028",
+       "evidence": "The first self-assessment must be completed and approved by 31 March 2028.",
+       "paragraph": "8.2",
+       "requirement": "Complete and board-approve the first self-assessment"
+      },
+      {
+       "deadline": null,
+       "evidence": "The self-assessment must cover the firm's important business services, impact tolerances, mapping, scenario testing results, vulnerabilities and remediation actions",
+       "paragraph": "8.3",
+       "requirement": "Ensure the self-assessment covers important business services, impact tolerances, mapping, scenario testing results, vulnerabilities and remediation actions, and management of material third-party providers"
+      },
+      {
+       "deadline": "at least 5 years",
+       "evidence": "Firms must keep each self-assessment for at least 5 years",
+       "paragraph": "8.5",
+       "requirement": "Keep each self-assessment for at least 5 years"
+      },
+      {
+       "deadline": "on request",
+       "evidence": "provide it to the FSOA on request",
+       "paragraph": "8.5",
+       "requirement": "Provide each self-assessment to the FSOA on request"
+      }
+     ],
+     "summary": "Firms must appoint and notify a senior manager responsible for operational resilience, and complete a board-approved annual self-assessment covering specified topics, retaining it for at least 5 years. Board receipt of quarterly management information and challenge is guidance only (\"should\"), not an obligation.",
+     "title": "Governance and accountability"
     },
     "name": "SectionSummary"
    }
   ],
   "usage": {
-   "cache_creation_input_tokens": 796,
+   "cache_creation_input_tokens": 923,
    "cache_read_input_tokens": 6399,
    "input_tokens": 2,
-   "output_tokens": 212
+   "output_tokens": 814
   }
  }
 }

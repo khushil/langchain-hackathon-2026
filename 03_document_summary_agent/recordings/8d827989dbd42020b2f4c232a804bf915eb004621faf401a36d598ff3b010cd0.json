@@ -1,6 +1,6 @@
 {
  "meta": {
-  "duration_s": 6.13,
+  "duration_s": 9.697,
   "init": {
    "agents": [],
    "apiKeySource": "none",
@@ -14,14 +14,14 @@
     "StructuredOutput"
    ]
   },
-  "recorded_at": "2026-11-24T20:19:41.264410+00:00"
+  "recorded_at": "2026-11-24T20:52:39.571005+00:00"
  },
  "request": {
   "effort": "medium",
   "format": 2,
   "messages": [
    {
-    "content": "Summarise ONE section of a regulatory document and extract its obligations. Analyse only; do not create files. Return a SectionSummary.\n\nDocument: PS26-4, \"Policy Statement PS26/4: Operational resilience and third-party technology risk\"\nSection number: 9\nSection title: Transitional arrangements\n\nFull text:\n9.1 Small firms, as defined in paragraph 2.3, may meet the requirements in paragraphs 4.1, 4.2, 5.1 and 6.1 by 31 March 2028 instead of 31 March 2027.\n\n9.2 Small firms may complete their first round of scenario testing under paragraph 5.3 by 30 September 2028 instead of 30 September 2027.\n\n9.3 For all firms, contracts with material third-party providers that were in place before 1 January 2027 must be updated to meet paragraph 6.3 at their next renewal, or by 31 December 2028, whichever is earlier.\n\n9.4 The transitional arrangements do not apply to the incident reporting requirements in section 7 or to the requirement to name a senior manager in paragraph 8.1. These apply to all firms from 1 January 2027.",
+    "content": "Summarise ONE section of regulatory document PS26-4 (Policy Statement PS26/4: Operational resilience and third-party technology risk) and extract its obligations. Only analyse; do not create files. Return a SectionSummary.\n\nSection number: 9\nSection title: Transitional arrangements\nFull text:\n9.1 Small firms, as defined in paragraph 2.3, may meet the requirements in paragraphs 4.1, 4.2, 5.1 and 6.1 by 31 March 2028 instead of 31 March 2027.\n\n9.2 Small firms may complete their first round of scenario testing under paragraph 5.3 by 30 September 2028 instead of 30 September 2027.\n\n9.3 For all firms, contracts with material third-party providers that were in place before 1 January 2027 must be updated to meet paragraph 6.3 at their next renewal, or by 31 December 2028, whichever is earlier.\n\n9.4 The transitional arrangements do not apply to the incident reporting requirements in section 7 or to the requirement to name a senior manager in paragraph 8.1. These apply to all firms from 1 January 2027.",
     "role": "user"
    }
   ],
@@ -397,9 +397,9 @@
   },
   "system": "# Section summariser agent\nYou are given one section: its number, title and text. Return a `SectionSummary` as a single JSON object, with no text before or after it:\n\n- `number`: the section number, for example `\"4\"`.\n- `title`: the section title.\n- `summary`: one to three sentences on what the section says.\n- `obligations`: every obligation in the section. Use an empty list if there are none.\n\nEach `Obligation` has four fields:\n\n- `requirement`: what the firm must do, in plain English.\n- `paragraph`: the paragraph number it comes from, for example `\"4.2\"`.\n- `deadline`: the deadline exactly as written in the document, or `null` if there is none.\n- `evidence`: a quote copied word for word from that paragraph, at most 30 words.\n\nFor example:\n\n```json\n{\n  \"number\": \"7\",\n  \"title\": \"Incident reporting\",\n  \"summary\": \"Firms must report major incidents to the regulator quickly.\",\n  \"obligations\": [\n    {\n      \"requirement\": \"Report major incidents to the regulator\",\n      \"paragraph\": \"7.1\",\n      \"deadline\": \"within 4 hours\",\n      \"evidence\": \"Firms must notify the FSOA of a major incident within 4 hours\"\n    }\n  ]\n}\n```\n\n### What counts as an obligation\n\nAn obligation is something a firm must do. Look for \"must\", \"shall\", \"is required to\" and \"will need to\".\n\n- Do not list recommendations or guidance (\"should\", \"may\", \"we expect\") as obligations.\n- Do not list things only the regulator does.\n- If one paragraph sets several separate requirements, list each one separately.\n- If the section changes a requirement or deadline from an earlier section, say so in the summary.\n\n### Rules for accuracy\n\n- Copy `evidence` word for word. Never paraphrase, correct or shorten the wording inside a quote.\n- Copy `deadline` exactly as written. Do not convert dates or durations, for example \"within 4 hours\" stays as it is.\n- Use only the section you were given. Do not use outside knowledge of the regulation.\n- Do not guess. If a paragraph is ambiguous, say so in the summary rather than inventing a requirement.\n\nThese fields are checked automatically against the source text afterwards. A quote that isn't word for word, or a\ndeadline that isn't in the section, will be flagged.\n"
  },
- "request_sha256": "e6a2c0cb91a4c7ec8a39149d8d9fcf60deb528a21d43800b6d4dcb5d30b0d3db",
+ "request_sha256": "8d827989dbd42020b2f4c232a804bf915eb004621faf401a36d598ff3b010cd0",
  "response": {
-  "content": "",
+  "content": "{\"number\":\"9\",\"title\":\"Transitional arrangements\",\"summary\":\"Small firms get an extra year (to 31 March 2028) for the requirements in paragraphs 4.1, 4.2, 5.1 and 6.1, and until 30 September 2028 for their first scenario testing round. All firms must update pre-2027 material third-party contracts to meet paragraph 6.3 at next renewal or by 31 December 2028, whichever is earlier. Incident reporting (section 7) and naming a senior manager (paragraph 8.1) get no transition and apply from 1 January 2027.\",\"obligations\":[{\"requirement\":\"Small firms must meet the requirements in paragraphs 4.1, 4.2, 5.1 and 6.1 (extended deadline instead of 31 March 2027)\",\"paragraph\":\"9.1\",\"deadline\":\"by 31 March 2028 instead of 31 March 2027\",\"evidence\":\"Small firms, as defined in paragraph 2.3, may meet the requirements in paragraphs 4.1, 4.2, 5.1 and 6.1 by 31 March 2028 instead of 31 March 2027.\"},{\"requirement\":\"Small firms must complete their first round of scenario testing under paragraph 5.3 (extended deadline instead of 30 September 2027)\",\"paragraph\":\"9.2\",\"deadline\":\"by 30 September 2028 instead of 30 September 2027\",\"evidence\":\"Small firms may complete their first round of scenario testing under paragraph 5.3 by 30 September 2028 instead of 30 September 2027.\"},{\"requirement\":\"Update contracts with material third-party providers in place before 1 January 2027 to meet paragraph 6.3\",\"paragraph\":\"9.3\",\"deadline\":\"at their next renewal, or by 31 December 2028, whichever is earlier\",\"evidence\":\"must be updated to meet paragraph 6.3 at their next renewal, or by 31 December 2028, whichever is earlier.\"},{\"requirement\":\"Comply with the section 7 incident reporting requirements, with no transitional relief\",\"paragraph\":\"9.4\",\"deadline\":\"from 1 January 2027\",\"evidence\":\"The transitional arrangements do not apply to the incident reporting requirements in section 7\"},{\"requirement\":\"Name a senior manager under paragraph 8.1, with no transitional relief\",\"paragraph\":\"9.4\",\"deadline\":\"from 1 January 2027\",\"evidence\":\"or to the requirement to name a senior manager in paragraph 8.1. These apply to all firms from 1 January 2027.\"}]}",
   "model_reported": "claude-sonnet-5-5",
   "tool_calls": [
    {
@@ -407,47 +407,47 @@
      "number": "9",
      "obligations": [
       {
-       "deadline": "by 31 March 2028",
+       "deadline": "by 31 March 2028 instead of 31 March 2027",
        "evidence": "Small firms, as defined in paragraph 2.3, may meet the requirements in paragraphs 4.1, 4.2, 5.1 and 6.1 by 31 March 2028 instead of 31 March 2027.",
        "paragraph": "9.1",
-       "requirement": "Small firms must meet the requirements in paragraphs 4.1, 4.2, 5.1 and 6.1 (extended from 31 March 2027)."
+       "requirement": "Small firms must meet the requirements in paragraphs 4.1, 4.2, 5.1 and 6.1 by the extended date (instead of 31 March 2027)"
       },
       {
-       "deadline": "by 30 September 2028",
+       "deadline": "by 30 September 2028 instead of 30 September 2027",
        "evidence": "Small firms may complete their first round of scenario testing under paragraph 5.3 by 30 September 2028 instead of 30 September 2027.",
        "paragraph": "9.2",
-       "requirement": "Small firms must complete their first round of scenario testing under paragraph 5.3 (extended from 30 September 2027)."
+       "requirement": "Small firms must complete their first round of scenario testing under paragraph 5.3 by the extended date (instead of 30 September 2027)"
       },
       {
        "deadline": "at their next renewal, or by 31 December 2028, whichever is earlier",
        "evidence": "must be updated to meet paragraph 6.3 at their next renewal, or by 31 December 2028, whichever is earlier.",
        "paragraph": "9.3",
-       "requirement": "Update contracts with material third-party providers that were in place before 1 January 2027 to meet paragraph 6.3."
+       "requirement": "Update contracts with material third-party providers that were in place before 1 January 2027 to meet paragraph 6.3"
       },
       {
        "deadline": "from 1 January 2027",
-       "evidence": "These apply to all firms from 1 January 2027.",
+       "evidence": "The transitional arrangements do not apply to the incident reporting requirements in section 7",
        "paragraph": "9.4",
-       "requirement": "Comply with the incident reporting requirements in section 7 with no transitional relief."
+       "requirement": "Comply with the section 7 incident reporting requirements, with no transitional relief"
       },
       {
        "deadline": "from 1 January 2027",
-       "evidence": "The transitional arrangements do not apply to the incident reporting requirements in section 7 or to the requirement to name a senior manager in paragraph 8.1.",
+       "evidence": "or to the requirement to name a senior manager in paragraph 8.1. These apply to all firms from 1 January 2027.",
        "paragraph": "9.4",
-       "requirement": "Name a senior manager under paragraph 8.1 with no transitional relief."
+       "requirement": "Name a senior manager under paragraph 8.1, with no transitional relief"
       }
      ],
-     "summary": "Section 9 gives small firms extra time (to 31 March 2028) for the requirements in paragraphs 4.1, 4.2, 5.1 and 6.1, and until 30 September 2028 for first scenario testing. All firms must update existing material third-party contracts to meet paragraph 6.3 at next renewal or by 31 December 2028, whichever is earlier. Incident reporting (section 7) and naming a senior manager (paragraph 8.1) get no transition and apply to all firms from 1 January 2027. These extend the earlier deadlines of 31 March 2027 and 30 September 2027 for small firms.",
+     "summary": "Small firms get an extra year (to 31 March 2028) for the requirements in paragraphs 4.1, 4.2, 5.1 and 6.1, and until 30 September 2028 for their first scenario testing round, instead of the earlier 2027 dates. All firms must update pre-2027 material third-party contracts to meet paragraph 6.3 at next renewal or by 31 December 2028, whichever is earlier. Incident reporting (section 7) and naming a senior manager (paragraph 8.1) get no transition and apply from 1 January 2027.",
      "title": "Transitional arrangements"
     },
     "name": "SectionSummary"
    }
   ],
   "usage": {
-   "cache_creation_input_tokens": 944,
+   "cache_creation_input_tokens": 940,
    "cache_read_input_tokens": 6399,
    "input_tokens": 2,
-   "output_tokens": 934
+   "output_tokens": 1775
   }
  }
 }

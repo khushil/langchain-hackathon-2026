@@ -1,6 +1,6 @@
 {
  "meta": {
-  "duration_s": 6.221,
+  "duration_s": 6.802,
   "init": {
    "agents": [],
    "apiKeySource": "none",
@@ -14,14 +14,14 @@
     "StructuredOutput"
    ]
   },
-  "recorded_at": "2026-11-24T20:19:41.649401+00:00"
+  "recorded_at": "2026-11-24T20:52:30.936643+00:00"
  },
  "request": {
   "effort": "medium",
   "format": 2,
   "messages": [
    {
-    "content": "Summarise ONE section of a regulatory document and extract its obligations. Analyse only; do not create files. Return a SectionSummary.\n\nDocument: PS26-4, \"Policy Statement PS26/4: Operational resilience and third-party technology risk\"\nSection number: 5\nSection title: Mapping and scenario testing\n\nFull text:\n5.1 Firms must map the people, processes, technology, facilities and information that support each important business service, including those provided by third parties, by 31 March 2027.\n\n5.2 Mapping must be detailed enough to identify single points of failure and concentrations of risk, including where several important business services depend on the same third-party provider.\n\n5.3 Firms must test their ability to remain within impact tolerance under severe but plausible scenarios. The first round of scenario testing must be completed by 30 September 2027, and testing must be repeated at least once a year after that.\n\n5.4 Scenarios must include, at a minimum, the failure of a material third-party provider, a cyber attack that makes key systems unavailable, and the loss of a key site.\n\n5.5 Where testing shows that a firm cannot remain within an impact tolerance, the firm must record the vulnerability, set out the actions it will take to address it, and report the vulnerability to the board at its next meeting.",
+    "content": "Summarise ONE section of regulatory document PS26-4 (Policy Statement PS26/4: Operational resilience and third-party technology risk) and extract its obligations. Only analyse; do not create files. Return a SectionSummary.\n\nSection number: 4\nSection title: Important business services and impact tolerances\nFull text:\n4.1 Firms must identify their important business services by 31 March 2027. In doing so, firms should consider the number and type of customers using each service, the availability of alternatives, and the time sensitivity of payments or other transactions.\n\n4.2 Firms must set an impact tolerance for each important business service by 31 March 2027. Impact tolerances must be set at the point at which harm becomes intolerable, not at the point at which the firm expects to be able to recover.\n\n4.3 The board must approve the list of important business services and their impact tolerances, and must review both at least once every 12 months, or sooner if there is a material change to the firm's business.\n\n4.4 We expect most retail banks to identify between 6 and 15 important business services. Firms that identify fewer than 4 should be prepared to explain why.\n\n4.5 Firms must keep a record of how they identified each important business service and set each impact tolerance, and must provide it to the FSOA on request within 10 business days.",
     "role": "user"
    }
   ],
@@ -397,66 +397,60 @@
   },
   "system": "# Section summariser agent\nYou are given one section: its number, title and text. Return a `SectionSummary` as a single JSON object, with no text before or after it:\n\n- `number`: the section number, for example `\"4\"`.\n- `title`: the section title.\n- `summary`: one to three sentences on what the section says.\n- `obligations`: every obligation in the section. Use an empty list if there are none.\n\nEach `Obligation` has four fields:\n\n- `requirement`: what the firm must do, in plain English.\n- `paragraph`: the paragraph number it comes from, for example `\"4.2\"`.\n- `deadline`: the deadline exactly as written in the document, or `null` if there is none.\n- `evidence`: a quote copied word for word from that paragraph, at most 30 words.\n\nFor example:\n\n```json\n{\n  \"number\": \"7\",\n  \"title\": \"Incident reporting\",\n  \"summary\": \"Firms must report major incidents to the regulator quickly.\",\n  \"obligations\": [\n    {\n      \"requirement\": \"Report major incidents to the regulator\",\n      \"paragraph\": \"7.1\",\n      \"deadline\": \"within 4 hours\",\n      \"evidence\": \"Firms must notify the FSOA of a major incident within 4 hours\"\n    }\n  ]\n}\n```\n\n### What counts as an obligation\n\nAn obligation is something a firm must do. Look for \"must\", \"shall\", \"is required to\" and \"will need to\".\n\n- Do not list recommendations or guidance (\"should\", \"may\", \"we expect\") as obligations.\n- Do not list things only the regulator does.\n- If one paragraph sets several separate requirements, list each one separately.\n- If the section changes a requirement or deadline from an earlier section, say so in the summary.\n\n### Rules for accuracy\n\n- Copy `evidence` word for word. Never paraphrase, correct or shorten the wording inside a quote.\n- Copy `deadline` exactly as written. Do not convert dates or durations, for example \"within 4 hours\" stays as it is.\n- Use only the section you were given. Do not use outside knowledge of the regulation.\n- Do not guess. If a paragraph is ambiguous, say so in the summary rather than inventing a requirement.\n\nThese fields are checked automatically against the source text afterwards. A quote that isn't word for word, or a\ndeadline that isn't in the section, will be flagged.\n"
  },
- "request_sha256": "bbb7453ae0f6537125e46acad874c6776c713425fb33732dd9e6463737bc141f",
+ "request_sha256": "ef03cd3780908ffad32b1047400d77a809726948438dfc678cd5d3569431c28d",
  "response": {
-  "content": "",
+  "content": "{\"number\":\"4\",\"title\":\"Important business services and impact tolerances\",\"summary\":\"Firms must identify their important business services and set an impact tolerance for each by 31 March 2027, at the point where harm becomes intolerable. The board must approve and review both at least every 12 months, and firms must keep records and provide them to the FSOA on request. Paragraph 4.4 gives an expectation of 6 to 15 services for most retail banks, which is guidance and not an obligation.\",\"tool_calls\":[]}",
   "model_reported": "claude-sonnet-5-5",
   "tool_calls": [
    {
     "args": {
-     "number": "5",
+     "number": "4",
      "obligations": [
       {
        "deadline": "by 31 March 2027",
-       "evidence": "Firms must map the people, processes, technology, facilities and information that support each important business service, including those provided by third parties, by 31 March 2027.",
-       "paragraph": "5.1",
-       "requirement": "Map the people, processes, technology, facilities and information supporting each important business service, including those provided by third parties"
+       "evidence": "Firms must identify their important business services by 31 March 2027.",
+       "paragraph": "4.1",
+       "requirement": "Identify important business services"
+      },
+      {
+       "deadline": "by 31 March 2027",
+       "evidence": "Firms must set an impact tolerance for each important business service by 31 March 2027.",
+       "paragraph": "4.2",
+       "requirement": "Set an impact tolerance for each important business service"
       },
       {
        "deadline": null,
-       "evidence": "Mapping must be detailed enough to identify single points of failure and concentrations of risk",
-       "paragraph": "5.2",
-       "requirement": "Make mapping detailed enough to identify single points of failure and concentrations of risk, including where several important business services depend on the same third-party provider"
-      },
-      {
-       "deadline": "by 30 September 2027",
-       "evidence": "The first round of scenario testing must be completed by 30 September 2027",
-       "paragraph": "5.3",
-       "requirement": "Test ability to remain within impact tolerance under severe but plausible scenarios; complete the first round of testing"
-      },
-      {
-       "deadline": "at least once a year after that",
-       "evidence": "testing must be repeated at least once a year after that",
-       "paragraph": "5.3",
-       "requirement": "Repeat scenario testing at least once a year after the first round"
+       "evidence": "Impact tolerances must be set at the point at which harm becomes intolerable, not at the point at which the firm expects to be able to recover.",
+       "paragraph": "4.2",
+       "requirement": "Set impact tolerances at the point at which harm becomes intolerable, not at the expected recovery point"
       },
       {
        "deadline": null,
-       "evidence": "Scenarios must include, at a minimum, the failure of a material third-party provider, a cyber attack that makes key systems unavailable, and the loss of a key site.",
-       "paragraph": "5.4",
-       "requirement": "Include in scenarios at minimum failure of a material third-party provider, a cyber attack making key systems unavailable, and loss of a key site"
+       "evidence": "The board must approve the list of important business services and their impact tolerances",
+       "paragraph": "4.3",
+       "requirement": "Board must approve the list of important business services and their impact tolerances"
+      },
+      {
+       "deadline": "at least once every 12 months, or sooner if there is a material change to the firm's business",
+       "evidence": "must review both at least once every 12 months, or sooner if there is a material change to the firm's business",
+       "paragraph": "4.3",
+       "requirement": "Board must review the list and impact tolerances at least every 12 months, or sooner if there is a material change to the business"
       },
       {
        "deadline": null,
-       "evidence": "the firm must record the vulnerability",
-       "paragraph": "5.5",
-       "requirement": "Record any vulnerability where testing shows the firm cannot remain within impact tolerance"
+       "evidence": "Firms must keep a record of how they identified each important business service and set each impact tolerance",
+       "paragraph": "4.5",
+       "requirement": "Keep a record of how each important business service was identified and each impact tolerance set"
       },
       {
-       "deadline": null,
-       "evidence": "set out the actions it will take to address it",
-       "paragraph": "5.5",
-       "requirement": "Set out the actions the firm will take to address the vulnerability"
-      },
-      {
-       "deadline": "at its next meeting",
-       "evidence": "report the vulnerability to the board at its next meeting",
-       "paragraph": "5.5",
-       "requirement": "Report the vulnerability to the board"
+       "deadline": "within 10 business days",
+       "evidence": "must provide it to the FSOA on request within 10 business days",
+       "paragraph": "4.5",
+       "requirement": "Provide the record to the FSOA on request"
       }
      ],
-     "summary": "Firms must map the resources supporting each important business service, including third-party dependencies, in enough detail to find single points of failure and risk concentrations. They must run severe but plausible scenario tests, with minimum scenarios specified, at least annually. They must record, plan for and report to the board any failure to remain within impact tolerance.",
-     "title": "Mapping and scenario testing"
+     "summary": "Firms must identify their important business services and set an impact tolerance for each by 31 March 2027, at the point where harm becomes intolerable. The board must approve and review both at least every 12 months (or sooner on a material business change), and firms must keep records and give them to the FSOA on request within 10 business days. Paragraph 4.4 (6 to 15 services expected for most retail banks) and the factors in 4.1 are guidance, not obligations.",
+     "title": "Important business services and impact tolerances"
     },
     "name": "SectionSummary"
    }
@@ -465,7 +459,7 @@
    "cache_creation_input_tokens": 973,
    "cache_read_input_tokens": 6399,
    "input_tokens": 2,
-   "output_tokens": 930
+   "output_tokens": 1011
   }
  }
 }

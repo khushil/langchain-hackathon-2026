@@ -19,6 +19,7 @@ from review_app.service import (
     RunInProgressError,
     UnknownSectionError,
 )
+from workflow.requests import brief_request_text
 
 RUN_COLUMNS = (Column("brief", "Brief"), Column("sections", "Sections"), Column("status", "Status"))
 START_TEMPLATE = "compliance_brief/start.html"
@@ -150,7 +151,7 @@ def routes(services: Services) -> list[Route]:
         payload = {
             "document_id": document.document_id,
             "firm_id": firm_id,
-            "request": f"Summarise document {document.document_id} for {firm_id}",
+            "request": brief_request_text(document.document_id, firm_id),
         }
         if sorted(chosen, key=known.index) != known:
             payload["sections"] = sorted(chosen, key=known.index)

@@ -9,6 +9,21 @@ from context.reader import DocumentRead, SectionRead
 from workflow.errors import InvalidRequestError, UnknownSectionError
 
 
+def brief_request_text(document_id: str, firm_id: str) -> str:
+    """Return the words of a brief request, the starter's own, built in this one place.
+
+    The application and the notebook both ask with these words, so a recorded run answers either.
+
+    Args:
+        document_id: The document, for example ``PS26-4``.
+        firm_id: The firm, for example ``FIRM-001``.
+
+    Returns:
+        ``Summarise document <document> for <firm>``.
+    """
+    return f"Summarise document {document_id} for {firm_id}"
+
+
 def request_of(state: Mapping[str, Any]) -> Mapping[str, Any]:
     """Return the run's request from its state.
 

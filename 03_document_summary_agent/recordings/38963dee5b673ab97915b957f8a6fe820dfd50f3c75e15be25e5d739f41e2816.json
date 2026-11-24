@@ -1,6 +1,6 @@
 {
  "meta": {
-  "duration_s": 4.648,
+  "duration_s": 4.542,
   "init": {
    "agents": [],
    "apiKeySource": "none",
@@ -14,7 +14,7 @@
     "StructuredOutput"
    ]
   },
-  "recorded_at": "2026-11-24T20:20:23.222809+00:00"
+  "recorded_at": "2026-11-24T20:53:21.155513+00:00"
  },
  "request": {
   "effort": "medium",
@@ -139,7 +139,7 @@
        "deadline": "within 4 hours of classifying an incident as a major incident, and in any case no later than 24 hours after the incident is first detected",
        "evidence": "Firms must submit an initial notification to the FSOA within 4 hours of classifying an incident as a major incident",
        "paragraph": "7.1",
-       "requirement": "Submit an initial notification to the FSOA after classifying an incident as major, and in any case no later than 24 hours after first detection"
+       "requirement": "Submit an initial notification to the FSOA within 4 hours of classifying an incident as major, and in any case no later than 24 hours after the incident is first detected"
       },
       {
        "deadline": "within 72 hours of the initial notification",
@@ -160,17 +160,17 @@
        "requirement": "Include a root-cause analysis and the lessons learned in the final report"
       }
      ],
-     "summary": "Firms must report major incidents to the FSOA in three stages: an initial notification, an intermediate report and a final report. The firm stays responsible for reporting when a third-party provider causes the incident. The FSOA will publish a template, and firms may use existing formats until then.",
+     "summary": "Firms must report major incidents to the FSOA in three stages: an initial notification, an intermediate report and a final report. Responsibility for reporting stays with the firm when a third-party provider causes the incident. The FSOA will publish a template, and firms may use their existing formats until then.",
      "title": "Incident reporting"
     },
     "name": "SectionSummary"
    }
   ],
   "usage": {
-   "cache_creation_input_tokens": 313,
+   "cache_creation_input_tokens": 314,
    "cache_read_input_tokens": 2446,
    "input_tokens": 2,
-   "output_tokens": 612
+   "output_tokens": 626
   }
  }
 }

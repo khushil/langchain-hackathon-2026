@@ -1,6 +1,6 @@
 {
  "meta": {
-  "duration_s": 3.904,
+  "duration_s": 3.703,
   "init": {
    "agents": [],
    "apiKeySource": "none",
@@ -14,14 +14,14 @@
     "StructuredOutput"
    ]
   },
-  "recorded_at": "2026-11-24T20:19:37.745234+00:00"
+  "recorded_at": "2026-11-24T20:52:30.931131+00:00"
  },
  "request": {
   "effort": "medium",
   "format": 2,
   "messages": [
    {
-    "content": "Summarise ONE section of a regulatory document and extract its obligations. Analyse only; do not create files. Return a SectionSummary.\n\nDocument: PS26-4, \"Policy Statement PS26/4: Operational resilience and third-party technology risk\"\nSection number: 2\nSection title: Scope and application\n\nFull text:\n2.1 This policy statement applies to all banks, building societies, payment institutions and electronic money institutions authorised by the FSOA.\n\n2.2 It applies to the firm's activities in all jurisdictions where the failure of an activity could cause harm to consumers in our jurisdiction or to the stability of our financial system.\n\n2.3 Some requirements are applied proportionately. For the purposes of this policy statement, a small firm is a firm that has fewer than 250,000 customers and total assets of less than £5 billion on 31 December 2026. A firm that exceeds either threshold is not a small firm.\n\n2.4 A firm that becomes a small firm, or stops being a small firm, after 31 December 2026 must notify the FSOA within 30 days of the change. Its status for the purposes of the transitional arrangements in section 9 is fixed on 31 December 2026 and does not change.\n\n2.5 Groups may meet these requirements at group level, provided that each authorised firm in the group can show how the group arrangements apply to its own important business services.",
+    "content": "Summarise ONE section of regulatory document PS26-4 (Policy Statement PS26/4: Operational resilience and third-party technology risk) and extract its obligations. Only analyse; do not create files. Return a SectionSummary.\n\nSection number: 3\nSection title: Definitions\nFull text:\n3.1 An important business service is a service that a firm provides to an external end user, where disruption to the service could cause intolerable harm to consumers or risk to market integrity. Internal services, such as human resources or internal reporting, are not important business services on their own.\n\n3.2 An impact tolerance is the maximum tolerable level of disruption to an important business service, expressed as a maximum length of time and, where relevant, a maximum number of affected customers or transactions.\n\n3.3 A material third-party provider is a provider of technology services whose failure would cause the firm to breach an impact tolerance for one or more important business services.\n\n3.4 A major incident is an operational incident that has caused, or is likely to cause, a breach of an impact tolerance, or that affects more than 10% of the firm's customers.\n\n3.5 Business days are days other than weekends and public holidays in our jurisdiction.",
     "role": "user"
    }
   ],
@@ -397,33 +397,26 @@
   },
   "system": "# Section summariser agent\nYou are given one section: its number, title and text. Return a `SectionSummary` as a single JSON object, with no text before or after it:\n\n- `number`: the section number, for example `\"4\"`.\n- `title`: the section title.\n- `summary`: one to three sentences on what the section says.\n- `obligations`: every obligation in the section. Use an empty list if there are none.\n\nEach `Obligation` has four fields:\n\n- `requirement`: what the firm must do, in plain English.\n- `paragraph`: the paragraph number it comes from, for example `\"4.2\"`.\n- `deadline`: the deadline exactly as written in the document, or `null` if there is none.\n- `evidence`: a quote copied word for word from that paragraph, at most 30 words.\n\nFor example:\n\n```json\n{\n  \"number\": \"7\",\n  \"title\": \"Incident reporting\",\n  \"summary\": \"Firms must report major incidents to the regulator quickly.\",\n  \"obligations\": [\n    {\n      \"requirement\": \"Report major incidents to the regulator\",\n      \"paragraph\": \"7.1\",\n      \"deadline\": \"within 4 hours\",\n      \"evidence\": \"Firms must notify the FSOA of a major incident within 4 hours\"\n    }\n  ]\n}\n```\n\n### What counts as an obligation\n\nAn obligation is something a firm must do. Look for \"must\", \"shall\", \"is required to\" and \"will need to\".\n\n- Do not list recommendations or guidance (\"should\", \"may\", \"we expect\") as obligations.\n- Do not list things only the regulator does.\n- If one paragraph sets several separate requirements, list each one separately.\n- If the section changes a requirement or deadline from an earlier section, say so in the summary.\n\n### Rules for accuracy\n\n- Copy `evidence` word for word. Never paraphrase, correct or shorten the wording inside a quote.\n- Copy `deadline` exactly as written. Do not convert dates or durations, for example \"within 4 hours\" stays as it is.\n- Use only the section you were given. Do not use outside knowledge of the regulation.\n- Do not guess. If a paragraph is ambiguous, say so in the summary rather than inventing a requirement.\n\nThese fields are checked automatically against the source text afterwards. A quote that isn't word for word, or a\ndeadline that isn't in the section, will be flagged.\n"
  },
- "request_sha256": "65ca3f82f8965bd827dc3f702291fbb800285ba7f6012d75f7b0c4c299041490",
+ "request_sha256": "df3390a56955aa6cf2b3158b69357eecb3d58cc16f2601867382d69b98cce73a",
  "response": {
-  "content": "",
+  "content": "{\"number\":\"3\",\"title\":\"Definitions\",\"summary\":\"Section 3 defines key terms used in PS26/4: important business service, impact tolerance, material third-party provider, major incident and business days. It is definitional only and sets no firm obligations.\",\"obligations\":[]}",
   "model_reported": "claude-sonnet-5-5",
   "tool_calls": [
    {
     "args": {
-     "number": "2",
-     "obligations": [
-      {
-       "deadline": "within 30 days of the change",
-       "evidence": "A firm that becomes a small firm, or stops being a small firm, after 31 December 2026 must notify the FSOA within 30 days of the change.",
-       "paragraph": "2.4",
-       "requirement": "Notify the FSOA if the firm becomes, or stops being, a small firm after 31 December 2026"
-      }
-     ],
-     "summary": "The policy statement applies to banks, building societies, payment institutions and e-money institutions authorised by the FSOA, including their activities in any jurisdiction where failure could harm consumers or financial stability in the FSOA's jurisdiction. Some requirements are proportionate, with a small firm defined as under 250,000 customers and under £5 billion total assets on 31 December 2026. Firms must notify the FSOA of changes in small-firm status, and groups may comply at group level if each authorised firm can show how this applies to it.",
-     "title": "Scope and application"
+     "number": "3",
+     "obligations": [],
+     "summary": "Section 3 defines key terms used in PS26/4: important business service (external-facing service whose disruption could cause intolerable consumer harm or market integrity risk), impact tolerance (maximum tolerable disruption), material third-party provider (technology provider whose failure would breach an impact tolerance), major incident (breach or likely breach of an impact tolerance, or affecting more than 10% of customers) and business days. It is definitional only and sets no obligations on firms.",
+     "title": "Definitions"
     },
     "name": "SectionSummary"
    }
   ],
   "usage": {
-   "cache_creation_input_tokens": 1003,
+   "cache_creation_input_tokens": 941,
    "cache_read_input_tokens": 6399,
    "input_tokens": 2,
-   "output_tokens": 406
+   "output_tokens": 354
   }
  }
 }
