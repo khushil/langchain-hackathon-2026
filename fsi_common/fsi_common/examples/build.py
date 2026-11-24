@@ -8,7 +8,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from fsi_common.examples.data import FACT_KINDS, build_examples
+from fsi_common.examples.data import COPIED_ATTRIBUTES, FACT_KINDS, build_examples
 from fsi_common.examples.plants import planted_files, valid_files
 
 EXAMPLES_DIR = Path(__file__).resolve().parent
@@ -30,7 +30,8 @@ def expected_files() -> dict[str, str]:
     """Return every example file, by path relative to the examples folder, with its text.
 
     Returns:
-        The valid files, the planted files, ``expected-errors.json`` and ``fact-kinds.json``.
+        The valid files, the planted files, ``expected-errors.json``, and the topic's declaration
+        in ``fact-kinds.json`` and ``copied-attributes.json``.
     """
     ex = build_examples()
     files = {f"valid/{name}": render(value) for name, value in valid_files(ex).items()}
@@ -42,6 +43,7 @@ def expected_files() -> dict[str, str]:
     }
     files["expected-errors.json"] = render(errors)
     files["fact-kinds.json"] = render(list(FACT_KINDS))
+    files["copied-attributes.json"] = render(list(COPIED_ATTRIBUTES))
     return files
 
 

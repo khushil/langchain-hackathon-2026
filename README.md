@@ -29,6 +29,10 @@ cp .env.example .env
 calls go; the default, `replay`, answers only from saved recordings, so nothing calls a model until you change
 it. The comments in `.env.example` describe each setting.
 
+With tracing on (`LANGSMITH_TRACING="true"`, as `.env.example` has it) and no LangSmith key in your shell,
+`import agent` stops with `TracingKeyMissingError`; either export `LANGSMITH_KEY` in your shell, or set
+`LANGSMITH_TRACING=false` in `.env` to run without tracing.
+
 ## Checks
 
 ```bash
@@ -42,6 +46,8 @@ first failing target names the check; run that target alone (`make test`, `make 
 
 ## Credits
 
-The sample data (the fictional policy statement PS26-4, the firm and the third-party providers) and the shape of
-each topic come from the FSI hackathon starter,
-[github.com/langchain-samples/fsi-hackathon-london-2026](https://github.com/langchain-samples/fsi-hackathon-london-2026).
+This repository follows the FSI hackathon starter,
+[github.com/langchain-samples/fsi-hackathon-london-2026](https://github.com/langchain-samples/fsi-hackathon-london-2026),
+as it stood at commit `12acee0`. From the starter come its sample document (the fictional policy statement
+PS26-4), its firm and third-party provider tables, and the shape of topic 03, the compliance brief: the deep
+agent, its section sub-agent and tools, and their instructions.

@@ -1,6 +1,6 @@
 {
   "schema": "brief.v1",
-  "id": "brief:61aed14b1109df80",
+  "id": "brief:268e73948e95e292",
   "request": "Summarise document PS26-4 for FIRM-001",
   "sources": [
     "source:c9690d260c586cbb",
@@ -9,26 +9,26 @@
   ],
   "statements": [
     {
-      "id": "statement:e6524eff3fe07eda",
+      "id": "statement:9e74809206dacc1e",
       "heading": "Incident reporting",
       "text": "Harbour Mutual Bank must notify the regulator of a major incident within 4 hours of classifying it, and no later than 24 hours after first detecting it.",
       "cites": [
-        "fact:9ff827e1365632d7"
+        "fact:7d0607968a1b5c72"
       ]
     },
     {
-      "id": "statement:74f26e36868b1af2",
+      "id": "statement:614d6afd288d77e7",
       "heading": "Third-party contracts",
       "text": "Contracts may wait until 2029.",
       "cites": [
-        "fact:8b53031651720070"
+        "fact:82670a4f6632680e"
       ]
     }
   ],
   "open_question_ids": [
-    "question:5926550a73f8c47c"
+    "question:5ea41b232aa3a5af"
   ],
-  "content_digest": "sha256:61aed14b1109df8073aed510ac9fe2896503889fdafbe8cb28a2dafdf5ab67b3",
+  "content_digest": "sha256:268e73948e95e292371574c16d91ce010b64052c96f0424e909adb4b78b4177c",
   "model": "claude-opus-5-5",
   "prompt_version": "1"
 }

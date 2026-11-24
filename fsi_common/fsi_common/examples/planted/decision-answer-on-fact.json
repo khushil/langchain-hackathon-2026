@@ -1,8 +1,32 @@
 {
   "schema": "decision.v1",
-  "id": "decision:63d5169cb7bb24c8",
-  "subject_id": "fact:9ff827e1365632d7",
-  "seen_digest": "sha256:3045bd83f518be1b9034d5a2321f1b8c259af5721f4f540a58df54e596bdfad7",
+  "id": "decision:c906256f258a784f",
+  "subject_id": "fact:7d0607968a1b5c72",
+  "seen_digest": "sha256:3c0ee96904534270bade856c5c3077eaf98de4709e8027d704149b6456fe7ddb",
+  "judged": {
+    "kind": "obligation",
+    "subject": {
+      "source_id": "source:c9690d260c586cbb",
+      "anchor": "para:7.1"
+    },
+    "quote": "Firms must submit an initial notification to the FSOA within 4 hours of classifying an incident as a major incident",
+    "attributes": {
+      "requirement": "Notify the regulator of a major incident",
+      "actor": "firm",
+      "deadline": "within 4 hours of classifying an incident as a major incident, and in any case no later than 24 hours after the incident is first detected"
+    },
+    "checks": [
+      {
+        "check": "deadline-verbatim.v1",
+        "outcome": "pass"
+      },
+      {
+        "check": "quote-verbatim.v1",
+        "outcome": "pass"
+      }
+    ]
+  },
+  "judged_digest": "sha256:8110cd3c059f421dcc523a95d67ae42398fd093a1defde8ac3900234d1cd40ae",
   "outcome": "answer",
   "amendment": null,
   "answer": "Yes",

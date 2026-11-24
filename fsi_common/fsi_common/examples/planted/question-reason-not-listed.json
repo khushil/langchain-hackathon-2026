@@ -1,6 +1,6 @@
 {
   "schema": "open_question.v1",
-  "id": "question:b16d3b48d82946ab",
+  "id": "question:0c76da3b574c49c6",
   "about": {
     "source_id": "source:48afc74ed0bf2412",
     "anchor": "row:FIRM-001"
@@ -11,7 +11,7 @@
   "ask_role": "Head of Third-Party Risk",
   "reason": "model_unsure",
   "cites": [
-    "fact:8b53031651720070",
+    "fact:82670a4f6632680e",
     "unit:3ad9f6791e610466"
   ],
   "priority": "high",

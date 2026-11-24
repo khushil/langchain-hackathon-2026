@@ -4,7 +4,7 @@ import sys
 from pathlib import Path
 
 import pytest
-from conftest import FakeChatModel, FakeReplayMissError
+from model_fakes import FakeChatModel, FakeReplayMissError
 
 from utils import models
 from utils.models import (
@@ -133,6 +133,15 @@ def test_tracing_with_an_empty_key_is_refused(model_env, flag, backend):
     model_env.setenv("LANGSMITH_API_KEY", "  ")
     with pytest.raises(TracingKeyMissingError, match="LANGSMITH_API_KEY is empty"):
         get_model("section")
+
+
+def test_the_tracing_refusal_names_both_ways_out(model_env):
+    model_env.setenv("LANGSMITH_TRACING", "true")
+    with pytest.raises(TracingKeyMissingError) as exc_info:
+        get_model("section")
+    message = str(exc_info.value)
+    assert "export LANGSMITH_KEY in your shell" in message
+    assert "set LANGSMITH_TRACING=false in the .env in the repository root" in message
 
 
 def test_tracing_with_a_key_is_allowed(model_env, fake_adapter):

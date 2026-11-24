@@ -1,5 +1,6 @@
 {
   "$defs": {
+    "JsonValue": {},
     "Person": {
       "additionalProperties": false,
       "description": "A named person and the role in which they act; never a model, a program or a service.",
@@ -8,7 +9,7 @@
           "description": "The person's name as they give it",
           "minLength": 1,
           "not": {
-            "pattern": "\\b(?:[aA][gG][eE][nN][tT]|[aA][nN][tT][hH][rR][oO][pP][iI][cC]|[aA][sS][sS][iI][sS][tT][aA][nN][tT]|[aA][uU][tT][oO][mM][aA][tT][eE][dD]|[aA][uU][tT][oO][mM][aA][tT][iI][oO][nN]|[bB][oO][tT]|[cC][hH][aA][tT][gG][pP][tT]|[cC][lL][aA][uU][dD][eE]|[cC][oO][pP][iI][lL][oO][tT]|[fF][aA][bB][lL][eE]|[gG][eE][mM][iI][nN][iI]|[gG][pP][tT]|[hH][aA][iI][kK][uU]|[lL][lL][aA][mM][aA]|[lL][lL][mM]|[mM][aA][cC][hH][iI][nN][eE]|[mM][iI][sS][tT][rR][aA][lL]|[mM][oO][dD][eE][lL]|[mM][yY][tT][hH][oO][sS]|[oO][pP][eE][nN][aA][iI]|[oO][pP][uU][sS]|[sS][oO][nN][nN][eE][tT]|[sS][yY][sS][tT][eE][mM])\\b"
+            "pattern": "^\\s*(?:(?:[aA][gG][eE][nN][tT]|[aA][iI]|[aA][sS][sS][iI][sS][tT][aA][nN][tT]|[aA][uU][tT][oO][mM][aA][tT][eE][dD]|[aA][uU][tT][oO][mM][aA][tT][iI][oO][nN]|[bB][oO][tT]|[cC][hH][aA][tT][bB][oO][tT]|[lL][lL][mM]|[mM][aA][cC][hH][iI][nN][eE]|[mM][oO][dD][eE][lL]|[sS][yY][sS][tT][eE][mM])|(?:[aA][nN][tT][hH][rR][oO][pP][iI][cC]|[cC][hH][aA][tT][gG][pP][tT]|[cC][lL][aA][uU][dD][eE]|[cC][oO][pP][iI][lL][oO][tT]|[fF][aA][bB][lL][eE]|[gG][eE][mM][iI][nN][iI]|[gG][pP][tT]|[hH][aA][iI][kK][uU]|[lL][lL][aA][mM][aA]|[mM][iI][sS][tT][rR][aA][lL]|[mM][yY][tT][hH][oO][sS]|[oO][pP][eE][nN][aA][iI]|[oO][pP][uU][sS]|[sS][oO][nN][nN][eE][tT])(?:\\d[a-zA-Z0-9.]*)?(?:[\\s_:/-]+(?:[aA][nN][tT][hH][rR][oO][pP][iI][cC]|[cC][hH][aA][tT][gG][pP][tT]|[cC][lL][aA][uU][dD][eE]|[cC][oO][pP][iI][lL][oO][tT]|[fF][aA][bB][lL][eE]|[gG][eE][mM][iI][nN][iI]|[gG][pP][tT]|[hH][aA][iI][kK][uU]|[lL][lL][aA][mM][aA]|[mM][iI][sS][tT][rR][aA][lL]|[mM][yY][tT][hH][oO][sS]|[oO][pP][eE][nN][aA][iI]|[oO][pP][uU][sS]|[sS][oO][nN][nN][eE][tT]|[cC][oO][dD][eE]|[fF][lL][aA][sS][hH]|[iI][nN][sS][tT][aA][nN][tT]|[mM][iI][nN][iI]|[nN][aA][nN][oO]|[pP][rR][oO]|[tT][uU][rR][bB][oO]|[uU][lL][tT][rR][aA]|\\d[a-zA-Z0-9.]*))*(?:\\[1[mM]\\])?)\\s*$"
           },
           "pattern": "\\S",
           "title": "Name",
@@ -18,7 +19,7 @@
           "description": "The role they act in, for example 'Head of Compliance'",
           "minLength": 1,
           "not": {
-            "pattern": "\\b(?:[aA][gG][eE][nN][tT]|[aA][nN][tT][hH][rR][oO][pP][iI][cC]|[aA][sS][sS][iI][sS][tT][aA][nN][tT]|[aA][uU][tT][oO][mM][aA][tT][eE][dD]|[aA][uU][tT][oO][mM][aA][tT][iI][oO][nN]|[bB][oO][tT]|[cC][hH][aA][tT][gG][pP][tT]|[cC][lL][aA][uU][dD][eE]|[cC][oO][pP][iI][lL][oO][tT]|[fF][aA][bB][lL][eE]|[gG][eE][mM][iI][nN][iI]|[gG][pP][tT]|[hH][aA][iI][kK][uU]|[lL][lL][aA][mM][aA]|[lL][lL][mM]|[mM][aA][cC][hH][iI][nN][eE]|[mM][iI][sS][tT][rR][aA][lL]|[mM][oO][dD][eE][lL]|[mM][yY][tT][hH][oO][sS]|[oO][pP][eE][nN][aA][iI]|[oO][pP][uU][sS]|[sS][oO][nN][nN][eE][tT]|[sS][yY][sS][tT][eE][mM])\\b"
+            "pattern": "^\\s*(?:(?:[aA][gG][eE][nN][tT]|[aA][iI]|[aA][sS][sS][iI][sS][tT][aA][nN][tT]|[aA][uU][tT][oO][mM][aA][tT][eE][dD]|[aA][uU][tT][oO][mM][aA][tT][iI][oO][nN]|[bB][oO][tT]|[cC][hH][aA][tT][bB][oO][tT]|[lL][lL][mM]|[mM][aA][cC][hH][iI][nN][eE]|[mM][oO][dD][eE][lL]|[sS][yY][sS][tT][eE][mM])|(?:[aA][nN][tT][hH][rR][oO][pP][iI][cC]|[cC][hH][aA][tT][gG][pP][tT]|[cC][lL][aA][uU][dD][eE]|[cC][oO][pP][iI][lL][oO][tT]|[fF][aA][bB][lL][eE]|[gG][eE][mM][iI][nN][iI]|[gG][pP][tT]|[hH][aA][iI][kK][uU]|[lL][lL][aA][mM][aA]|[mM][iI][sS][tT][rR][aA][lL]|[mM][yY][tT][hH][oO][sS]|[oO][pP][eE][nN][aA][iI]|[oO][pP][uU][sS]|[sS][oO][nN][nN][eE][tT])(?:\\d[a-zA-Z0-9.]*)?(?:[\\s_:/-]+(?:[aA][nN][tT][hH][rR][oO][pP][iI][cC]|[cC][hH][aA][tT][gG][pP][tT]|[cC][lL][aA][uU][dD][eE]|[cC][oO][pP][iI][lL][oO][tT]|[fF][aA][bB][lL][eE]|[gG][eE][mM][iI][nN][iI]|[gG][pP][tT]|[hH][aA][iI][kK][uU]|[lL][lL][aA][mM][aA]|[mM][iI][sS][tT][rR][aA][lL]|[mM][yY][tT][hH][oO][sS]|[oO][pP][eE][nN][aA][iI]|[oO][pP][uU][sS]|[sS][oO][nN][nN][eE][tT]|[cC][oO][dD][eE]|[fF][lL][aA][sS][hH]|[iI][nN][sS][tT][aA][nN][tT]|[mM][iI][nN][iI]|[nN][aA][nN][oO]|[pP][rR][oO]|[tT][uU][rR][bB][oO]|[uU][lL][tT][rR][aA]|\\d[a-zA-Z0-9.]*))*(?:\\[1[mM]\\])?)\\s*$"
           },
           "pattern": "\\S",
           "title": "Role",
@@ -36,7 +37,7 @@
   "$id": "decision.v1.schema.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
-  "description": "One person's decision on one record, at the digest of the record they saw.\n\n``accept``, ``amend`` and ``reject`` apply to a fact, a statement or a disagreement;\n``answer`` applies to an open question. The reviewer is always a named person, and the\nschema refuses an empty name and the name of a model or a program.",
+  "description": "One person's decision on one record, at the digest of the record they saw.\n\n``accept``, ``amend`` and ``reject`` apply to a fact, a statement or a disagreement;\n``answer`` applies to an open question. The reviewer is always a named person, and the\nschema refuses an empty name and a value that is a model or a program.\n\nTwo digests are kept. ``seen_digest`` is of the whole record as it was on the screen, for\nthe audit. ``judged_digest`` is of ``judged``, the part the person judged (for a fact: kind,\nsubject, quote, attributes, and each check's name and outcome), so a rerun that finds the\nsame fact with another model, prompt, extractor or check wording carries the decision, and a\nrerun that changes what was judged asks again with the difference named.",
   "properties": {
     "amendment": {
       "anyOf": [
@@ -79,6 +80,20 @@
       "title": "Id",
       "type": "string"
     },
+    "judged": {
+      "additionalProperties": {
+        "$ref": "#/$defs/JsonValue"
+      },
+      "description": "What the person judged, as JSON: for a fact its kind, subject, quote, attributes and each check's name and outcome, with no model, prompt, extractor or check detail",
+      "title": "Judged",
+      "type": "object"
+    },
+    "judged_digest": {
+      "description": "The digest of what the person judged; the same fact id with this digest on a rerun carries the decision",
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "title": "Judged Digest",
+      "type": "string"
+    },
     "outcome": {
       "description": "What the person decided",
       "enum": [
@@ -106,7 +121,7 @@
       "type": "string"
     },
     "seen_digest": {
-      "description": "The digest of the record as the person saw it",
+      "description": "The digest of the whole record as the person saw it, kept for the audit",
       "pattern": "^sha256:[0-9a-f]{64}$",
       "title": "Seen Digest",
       "type": "string"
@@ -121,6 +136,8 @@
   "required": [
     "date",
     "id",
+    "judged",
+    "judged_digest",
     "outcome",
     "reason",
     "reviewer",

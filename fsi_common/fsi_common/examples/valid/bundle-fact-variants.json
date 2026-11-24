@@ -1,0 +1,128 @@
+[
+  {
+    "schema": "source.v1",
+    "id": "source:c9690d260c586cbb",
+    "key": "PS26-4",
+    "title": "Policy Statement PS26/4: Operational resilience and third-party technology risk",
+    "kind": "document",
+    "digest": "sha256:48e71bd7b38e8d7dcd8c5bfcfca55c0bb8d1be0a902aaea8423df52be08440a3",
+    "locator": "03_document_summary_agent/data/documents/PS26-4.md",
+    "terms": "Fictional sample data from the FSI hackathon starter (github.com/langchain-samples/fsi-hackathon-london-2026), carried with credit"
+  },
+  {
+    "schema": "source_unit.v1",
+    "id": "unit:23eecd8808c48d2c",
+    "source_id": "source:c9690d260c586cbb",
+    "anchor": "para:7.1",
+    "text_digest": "sha256:5be3614c6948b4d2582756754ce48165cb9fd63055613f5bec9f94ee5ea38f06"
+  },
+  {
+    "schema": "fact.v1",
+    "id": "fact:7d0607968a1b5c72",
+    "kind": "obligation",
+    "subject": {
+      "source_id": "source:c9690d260c586cbb",
+      "anchor": "para:7.1"
+    },
+    "quote": "Firms must submit an initial notification to the FSOA within 4 hours of classifying an incident as a major incident",
+    "attributes": {
+      "requirement": "Notify the regulator of a major incident",
+      "actor": "firm",
+      "deadline": "within 4 hours of classifying an incident as a major incident, and in any case no later than 24 hours after the incident is first detected"
+    },
+    "status": {
+      "status": "documented",
+      "observed_at": null,
+      "rule": null,
+      "unknown_reason": null
+    },
+    "provenance": {
+      "source_id": "source:c9690d260c586cbb",
+      "anchor": "para:7.1",
+      "extractor": {
+        "name": "section-reader",
+        "version": "0.1.0"
+      },
+      "model": "claude-sonnet-5-5",
+      "prompt_version": "1",
+      "as_of": "sha256:48e71bd7b38e8d7dcd8c5bfcfca55c0bb8d1be0a902aaea8423df52be08440a3"
+    },
+    "checks": [
+      {
+        "check": "quote-verbatim.v1",
+        "outcome": "pass",
+        "detail": "found word for word in the unit's text"
+      },
+      {
+        "check": "deadline-verbatim.v1",
+        "outcome": "pass",
+        "detail": "found word for word in the unit's text"
+      }
+    ]
+  },
+  {
+    "schema": "fact.v1",
+    "id": "fact:7d0607968a1b5c72",
+    "kind": "obligation",
+    "subject": {
+      "source_id": "source:c9690d260c586cbb",
+      "anchor": "para:7.1"
+    },
+    "quote": "Firms must submit an initial notification to the FSOA within 4 hours of classifying an incident as a major incident",
+    "attributes": {
+      "requirement": "Tell the FSOA about a major incident",
+      "actor": "firm",
+      "deadline": "within 4 hours of classifying an incident as a major incident, and in any case no later than 24 hours after the incident is first detected"
+    },
+    "status": {
+      "status": "documented",
+      "observed_at": null,
+      "rule": null,
+      "unknown_reason": null
+    },
+    "provenance": {
+      "source_id": "source:c9690d260c586cbb",
+      "anchor": "para:7.1",
+      "extractor": {
+        "name": "section-reader",
+        "version": "0.1.0"
+      },
+      "model": "claude-sonnet-5-5",
+      "prompt_version": "1",
+      "as_of": "sha256:48e71bd7b38e8d7dcd8c5bfcfca55c0bb8d1be0a902aaea8423df52be08440a3"
+    },
+    "checks": [
+      {
+        "check": "quote-verbatim.v1",
+        "outcome": "pass",
+        "detail": "found word for word in the unit's text"
+      },
+      {
+        "check": "deadline-verbatim.v1",
+        "outcome": "pass",
+        "detail": "found word for word in the unit's text"
+      }
+    ]
+  },
+  {
+    "schema": "disagreement.v1",
+    "id": "disagreement:1c522b8f34d1c50d",
+    "about": "Two readings of paragraph 7.1 word the requirement differently",
+    "claims": [
+      {
+        "fact_id": "fact:7d0607968a1b5c72",
+        "judged_digest": "sha256:3bc75434d60a74b97a6c8b3050b6fe8fc51e52eab90cd5ed66a364aaa8109674"
+      },
+      {
+        "fact_id": "fact:7d0607968a1b5c72",
+        "judged_digest": "sha256:8110cd3c059f421dcc523a95d67ae42398fd093a1defde8ac3900234d1cd40ae"
+      }
+    ],
+    "found_by": {
+      "name": "fact-variants",
+      "version": "0.1.0"
+    },
+    "status": "open",
+    "decision_id": null
+  }
+]

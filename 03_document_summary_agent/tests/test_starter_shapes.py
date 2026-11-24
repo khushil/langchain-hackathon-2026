@@ -5,21 +5,22 @@ import re
 
 import pytest
 
-from fsi_common.examples.data import FACT_KINDS
+from fsi_common.examples.data import COPIED_ATTRIBUTES, FACT_KINDS
 from fsi_common.records import CheckResult, Extractor, Fact, Source
 from sub_agent import Obligation, SectionSummary
 from utils import PROJECT_ROOT
 from utils.records import (
+    COPIED_ATTRIBUTES as TOPIC_COPIED_ATTRIBUTES,
+)
+from utils.records import (
     DOCUMENT_FACT_KINDS,
+    FACT_CONTEXT,
     SectionResult,
     StarterShapeError,
     fact_to_obligation,
     obligation_to_fact,
     records_to_section_summary,
     section_summary_to_records,
-)
-from utils.records import (
-    FACT_KINDS as KINDS_CONTEXT,
 )
 
 EXTRACTOR = Extractor(name="section-summariser", version="0.1.0")
@@ -82,7 +83,7 @@ def test_every_obligation_becomes_a_cited_fact(example, source):
             "requirement": obligation["requirement"],
             "deadline": obligation["deadline"],
         }
-        assert Fact.model_validate(fact.to_json(), context=KINDS_CONTEXT) == fact
+        assert Fact.model_validate(fact.to_json(), context=FACT_CONTEXT) == fact
 
 
 def test_a_null_deadline_and_a_repeated_obligation_round_trip(source):
@@ -183,11 +184,49 @@ def test_a_fact_of_another_kind_cannot_become_an_obligation(source):
     )
     data = fact.to_json() | {"kind": "guidance"}
     other = Fact.build(
-        context=KINDS_CONTEXT, **{k: v for k, v in data.items() if k not in {"id", "schema"}}
+        context=FACT_CONTEXT, **{k: v for k, v in data.items() if k not in {"id", "schema"}}
     )
     with pytest.raises(StarterShapeError, match="is not an obligation"):
         fact_to_obligation(other)
 
 
-def test_the_topic_kind_list_is_the_one_the_shared_examples_use():
+def test_the_topic_declaration_is_the_one_the_shared_examples_use():
     assert DOCUMENT_FACT_KINDS == FACT_KINDS
+    assert TOPIC_COPIED_ATTRIBUTES == COPIED_ATTRIBUTES == ("deadline",)
+
+
+def _fact_of(source, **changes):
+    fields = {
+        "requirement": "Notify the regulator of a major incident",
+        "paragraph": "7.1",
+        "deadline": "within 4 hours of classifying an incident as a major incident",
+        "evidence": "Firms must submit an initial notification to the FSOA within 4 hours",
+    }
+    return obligation_to_fact(
+        Obligation(**(fields | changes)),
+        source=source,
+        extractor=EXTRACTOR,
+        model="claude-sonnet-5-5",
+        prompt_version="1",
+        checks=PASSED,
+    )
+
+
+def test_a_rerun_that_rewords_the_requirement_gives_the_same_fact_id(source):
+    first = _fact_of(source)
+    rerun = _fact_of(source, requirement="Tell the FSOA within 4 hours of a major incident")
+    assert rerun.id == first.id
+    assert rerun.attributes["requirement"] != first.attributes["requirement"]
+
+
+@pytest.mark.parametrize(
+    "change",
+    [
+        {"evidence": "Firms must submit an initial notification to the FSOA"},
+        {"deadline": "no later than 24 hours after the incident is first detected"},
+        {"deadline": None},
+        {"paragraph": "7.2"},
+    ],
+)
+def test_a_changed_quote_deadline_or_paragraph_gives_another_fact(source, change):
+    assert _fact_of(source, **change).id != _fact_of(source).id

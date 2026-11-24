@@ -2,23 +2,43 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterable
-
 from fsi_common.ids import digest_json
-from fsi_common.records.base import MACHINE_WORDS, Addressed, Extractor, Person, Record, SourceRef
+from fsi_common.records.base import (
+    MACHINE_IDENTITIES,
+    MODEL_PRODUCTS,
+    Addressed,
+    Extractor,
+    Person,
+    Record,
+    SourceRef,
+)
 from fsi_common.records.briefs import Brief, Statement
+from fsi_common.records.carry import CarryOutcome, CarryOver, carry_over, judged_differences
 from fsi_common.records.decisions import Assumption, Decision, SignOff
 from fsi_common.records.facts import (
-    FACT_KINDS_CONTEXT_KEY,
     CheckResult,
     ClaimStatus,
     Fact,
     InferenceRule,
     MatchRate,
     Provenance,
+    fact_judged_basis,
 )
-from fsi_common.records.questions import SETTLED_STATES, Disagreement, GapReason, OpenQuestion
+from fsi_common.records.questions import (
+    SETTLED_STATES,
+    ClaimRef,
+    Disagreement,
+    GapReason,
+    OpenQuestion,
+)
 from fsi_common.records.sources import Source, SourceUnit, UnitAccounting, UnitWithoutFacts
+from fsi_common.records.topic import (
+    FACT_TOPIC_CONTEXT_KEY,
+    FactTopic,
+    fact_id_basis,
+    fact_topic,
+    fact_topic_context,
+)
 
 RECORD_TYPES: dict[str, type[Record]] = {
     cls.SCHEMA: cls
@@ -52,31 +72,41 @@ def record_digest(record: Addressed) -> str:
     return digest_json(record.to_json())
 
 
-def fact_kinds_context(kinds: Iterable[str]) -> dict[str, frozenset[str]]:
-    """Return the validation context that holds a topic's closed list of fact kinds.
+def judged_digest(record: Addressed) -> str:
+    """Return the digest of what a person judges in a record.
+
+    A decision carries this digest as ``judged_digest``. For a fact it covers the kind, subject,
+    quote, attributes and each check's name and outcome, so a rerun with another model, prompt,
+    extractor or check wording gives the same digest and the decision carries over.
 
     Args:
-        kinds: The topic's fact kinds.
+        record: Any record, or a statement of a brief.
 
     Returns:
-        A context to pass to ``Fact.build`` or ``Fact.model_validate``.
+        The digest of the record's judged fields.
     """
-    return {FACT_KINDS_CONTEXT_KEY: frozenset(kinds)}
+    return digest_json(record.judged_basis())
 
 
 __all__ = [
-    "MACHINE_WORDS",
+    "MACHINE_IDENTITIES",
+    "MODEL_PRODUCTS",
     "RECORD_TYPES",
     "SETTLED_STATES",
     "Addressed",
     "Assumption",
     "Brief",
+    "CarryOutcome",
+    "CarryOver",
     "CheckResult",
+    "ClaimRef",
     "ClaimStatus",
     "Decision",
     "Disagreement",
     "Extractor",
+    "FACT_TOPIC_CONTEXT_KEY",
     "Fact",
+    "FactTopic",
     "GapReason",
     "InferenceRule",
     "MatchRate",
@@ -91,6 +121,12 @@ __all__ = [
     "Statement",
     "UnitAccounting",
     "UnitWithoutFacts",
-    "fact_kinds_context",
+    "carry_over",
+    "fact_id_basis",
+    "fact_judged_basis",
+    "fact_topic",
+    "fact_topic_context",
+    "judged_differences",
+    "judged_digest",
     "record_digest",
 ]

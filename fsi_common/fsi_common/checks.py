@@ -7,7 +7,7 @@ from typing import Any
 
 from pydantic import ValidationError
 
-from fsi_common.records import RECORD_TYPES, Fact, Record, fact_kinds_context
+from fsi_common.records import RECORD_TYPES, Fact, FactTopic, Record, fact_topic_context
 
 ALL = frozenset(RECORD_TYPES)
 BUNDLE = "bundle"
@@ -43,7 +43,10 @@ CHECKS: dict[str, CheckInfo] = {
     "schema.date": CheckInfo("every date is a calendar date", ALL),
     "id.recompute": CheckInfo("every id recomputes from its record's content", ALL),
     "fact.quote": CheckInfo("every fact quotes its source unit", _on("fact.v1")),
-    "fact.kind": CheckInfo("every fact's kind is in the topic's closed list", _on("fact.v1")),
+    "fact.kind": CheckInfo(
+        "every fact's kind is in the topic's closed list, given with its copied attributes",
+        _on("fact.v1"),
+    ),
     "fact.provenance-subject": CheckInfo(
         "a fact's provenance names its own subject", _on("fact.v1")
     ),
@@ -57,9 +60,13 @@ CHECKS: dict[str, CheckInfo] = {
     "status.match-rate": CheckInfo("a rule's matches do not exceed its population", _on("fact.v1")),
     "person.empty": CheckInfo("a reviewer has a name and a role", _on("decision.v1", "signoff.v1")),
     "person.machine": CheckInfo(
-        "a reviewer is never a model or a program", _on("decision.v1", "signoff.v1")
+        "a reviewer's name or role is never, as a whole, a model or a program",
+        _on("decision.v1", "signoff.v1"),
     ),
     "decision.outcome": CheckInfo("a decision's outcome fits its subject", _on("decision.v1")),
+    "decision.judged-digest": CheckInfo(
+        "a decision's judged digest recomputes from what it says was judged", _on("decision.v1")
+    ),
     "question.cites": CheckInfo("a question cites what it rests on", _on("open_question.v1")),
     "question.state": CheckInfo(
         "a settled question names a person's decision", _on("open_question.v1")
@@ -80,7 +87,9 @@ CHECKS: dict[str, CheckInfo] = {
     ),
     "id.duplicate": CheckInfo("no id names two different records", _on(BUNDLE)),
     "ref.resolves": CheckInfo("every id a record cites is in the bundle", _on(BUNDLE)),
-    "decision.digest-stale": CheckInfo("a decision's digest is its subject's", _on(BUNDLE)),
+    "decision.digest-stale": CheckInfo(
+        "a decision's judged digest is its subject's as the bundle holds it", _on(BUNDLE)
+    ),
     "question.decision-matches": CheckInfo(
         "a settled question's decision is about it", _on(BUNDLE)
     ),
@@ -120,15 +129,15 @@ def check_for_error(error_type: str) -> str:
 
 
 def validate_record(
-    data: Any, *, where: str, fact_kinds: frozenset[str] | None
+    data: Any, *, where: str, topic: FactTopic | None
 ) -> tuple[Record | None, list[Finding]]:
     """Validate one record read from JSON.
 
     Args:
         data: The JSON value read.
         where: Where it was read from, for the findings.
-        fact_kinds: The topic's closed list of fact kinds; a fact read without one fails
-            ``fact.kind``.
+        topic: The topic's declaration for its facts (kinds and copied attributes); a fact read
+            without one fails ``fact.kind``.
 
     Returns:
         The record, or None if it failed, and the findings.
@@ -137,9 +146,19 @@ def validate_record(
         name = data.get("schema") if isinstance(data, dict) else type(data).__name__
         return None, [Finding("schema.unknown", where, f"'{name}' is not a record schema")]
     record_type = RECORD_TYPES[data["schema"]]
-    if record_type is Fact and fact_kinds is None:
-        return None, [Finding("fact.kind", where, "no closed list of fact kinds was given")]
-    context = fact_kinds_context(fact_kinds) if fact_kinds is not None else None
+    if record_type is Fact and topic is None:
+        return None, [
+            Finding(
+                "fact.kind",
+                where,
+                "no topic declaration of fact kinds and copied attributes was given",
+            )
+        ]
+    context = (
+        fact_topic_context(kinds=topic.kinds, copied_attributes=topic.copied_attributes)
+        if topic is not None
+        else None
+    )
     try:
         record = record_type.model_validate(data, context=context)
     except ValidationError as exc:

@@ -18,7 +18,7 @@ Each record type is a Pydantic model in `fsi_common/records/`, exported as a JSO
 | Fact | `fact.v1` | One thing a source unit says, with a word-for-word quote, normalised attributes, how it is known (documented, observed, inferred by a named rule with its match rate, or unknown with the reason), where it came from (the extractor, and the model and prompt version where a model produced it) and the result of each plain-code check run on it. Its kind comes from the topic's closed list. |
 | Open question | `open_question.v1` | Something the sources do not settle, written as a question one role can answer: why it is unknown, what changes with the answer, whom to ask, a reason from a closed list, what it cites, a priority that orders the review and never removes a question, and where it stands. |
 | Disagreement | `disagreement.v1` | Two or more facts that differ about one thing, kept side by side. The record has no field that picks a winner; a person reconciles it with a decision. |
-| Decision | `decision.v1` | One person's accept, amend or reject on a fact, a statement or a disagreement, or their answer to an open question, with the digest of what they saw, their reason in their own words, their name and role, and the date. |
+| Decision | `decision.v1` | One person's accept, amend or reject on a fact, a statement or a disagreement, or their answer to an open question, with the digest of the whole record they saw, what they judged in it and its digest, their reason in their own words, their name and role, and the date. |
 | Brief | `brief.v1` | The statements written for one request, each citing one or more facts, the open questions carried to the reviewer, the digest of all of that, and the model and prompt version that wrote it. |
 | Sign-off | `signoff.v1` | A person's signature on a brief, or its return, at the digest they read, with each open question they accept as an assumption in their own words. |
 | Unit accounting | `unit_accounting.v1` | For one source, the units read, the units that produced facts and the units that produced none with the reason. The two lists must add up to the units read. |
@@ -27,8 +27,9 @@ Each record type is a Pydantic model in `fsi_common/records/`, exported as a JSO
 
 Every id is the record's family, a colon and the first 16 hex characters of the SHA-256 of the canonical JSON of
 its content (`fact:9ff827e1365632d7`), never a clock, a counter or a position. A fact's id comes from its kind,
-subject, quote and attributes, so a rerun that finds the same obligation gives it the same id, and a reviewer's
-earlier decision still attaches to it. A brief's id is the start of its content digest. `Record.build(...)`
+subject, quote and the attributes its topic declares as copied word for word from the source (for the compliance
+brief, the deadline as written), so a rerun that finds the same obligation gives it the same id however a model
+words its requirement, and a reviewer's earlier decision still attaches to it. A brief's id is the start of its content digest. `Record.build(...)`
 derives the id; reading a record checks that it recomputes.
 
 ## The rules a record cannot break
@@ -43,12 +44,12 @@ statement of a brief cites at least one fact. A fact always quotes its unit.
 
 ```bash
 cd fsi_common
-python -m fsi_common.validate path/to/records/ --fact-kinds path/to/kinds.json
+python -m fsi_common.validate path/to/records/ --fact-kinds path/to/kinds.json --copied-attributes path/to/copied.json
 python -m fsi_common.validate --selftest
 ```
 
 A `.json` file with one object is one record; a `.json` file with an array is a bundle, whose records are also
-checked against each other (every cited id is present, each decision's digest is its subject's, a signed brief's
+checked against each other (every cited id is present, each decision's judged digest is its subject's, a signed brief's
 open questions are settled or accepted as assumptions, no statement cites a fact that failed a check, and the
 unit accounting matches the facts); a `.jsonl` file holds one record per line. The validator prints one line per
 check with PASS or FAIL and how many records or bundles it examined, and exits non-zero on any failure, on a file

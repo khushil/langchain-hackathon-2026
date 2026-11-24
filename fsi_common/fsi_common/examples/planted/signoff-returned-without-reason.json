@@ -1,8 +1,8 @@
 {
   "schema": "signoff.v1",
-  "id": "signoff:310efba49df4e4f0",
-  "brief_id": "brief:61aed14b1109df80",
-  "brief_digest": "sha256:61aed14b1109df8073aed510ac9fe2896503889fdafbe8cb28a2dafdf5ab67b3",
+  "id": "signoff:7893baf01a311058",
+  "brief_id": "brief:268e73948e95e292",
+  "brief_digest": "sha256:268e73948e95e292371574c16d91ce010b64052c96f0424e909adb4b78b4177c",
   "reviewer": {
     "name": "Dana Whitfield",
     "role": "Head of Compliance"
@@ -11,7 +11,7 @@
   "outcome": "returned",
   "assumptions": [
     {
-      "question_id": "question:5926550a73f8c47c",
+      "question_id": "question:5ea41b232aa3a5af",
       "words": "Until the contracts register is checked, treat both contracts as made before 1 January 2027."
     }
   ],

@@ -55,11 +55,34 @@ def decision_schema():
     return Draft202012Validator(json.loads(path.read_text(encoding="utf-8")))
 
 
-@pytest.mark.parametrize("name", ["", "   ", "claude-sonnet-5-5", "OpenAI reviewer", "SYSTEM"])
-def test_json_schema_alone_refuses_empty_and_machine_reviewers(decision_schema, name):
+def _decision_with(field: str, value: str) -> dict:
     data = json.loads((build.EXAMPLES_DIR / "valid" / "decision.json").read_text(encoding="utf-8"))
-    data["reviewer"]["name"] = name
-    assert list(decision_schema.iter_errors(data))
+    data["reviewer"][field] = value
+    return data
+
+
+@pytest.mark.parametrize(
+    "value", ["", "   ", "claude-sonnet-5-5", "SYSTEM", "system", "Bot", " claude ", "GPT", "AI"]
+)
+@pytest.mark.parametrize("field", ["name", "role"])
+def test_json_schema_alone_refuses_empty_and_machine_reviewers(decision_schema, field, value):
+    assert list(decision_schema.iter_errors(_decision_with(field, value)))
+
+
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [
+        ("name", "Claude Dupont"),
+        ("role", "Head of Model Risk"),
+        ("role", "Compliance Assistant"),
+        ("role", "Transfer Agent"),
+        ("role", "AI and Automation Lead"),
+    ],
+)
+def test_json_schema_accepts_people_whose_words_include_a_machine_word(
+    decision_schema, field, value
+):
+    assert list(decision_schema.iter_errors(_decision_with(field, value))) == []
 
 
 def test_json_schema_requires_the_schema_field(decision_schema):

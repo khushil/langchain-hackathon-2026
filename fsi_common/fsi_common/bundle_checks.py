@@ -17,7 +17,8 @@ from fsi_common.records import (
     SignOff,
     SourceUnit,
     UnitAccounting,
-    record_digest,
+    judged_differences,
+    judged_digest,
 )
 
 
@@ -28,34 +29,50 @@ def _addressed(records: Iterable[Record]) -> Iterator[Addressed]:
             yield from record.statements
 
 
-def _references(record: Record) -> Iterator[tuple[str, str]]:
+def _references(record: Record) -> Iterator[tuple[str, str, str | None]]:
+    """Yield each id a record cites, with the judged digest it must have where it names one."""
     if isinstance(record, Fact):
-        yield "subject.source_id", record.subject.source_id
+        yield "subject.source_id", record.subject.source_id, None
     elif isinstance(record, (SourceUnit, UnitAccounting)):
-        yield "source_id", record.source_id
+        yield "source_id", record.source_id, None
     elif isinstance(record, Brief):
-        yield from (("sources", ref) for ref in record.sources)
-        yield from (("open_question_ids", ref) for ref in record.open_question_ids)
+        yield from (("sources", ref, None) for ref in record.sources)
+        yield from (("open_question_ids", ref, None) for ref in record.open_question_ids)
         for statement in record.statements:
-            yield from ((f"{statement.id}.cites", ref) for ref in statement.cites)
+            yield from ((f"{statement.id}.cites", ref, None) for ref in statement.cites)
     elif isinstance(record, OpenQuestion):
-        yield "about.source_id", record.about.source_id
-        yield from (("cites", ref) for ref in record.cites)
+        yield "about.source_id", record.about.source_id, None
+        yield from (("cites", ref, None) for ref in record.cites)
         if record.decision_id:
-            yield "decision_id", record.decision_id
+            yield "decision_id", record.decision_id, None
     elif isinstance(record, Disagreement):
-        yield from (("claims", ref) for ref in record.claims)
+        yield from (("claims", c.fact_id, c.judged_digest) for c in record.claims)
         if record.decision_id:
-            yield "decision_id", record.decision_id
+            yield "decision_id", record.decision_id, None
     elif isinstance(record, Decision):
-        yield "subject_id", record.subject_id
+        yield "subject_id", record.subject_id, None
     elif isinstance(record, SignOff):
-        yield "brief_id", record.brief_id
-        yield from (("assumptions", a.question_id) for a in record.assumptions)
+        yield "brief_id", record.brief_id, None
+        yield from (("assumptions", a.question_id, None) for a in record.assumptions)
+
+
+def _variants_side_by_side(items: list[Addressed], records: list[Record]) -> bool:
+    """Whether different contents under one id are facts a disagreement keeps side by side."""
+    if not all(isinstance(item, Fact) for item in items):
+        return False
+    needed = {(item.id, judged_digest(item)) for item in items}
+    return any(
+        isinstance(record, Disagreement)
+        and needed <= {(c.fact_id, c.judged_digest) for c in record.claims}
+        for record in records
+    )
 
 
 def check_bundle(records: list[Record], *, where: str) -> list[Finding]:
     """Run the checks that need several records together.
+
+    Two different contents under one id are refused, except two or more facts that a
+    disagreement in the bundle names by id and judged digest, which are kept side by side.
 
     Args:
         records: Every record of one bundle, each already valid on its own.
@@ -65,22 +82,26 @@ def check_bundle(records: list[Record], *, where: str) -> list[Finding]:
         The findings.
     """
     findings: list[Finding] = []
-    by_id: dict[str, Addressed] = {}
+    by_id: dict[str, list[Addressed]] = {}
     for item in _addressed(records):
-        earlier = by_id.get(item.id)
-        if earlier is not None and earlier.to_json() != item.to_json():
+        held = by_id.setdefault(item.id, [])
+        if all(earlier.to_json() != item.to_json() for earlier in held):
+            held.append(item)
+    for item_id, items in by_id.items():
+        if len(items) > 1 and not _variants_side_by_side(items, records):
             findings.append(
-                Finding("id.duplicate", f"{where} {item.id}", "two different records share the id")
+                Finding("id.duplicate", f"{where} {item_id}", "two different records share the id")
             )
-        by_id.setdefault(item.id, item)
     for record in records:
-        for field, ref in _references(record):
-            if ref not in by_id:
+        for field, ref, judged in _references(record):
+            held = by_id.get(ref, [])
+            if not held or (judged and all(judged_digest(item) != judged for item in held)):
+                shown = f"{ref} judged {judged}" if judged else ref
                 findings.append(
                     Finding(
                         "ref.resolves",
                         f"{where} {record.id}.{field}",
-                        f"{ref} is not in the bundle",
+                        f"{shown} is not in the bundle",
                     )
                 )
     findings += _decision_checks(records, by_id, where)
@@ -90,22 +111,24 @@ def check_bundle(records: list[Record], *, where: str) -> list[Finding]:
 
 
 def _decision_checks(
-    records: list[Record], by_id: dict[str, Addressed], where: str
+    records: list[Record], by_id: dict[str, list[Addressed]], where: str
 ) -> list[Finding]:
     findings = []
     for record in records:
         if isinstance(record, Decision) and record.subject_id in by_id:
-            seen = record_digest(by_id[record.subject_id])
-            if record.seen_digest != seen:
+            subjects = by_id[record.subject_id]
+            if all(judged_digest(item) != record.judged_digest for item in subjects):
+                changed = judged_differences(record.judged, subjects[0].judged_basis())
                 findings.append(
                     Finding(
                         "decision.digest-stale",
                         f"{where} {record.id}",
-                        f"seen {record.seen_digest}, record is {seen}",
+                        f"judged {record.judged_digest}, the subject now gives "
+                        f"{judged_digest(subjects[0])}; changed: {', '.join(changed)}",
                     )
                 )
         if isinstance(record, OpenQuestion) and record.decision_id in by_id:
-            decision = by_id[record.decision_id]
+            decision = by_id[record.decision_id][0]
             if not isinstance(decision, Decision) or decision.subject_id != record.id:
                 findings.append(
                     Finding(
@@ -117,14 +140,16 @@ def _decision_checks(
     return findings
 
 
-def _brief_checks(records: list[Record], by_id: dict[str, Addressed], where: str) -> list[Finding]:
+def _brief_checks(
+    records: list[Record], by_id: dict[str, list[Addressed]], where: str
+) -> list[Finding]:
     findings = []
     for record in records:
         if isinstance(record, Brief):
             for statement in record.statements:
                 for ref in statement.cites:
-                    fact = by_id.get(ref)
-                    if isinstance(fact, Fact) and not fact.passed_checks:
+                    held = by_id.get(ref, [])
+                    if any(isinstance(f, Fact) and not f.passed_checks for f in held):
                         findings.append(
                             Finding(
                                 "brief.cites-failed-check",
@@ -132,7 +157,7 @@ def _brief_checks(records: list[Record], by_id: dict[str, Addressed], where: str
                                 f"{ref} failed a check",
                             )
                         )
-        brief = by_id.get(record.brief_id) if isinstance(record, SignOff) else None
+        brief = by_id.get(record.brief_id, [None])[0] if isinstance(record, SignOff) else None
         if isinstance(record, SignOff) and isinstance(brief, Brief):
             if record.brief_digest != brief.content_digest:
                 findings.append(
@@ -153,7 +178,7 @@ def _brief_checks(records: list[Record], by_id: dict[str, Addressed], where: str
                 )
             if record.outcome == "signed":
                 for ref in brief.open_question_ids:
-                    question = by_id.get(ref)
+                    question = by_id.get(ref, [None])[0]
                     settled = (
                         isinstance(question, OpenQuestion) and question.state in SETTLED_STATES
                     )

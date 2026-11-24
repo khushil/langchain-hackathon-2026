@@ -3,18 +3,37 @@
 State values are records as JSON (``record.to_json()``), validated with ``fsi_common`` at each
 node's boundary, because LangGraph's checkpointer stores JSON safely and refuses unregistered
 Python types in a future version. Collections are dicts keyed by id, merged by reducers that sort
-their keys, so parallel section writers give the same state in any order of completion.
+their keys, so parallel section writers give the same state in any order of completion. Facts
+are the one collection where an id may arrive with two contents (a fact's id leaves out what a
+model words), so each fact id holds a list with one content per judged digest, side by side.
 """
 
 from __future__ import annotations
 
 import re
+from collections.abc import Iterable
 from typing import Annotated, Any, TypedDict
 
 from pydantic import Field, model_validator
 
-from fsi_common.records import Decision, Fact, OpenQuestion, Person, SignOff, record_digest
+from fsi_common.ids import digest_json
+from fsi_common.records import (
+    CarryOver,
+    Decision,
+    Disagreement,
+    Extractor,
+    Fact,
+    OpenQuestion,
+    Person,
+    SignOff,
+    carry_over,
+    fact_judged_basis,
+    judged_differences,
+    judged_digest,
+    record_digest,
+)
 from fsi_common.records.base import BriefId, Digest, NonBlank, Part, StatementId
+from utils.records import FACT_CONTEXT
 
 RecordJson = dict[str, Any]
 """A record as JSON, as ``fsi_common`` writes it."""
@@ -24,6 +43,10 @@ STORE_ROOT = "compliance-brief"
 
 class ConflictingWriteError(Exception):
     """Two writers gave different content under one key, which content-derived ids rule out."""
+
+
+class InvalidFactWriteError(ValueError):
+    """A node wrote facts in another shape than ``{fact id: [fact JSON, ...]}``."""
 
 
 class ReviewMismatchError(ValueError):
@@ -57,6 +80,114 @@ def merge_records(left: dict[str, Any] | None, right: dict[str, Any] | None) -> 
             raise ConflictingWriteError(f"Two different records were written under {key}.")
         merged[key] = value
     return dict(sorted(merged.items()))
+
+
+def merge_fact_variants(
+    left: dict[str, list[RecordJson]] | None, right: dict[str, list[RecordJson]] | None
+) -> dict[str, list[RecordJson]]:
+    """Merge writes of facts, keeping every judged content under one id side by side.
+
+    A fact's id leaves out what a model words, so two section readers, or a reader and a rerun,
+    can write one id with two contents. Contents that differ in what a person judges are both
+    kept and nothing raises; ``variant_disagreements`` turns them into a disagreement the engine
+    records. Contents that differ only outside it (the provenance, a check's wording) are one
+    fact for the reviewer, and exactly one copy is kept: the one with the lowest record digest,
+    whichever write arrived first.
+
+    Args:
+        left: The state's facts so far, each id holding its list of contents.
+        right: A node's new facts in the same shape; ``fact_writes`` builds it.
+
+    Returns:
+        Every fact id, sorted, each with one content per judged digest, in judged digest order.
+
+    Raises:
+        InvalidFactWriteError: If a write holds a fact id whose value is not a list of fact JSON.
+    """
+    merged: dict[str, dict[str, RecordJson]] = {}
+    for side in (left or {}, right or {}):
+        for key, contents in side.items():
+            if not isinstance(contents, list) or not all(isinstance(c, dict) for c in contents):
+                raise InvalidFactWriteError(
+                    f"Facts under {key} were written as {type(contents).__name__}; write "
+                    "{fact id: [fact JSON, ...]}, as fact_writes builds it."
+                )
+            by_judged = merged.setdefault(key, {})
+            for content in contents:
+                try:
+                    judged = digest_json(fact_judged_basis(content))
+                except (KeyError, TypeError) as exc:
+                    raise InvalidFactWriteError(
+                        f"A content written under {key} is not fact JSON ({exc!r})."
+                    ) from exc
+                kept = by_judged.get(judged)
+                if kept is None or digest_json(content) < digest_json(kept):
+                    by_judged[judged] = content
+    return {
+        key: [by_judged[judged] for judged in sorted(by_judged)]
+        for key, by_judged in sorted(merged.items())
+    }
+
+
+def fact_writes(facts: Iterable[Fact]) -> dict[str, list[RecordJson]]:
+    """Return facts in the shape a node writes to the state's ``facts``.
+
+    Args:
+        facts: The facts a node produced.
+
+    Returns:
+        ``{fact id: [fact JSON, ...]}``.
+    """
+    return merge_fact_variants(None, {fact.id: [fact.to_json()] for fact in facts})
+
+
+def fact_variants(facts: dict[str, list[RecordJson]]) -> dict[str, list[RecordJson]]:
+    """Return the fact ids that hold more than one content.
+
+    Args:
+        facts: The state's facts.
+
+    Returns:
+        Each such id with its contents; empty when every id holds one.
+    """
+    return {key: contents for key, contents in facts.items() if len(contents) > 1}
+
+
+def variant_disagreements(
+    facts: dict[str, list[RecordJson]], *, found_by: Extractor
+) -> list[Disagreement]:
+    """Return one open disagreement for each fact id that holds two or more judged contents.
+
+    The reducer already keeps one copy of contents that differ only outside the judged fields,
+    so every id with two or more contents here is a disagreement about what a person judges.
+
+    Args:
+        facts: The state's facts.
+        found_by: The step that compared them, named and versioned.
+
+    Returns:
+        The disagreements, in fact id order, each naming every content by id and judged digest.
+    """
+    found = []
+    for key, contents in fact_variants(facts).items():
+        variants = [Fact.model_validate(c, context=FACT_CONTEXT) for c in contents]
+        judged = {judged_digest(f): f for f in variants}
+        if len(judged) < 2:
+            continue
+        first, *others = [judged[d] for d in sorted(judged)]
+        changed = sorted(
+            {n for f in others for n in judged_differences(first.judged_basis(), f.judged_basis())}
+        )
+        found.append(
+            Disagreement.build(
+                about=f"Readings of {first.subject.anchor} differ under one fact in: "
+                + ", ".join(changed),
+                claims=[{"fact_id": key, "judged_digest": d} for d in sorted(judged)],
+                found_by=found_by,
+                status="open",
+            )
+        )
+    return found
 
 
 def update_records(left: dict[str, Any] | None, right: dict[str, Any] | None) -> dict[str, Any]:
@@ -123,8 +254,9 @@ class BriefState(BriefInput, total=False):
     """Each unit's text by unit id, as split; the digest in the unit record is of this text."""
     section_results: Annotated[dict[str, RecordJson], merge_sections]
     """``SectionResult`` JSON by section number, one writer per section."""
-    facts: Annotated[dict[str, RecordJson], merge_records]
-    """``fact.v1`` records by id."""
+    facts: Annotated[dict[str, list[RecordJson]], merge_fact_variants]
+    """``fact.v1`` records by id, each id holding one content per judged digest; an id with two
+    or more is recorded as a disagreement (``variant_disagreements``)."""
     check_results: Annotated[dict[str, RunCheck], merge_records]
     """Run-level checks by ``<check>|<subject id>``."""
     accounting: Annotated[dict[str, RecordJson], merge_records]
@@ -142,16 +274,24 @@ class BriefState(BriefInput, total=False):
 
 
 class CitedFact(Part):
-    """One fact as the reviewer sees it, beside its source paragraph."""
+    """One fact as the reviewer sees it, beside its source paragraph and any earlier decision.
+
+    ``carry`` says what became of the latest earlier decision on the fact's id: carried (shown as
+    decided, with its date and reviewer), ask again (shown with the earlier decision and what
+    changed), or fresh. It must be what ``carry_over`` gives for that decision and this fact.
+    """
 
     fact: Fact = Field(description="The fact")
     seen_digest: Digest = Field(description="The digest a decision on this fact must carry")
     unit_text: NonBlank = Field(description="The full text of the unit the fact quotes")
+    carry: CarryOver = Field(description="What becomes of the earlier decision on this fact")
 
     @model_validator(mode="after")
     def _digest_is_the_facts(self) -> CitedFact:
         if self.seen_digest != record_digest(self.fact):
             raise ValueError(f"seen_digest is not the digest of fact {self.fact.id}")
+        if self.carry != carry_over(self.carry.decision, self.fact):
+            raise ValueError(f"carry is not what carry_over gives for fact {self.fact.id}")
         return self
 
 

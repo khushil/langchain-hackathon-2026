@@ -118,9 +118,10 @@ def check_tracing_key(env: Mapping[str, str]) -> None:
     has_key = any(env.get(name, "").strip() for name in ("LANGSMITH_API_KEY", "LANGCHAIN_API_KEY"))
     if tracing_enabled(env) and not has_key:
         raise TracingKeyMissingError(
-            "LANGSMITH_TRACING is true but LANGSMITH_API_KEY is empty. Export LANGSMITH_KEY in "
-            "your shell (the .env passes it on), or set LANGSMITH_TRACING=false to run without "
-            "tracing."
+            "LANGSMITH_TRACING is true but LANGSMITH_API_KEY is empty, so every trace would be "
+            "lost. Either export LANGSMITH_KEY in your shell before you start (the .env passes "
+            "it on as LANGSMITH_API_KEY), or set LANGSMITH_TRACING=false in the .env in the "
+            "repository root to run without tracing."
         )
 
 

@@ -1,8 +1,25 @@
 {
   "schema": "decision.v1",
-  "id": "decision:2644c19546588adb",
-  "subject_id": "question:5926550a73f8c47c",
-  "seen_digest": "sha256:ccc3dff50ce8a16adfb98f8934f0deb27d1117f9d5af02c388a752fb03d15961",
+  "id": "decision:b8b439c718e7088d",
+  "subject_id": "question:5ea41b232aa3a5af",
+  "seen_digest": "sha256:2e024aacb80b10f42250a8919637ea84c08566c3515ecc66091eb1e29ca9297c",
+  "judged": {
+    "about": {
+      "source_id": "source:48afc74ed0bf2412",
+      "anchor": "row:FIRM-001"
+    },
+    "question": "Were the firm's contracts with NimbusCloud and PayCore Ltd in place before 1 January 2027, and when does each next renew?",
+    "why_unknown": "The firm table gives each contract's end date (30 June 2027 and 31 December 2029) but not when it was made or when it renews.",
+    "impact": "Sets the date by which each contract must meet paragraph 6.3 under paragraph 9.3.",
+    "ask_role": "Head of Third-Party Risk",
+    "reason": "missing_data",
+    "cites": [
+      "fact:82670a4f6632680e",
+      "unit:3ad9f6791e610466"
+    ],
+    "priority": "high"
+  },
+  "judged_digest": "sha256:5ea41b232aa3a5af4799de71897181f0f9483352deea9adedb68f8b122db796a",
   "outcome": "answer",
   "amendment": null,
   "answer": "Both contracts were made in 2024, before 1 January 2027; neither renews before its end date.",

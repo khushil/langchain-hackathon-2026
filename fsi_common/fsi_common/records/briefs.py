@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from typing import Any, ClassVar, Literal, Self
 
 from pydantic import Field, ValidationInfo, field_validator, model_validator
@@ -85,8 +86,11 @@ class Brief(Record):
         """
         return digest_json(self.id_basis())
 
-    def expected_id(self) -> str:
+    def expected_id(self, context: Mapping[str, Any] | None = None) -> str:
         """Return the id this content must carry.
+
+        Args:
+            context: The validation context; not read, since a brief's id is its digest's start.
 
         Returns:
             ``brief:`` and the first 16 hex characters of the content digest.

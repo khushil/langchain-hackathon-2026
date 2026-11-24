@@ -1,9 +1,12 @@
 {
   "schema": "disagreement.v1",
-  "id": "disagreement:51165be38dc46998",
+  "id": "disagreement:60a47d036f4b84e7",
   "about": "Which provider the firm's card payments run on",
   "claims": [
-    "fact:89d225126d85fbc8"
+    {
+      "fact_id": "fact:2433f9aa681aa619",
+      "judged_digest": "sha256:20e03c8725ebb32a9699ea80b0ffb7b99d662c0ae9f5715313b220180696a514"
+    }
   ],
   "found_by": {
     "name": "provider-cross-check",

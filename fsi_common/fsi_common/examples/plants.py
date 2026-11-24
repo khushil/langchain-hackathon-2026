@@ -9,9 +9,9 @@ from __future__ import annotations
 import copy
 from typing import Any
 
-from fsi_common.examples.data import Examples
+from fsi_common.examples.data import COPIED_ATTRIBUTES, Examples
 from fsi_common.ids import DIGEST_PREFIX, ID_HEX_LENGTH, content_id, digest_json
-from fsi_common.records import RECORD_TYPES, Brief, Source, Statement
+from fsi_common.records import RECORD_TYPES, Brief, Fact, Source, Statement, fact_id_basis
 
 Json = dict[str, Any]
 
@@ -28,6 +28,9 @@ def rehash(data: Json) -> Json:
     record_type = RECORD_TYPES[data["schema"]]
     if record_type is Source:
         data["id"] = content_id("source", {k: data[k] for k in ("kind", "key", "digest")})
+        return data
+    if record_type is Fact:
+        data["id"] = content_id(Fact.ID_PREFIX, fact_id_basis(data, COPIED_ATTRIBUTES))
         return data
     if record_type is Brief:
         for statement in data["statements"]:
@@ -50,8 +53,10 @@ def valid_files(ex: Examples) -> dict[str, Any]:
         ex: The valid examples.
 
     Returns:
-        One file per record type, a second fact and a decision answering a question, and the
-        bundle that holds a whole run's records together.
+        One file per record type, a second fact and a decision answering a question, the bundle
+        that holds a whole run's records together, the same bundle after a rerun whose model
+        prompt, extractor and check wording moved (the decision carries), and two contents of
+        one fact kept side by side by a disagreement.
     """
     bundle = [
         ex.document,
@@ -88,6 +93,16 @@ def valid_files(ex: Examples) -> dict[str, Any]:
     }
     files: dict[str, Any] = {name: record.to_json() for name, record in singles.items()}
     files["bundle.json"] = [record.to_json() for record in bundle]
+    rerun = [ex.fact_7_1_rerun if record is ex.fact_7_1 else record for record in bundle]
+    files["bundle-rerun.json"] = [record.to_json() for record in rerun]
+    variants = [
+        ex.document,
+        ex.unit_7_1,
+        ex.fact_7_1,
+        ex.fact_7_1_variant,
+        ex.variant_disagreement,
+    ]
+    files["bundle-fact-variants.json"] = [record.to_json() for record in variants]
     return files
 
 
@@ -121,7 +136,7 @@ def planted_files(ex: Examples) -> dict[str, tuple[Any, str, str]]:
 
     def stale_check(bundle: list[Json]) -> None:
         target = next(item for item in bundle if item["id"] == ex.fact_7_1.id)
-        target["checks"][0]["detail"] = "found after normalising white space"
+        target["attributes"]["requirement"] = "Tell the FSOA about a major incident"
 
     def failed_check(bundle: list[Json]) -> None:
         target = next(item for item in bundle if item["id"] == ex.fact_9_3.id)
@@ -156,6 +171,14 @@ def planted_files(ex: Examples) -> dict[str, tuple[Any, str, str]]:
 
     def duplicate_id(bundle: list[Json]) -> None:
         bundle.append(ex.document.to_json() | {"title": "Policy Statement PS26/4, second copy"})
+
+    def variant_alone(bundle: list[Json]) -> None:
+        bundle.append(ex.fact_7_1_variant.to_json())
+
+    def claim_digest_unresolved(bundle: list[Json]) -> None:
+        listed = by_schema(bundle, "disagreement.v1")
+        listed["claims"][0]["judged_digest"] = DIGEST_PREFIX + "0" * 64
+        rehash(listed)
 
     def decision_not_about_it(bundle: list[Json]) -> None:
         by_schema(bundle, "open_question.v1").update(state="answered", decision_id=ex.accept_7_1.id)
@@ -300,6 +323,35 @@ def planted_files(ex: Examples) -> dict[str, tuple[Any, str, str]]:
             _plant(decision, lambda d: d["reviewer"].update(role="system")),
             "person.machine",
             "a decision whose reviewer's role is the system",
+        ),
+        "decision-judged-digest-does-not-recompute.json": (
+            _plant(decision, lambda d: d.update(judged_digest=digest_json("another fact"))),
+            "decision.judged-digest",
+            "a decision whose judged digest is not that of what it says was judged",
+        ),
+        "decision-claude-alone-reviewer.json": (
+            _plant(decision, lambda d: d["reviewer"].update(name=" claude ")),
+            "person.machine",
+            "a decision whose reviewer's whole name is a model's",
+        ),
+        "fact-deadline-changed-after-id.json": (
+            _plant(
+                fact,
+                lambda d: d["attributes"].update(deadline="within 24 hours"),
+                keep_id=True,
+            ),
+            "id.recompute",
+            "the deadline as written was changed after the id was derived",
+        ),
+        "bundle-fact-variant-without-disagreement.json": (
+            _bundle_plant(ex, variant_alone),
+            "id.duplicate",
+            "two contents of one fact with no disagreement keeping them side by side",
+        ),
+        "bundle-disagreement-claim-not-held.json": (
+            _bundle_plant(ex, claim_digest_unresolved),
+            "ref.resolves",
+            "a disagreement naming a fact by a judged digest no fact in the bundle has",
         ),
         "decision-answer-on-fact.json": (
             _plant(decision, lambda d: d.update(outcome="answer", answer="Yes")),

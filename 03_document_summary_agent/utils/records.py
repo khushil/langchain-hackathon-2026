@@ -15,7 +15,7 @@ from typing import TYPE_CHECKING
 
 from pydantic import Field, ValidationError
 
-from fsi_common.records import CheckResult, Extractor, Fact, Source, fact_kinds_context
+from fsi_common.records import CheckResult, Extractor, Fact, Source, fact_topic_context
 from fsi_common.records.base import FactId, NonBlank, Part
 
 if TYPE_CHECKING:
@@ -36,8 +36,16 @@ DOCUMENT_FACT_KINDS = (
 """The closed list of fact kinds for this topic: the reference labels' eight kinds of paragraph
 item, and the two kinds of fact read from the firm and provider tables."""
 
-FACT_KINDS = fact_kinds_context(DOCUMENT_FACT_KINDS)
-"""The validation context that holds the list, for ``Fact.build`` and ``Fact.model_validate``."""
+COPIED_ATTRIBUTES = ("deadline",)
+"""The attributes this topic copies word for word from the document: the deadline as written.
+
+With the kind, the paragraph and the quote they make a fact's id. The requirement is the model's
+plain wording of the paragraph, so it stays out of the id: a rerun that words it differently is
+the same fact, and a changed quote or deadline is another."""
+
+FACT_CONTEXT = fact_topic_context(kinds=DOCUMENT_FACT_KINDS, copied_attributes=COPIED_ATTRIBUTES)
+"""The validation context that holds the topic's declaration, which ``Fact.build`` and
+``Fact.model_validate`` need for every fact of this topic."""
 
 PARAGRAPH_SCHEME = "para"
 
@@ -110,7 +118,7 @@ def obligation_to_fact(
     anchor = paragraph_anchor(obligation.paragraph)
     try:
         return Fact.build(
-            context=FACT_KINDS,
+            context=FACT_CONTEXT,
             kind="obligation",
             subject={"source_id": source.id, "anchor": anchor},
             quote=obligation.evidence,

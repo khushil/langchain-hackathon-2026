@@ -59,7 +59,7 @@
   },
   {
     "schema": "fact.v1",
-    "id": "fact:9ff827e1365632d7",
+    "id": "fact:7d0607968a1b5c72",
     "kind": "obligation",
     "subject": {
       "source_id": "source:c9690d260c586cbb",
@@ -103,7 +103,7 @@
   },
   {
     "schema": "fact.v1",
-    "id": "fact:8b53031651720070",
+    "id": "fact:82670a4f6632680e",
     "kind": "obligation",
     "subject": {
       "source_id": "source:c9690d260c586cbb",
@@ -150,7 +150,7 @@
   },
   {
     "schema": "fact.v1",
-    "id": "fact:89d225126d85fbc8",
+    "id": "fact:2433f9aa681aa619",
     "kind": "firm_attribute",
     "subject": {
       "source_id": "source:48afc74ed0bf2412",
@@ -187,7 +187,7 @@
   },
   {
     "schema": "fact.v1",
-    "id": "fact:5f5a2c5eaa938cdf",
+    "id": "fact:460ab6a8123c6350",
     "kind": "provider_attribute",
     "subject": {
       "source_id": "source:0e6b10a049f2da9b",
@@ -225,7 +225,7 @@
   },
   {
     "schema": "fact.v1",
-    "id": "fact:4c8642e7ce4e2b25",
+    "id": "fact:33cda8305e9f57c6",
     "kind": "firm_attribute",
     "subject": {
       "source_id": "source:48afc74ed0bf2412",
@@ -271,7 +271,7 @@
   },
   {
     "schema": "open_question.v1",
-    "id": "question:5926550a73f8c47c",
+    "id": "question:5ea41b232aa3a5af",
     "about": {
       "source_id": "source:48afc74ed0bf2412",
       "anchor": "row:FIRM-001"
@@ -282,20 +282,26 @@
     "ask_role": "Head of Third-Party Risk",
     "reason": "missing_data",
     "cites": [
-      "fact:8b53031651720070",
+      "fact:82670a4f6632680e",
       "unit:3ad9f6791e610466"
     ],
     "priority": "high",
     "state": "answered",
-    "decision_id": "decision:e456c83424cd0584"
+    "decision_id": "decision:554a1f1a82d3e028"
   },
   {
     "schema": "disagreement.v1",
-    "id": "disagreement:7943a2e924c2ff5b",
+    "id": "disagreement:75cf5fbae753d323",
     "about": "Which provider the firm's card payments run on",
     "claims": [
-      "fact:89d225126d85fbc8",
-      "fact:5f5a2c5eaa938cdf"
+      {
+        "fact_id": "fact:2433f9aa681aa619",
+        "judged_digest": "sha256:20e03c8725ebb32a9699ea80b0ffb7b99d662c0ae9f5715313b220180696a514"
+      },
+      {
+        "fact_id": "fact:460ab6a8123c6350",
+        "judged_digest": "sha256:db61aab591b2d22b37edc19a14537ed770f54b979689a731f8d1376889427d3d"
+      }
     ],
     "found_by": {
       "name": "provider-cross-check",
@@ -306,9 +312,33 @@
   },
   {
     "schema": "decision.v1",
-    "id": "decision:e456c83424cd0584",
-    "subject_id": "fact:9ff827e1365632d7",
-    "seen_digest": "sha256:3045bd83f518be1b9034d5a2321f1b8c259af5721f4f540a58df54e596bdfad7",
+    "id": "decision:554a1f1a82d3e028",
+    "subject_id": "fact:7d0607968a1b5c72",
+    "seen_digest": "sha256:3c0ee96904534270bade856c5c3077eaf98de4709e8027d704149b6456fe7ddb",
+    "judged": {
+      "kind": "obligation",
+      "subject": {
+        "source_id": "source:c9690d260c586cbb",
+        "anchor": "para:7.1"
+      },
+      "quote": "Firms must submit an initial notification to the FSOA within 4 hours of classifying an incident as a major incident",
+      "attributes": {
+        "requirement": "Notify the regulator of a major incident",
+        "actor": "firm",
+        "deadline": "within 4 hours of classifying an incident as a major incident, and in any case no later than 24 hours after the incident is first detected"
+      },
+      "checks": [
+        {
+          "check": "deadline-verbatim.v1",
+          "outcome": "pass"
+        },
+        {
+          "check": "quote-verbatim.v1",
+          "outcome": "pass"
+        }
+      ]
+    },
+    "judged_digest": "sha256:8110cd3c059f421dcc523a95d67ae42398fd093a1defde8ac3900234d1cd40ae",
     "outcome": "accept",
     "amendment": null,
     "answer": null,
@@ -321,7 +351,7 @@
   },
   {
     "schema": "brief.v1",
-    "id": "brief:61aed14b1109df80",
+    "id": "brief:268e73948e95e292",
     "request": "Summarise document PS26-4 for FIRM-001",
     "sources": [
       "source:c9690d260c586cbb",
@@ -330,34 +360,34 @@
     ],
     "statements": [
       {
-        "id": "statement:e6524eff3fe07eda",
+        "id": "statement:9e74809206dacc1e",
         "heading": "Incident reporting",
         "text": "Harbour Mutual Bank must notify the regulator of a major incident within 4 hours of classifying it, and no later than 24 hours after first detecting it.",
         "cites": [
-          "fact:9ff827e1365632d7"
+          "fact:7d0607968a1b5c72"
         ]
       },
       {
-        "id": "statement:74f26e36868b1af2",
+        "id": "statement:614d6afd288d77e7",
         "heading": "Third-party contracts",
         "text": "Contracts with material providers made before 1 January 2027 must meet paragraph 6.3 at their next renewal or by 31 December 2028, whichever is earlier.",
         "cites": [
-          "fact:8b53031651720070"
+          "fact:82670a4f6632680e"
         ]
       }
     ],
     "open_question_ids": [
-      "question:5926550a73f8c47c"
+      "question:5ea41b232aa3a5af"
     ],
-    "content_digest": "sha256:61aed14b1109df8073aed510ac9fe2896503889fdafbe8cb28a2dafdf5ab67b3",
+    "content_digest": "sha256:268e73948e95e292371574c16d91ce010b64052c96f0424e909adb4b78b4177c",
     "model": "claude-opus-5-5",
     "prompt_version": "1"
   },
   {
     "schema": "signoff.v1",
-    "id": "signoff:29fe8e8d333cf0cb",
-    "brief_id": "brief:61aed14b1109df80",
-    "brief_digest": "sha256:61aed14b1109df8073aed510ac9fe2896503889fdafbe8cb28a2dafdf5ab67b3",
+    "id": "signoff:b34757467b2e3743",
+    "brief_id": "brief:268e73948e95e292",
+    "brief_digest": "sha256:268e73948e95e292371574c16d91ce010b64052c96f0424e909adb4b78b4177c",
     "reviewer": {
       "name": "Dana Whitfield",
       "role": "Head of Compliance"
@@ -366,7 +396,7 @@
     "outcome": "signed",
     "assumptions": [
       {
-        "question_id": "question:5926550a73f8c47c",
+        "question_id": "question:5ea41b232aa3a5af",
         "words": "Until the contracts register is checked, treat both contracts as made before 1 January 2027."
       }
     ],

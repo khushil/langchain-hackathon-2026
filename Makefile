@@ -11,8 +11,11 @@ lint:
 	$(PYTHON) -m ruff check .
 	$(PYTHON) -m ruff format --check .
 
+# One pytest run per workspace member, each with its own import path, so topics whose packages
+# share a name (each topic has a `utils`) never meet on one path. A new topic is one more line.
 test:
-	$(PYTHON) -m pytest -q -n $(PYTEST_WORKERS)
+	$(PYTHON) -m pytest -q -n $(PYTEST_WORKERS) -o "pythonpath=fsi_common" fsi_common/tests
+	$(PYTHON) -m pytest -q -n $(PYTEST_WORKERS) -o "pythonpath=fsi_common 03_document_summary_agent" 03_document_summary_agent/tests
 
 # The record schemas must match what the record types export, byte for byte.
 schemas-check:

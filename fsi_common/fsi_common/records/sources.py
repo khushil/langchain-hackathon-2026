@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from typing import ClassVar, Literal, Self
+from collections.abc import Mapping
+from typing import Any, ClassVar, Literal, Self
 
 from pydantic import Field, StrictInt, model_validator
 from pydantic_core import PydanticCustomError
@@ -43,8 +44,11 @@ class Source(Record):
     )
     terms: NonBlank = Field(description="The terms on which the source may be reused, as recorded")
 
-    def id_basis(self) -> dict[str, str]:
+    def id_basis(self, context: Mapping[str, Any] | None = None) -> dict[str, str]:
         """Return the fields the id is derived from.
+
+        Args:
+            context: The validation context; not read, since a source's id needs no topic.
 
         Returns:
             The kind, the key and the digest.

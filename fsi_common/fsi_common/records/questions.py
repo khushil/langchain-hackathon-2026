@@ -10,10 +10,12 @@ from pydantic_core import PydanticCustomError
 from fsi_common.records.base import (
     AnyRecordId,
     DecisionId,
+    Digest,
     DisagreementId,
     Extractor,
     FactId,
     NonBlank,
+    Part,
     QuestionId,
     Record,
     SourceRef,
@@ -103,11 +105,23 @@ class OpenQuestion(Record):
         return self
 
 
+class ClaimRef(Part):
+    """One of the differing facts: its id, and the digest of what a person would judge in it.
+
+    The judged digest tells apart two contents written under one fact id (a rerun that worded a
+    requirement differently), and stays the same when only the model or a check's wording moves.
+    """
+
+    fact_id: FactId = Field(description="The id of the fact")
+    judged_digest: Digest = Field(description="The digest of the fact's judged fields")
+
+
 class Disagreement(Record):
     """Two or more facts that differ about the same thing, kept side by side.
 
-    The record names no winner and has no field that could: a person reconciles it by a decision,
-    and the facts stay as they are.
+    The facts may have different ids, or one id with two contents told apart by their judged
+    digests. The record names no winner and has no field that could: a person reconciles it by a
+    decision, and the facts stay as they are.
     """
 
     SCHEMA: ClassVar[str] = "disagreement.v1"
@@ -119,7 +133,7 @@ class Disagreement(Record):
     schema_id: Literal["disagreement.v1"] = Field(default="disagreement.v1", alias="schema")
     id: DisagreementId
     about: NonBlank = Field(description="What the facts disagree on, in plain words")
-    claims: list[FactId] = Field(description="The differing facts, two or more")
+    claims: list[ClaimRef] = Field(description="The differing facts, two or more")
     found_by: Extractor = Field(description="The comparison that found the difference")
     status: Literal["open", "reconciled"] = Field(description="Whether a person has reconciled it")
     decision_id: DecisionId | None = Field(

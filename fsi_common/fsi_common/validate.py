@@ -21,9 +21,11 @@ from jsonschema import Draft202012Validator
 from fsi_common.bundle_checks import check_bundle
 from fsi_common.checks import BUNDLE, CHECKS, Finding, validate_record
 from fsi_common.export_schemas import SCHEMA_DIR, schema_file_name
+from fsi_common.records import FactTopic
 
 EXAMPLES_DIR = Path(__file__).resolve().parent / "examples"
 FACT_KINDS_FILE = EXAMPLES_DIR / "fact-kinds.json"
+COPIED_ATTRIBUTES_FILE = EXAMPLES_DIR / "copied-attributes.json"
 EXPECTED_ERRORS_FILE = EXAMPLES_DIR / "expected-errors.json"
 
 
@@ -65,13 +67,13 @@ def read_records(path: Path) -> tuple[list[Any], bool]:
     return [value], False
 
 
-def validate_file(path: Path, report: Report, *, fact_kinds: frozenset[str] | None) -> None:
+def validate_file(path: Path, report: Report, *, topic: FactTopic | None) -> None:
     """Validate every record of one file into the report.
 
     Args:
         path: The file.
         report: The report to add counts and findings to.
-        fact_kinds: The topic's closed list of fact kinds.
+        topic: The topic's declaration for its facts.
 
     Raises:
         UnreadableRecordsError: If the file cannot be read.
@@ -86,7 +88,7 @@ def validate_file(path: Path, report: Report, *, fact_kinds: frozenset[str] | No
                 check == "schema.unknown" and BUNDLE not in info.applies_to
             ):
                 report.examined[check] += 1
-        record, findings = validate_record(value, where=where, fact_kinds=fact_kinds)
+        record, findings = validate_record(value, where=where, topic=topic)
         report.records += 1
         report.findings += findings
         if record is not None:
@@ -121,25 +123,39 @@ def check_lines(report: Report) -> list[str]:
     return lines
 
 
-def load_fact_kinds(path: Path) -> frozenset[str]:
-    """Read a topic's closed list of fact kinds.
-
-    Args:
-        path: A JSON file holding a list of kind names.
-
-    Returns:
-        The kinds.
-
-    Raises:
-        UnreadableRecordsError: If the file is unreadable or is not a non-empty list of strings.
-    """
+def _load_names(path: Path, *, what: str, allow_empty: bool) -> frozenset[str]:
     try:
-        kinds = json.loads(path.read_text(encoding="utf-8"))
+        names = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
         raise UnreadableRecordsError(f"{path}: {exc}") from exc
-    if not isinstance(kinds, list) or not kinds or not all(isinstance(k, str) for k in kinds):
-        raise UnreadableRecordsError(f"{path}: expected a non-empty list of kind names")
-    return frozenset(kinds)
+    if (
+        not isinstance(names, list)
+        or (not names and not allow_empty)
+        or not all(isinstance(n, str) for n in names)
+    ):
+        empty = "" if allow_empty else "non-empty "
+        raise UnreadableRecordsError(f"{path}: expected a {empty}list of {what}")
+    return frozenset(names)
+
+
+def load_topic(kinds_path: Path, copied_path: Path) -> FactTopic:
+    """Read a topic's declaration for its facts from its two files.
+
+    Args:
+        kinds_path: A JSON file holding the non-empty list of kind names.
+        copied_path: A JSON file holding the list, possibly empty, of the attributes the topic
+            copies word for word from the source.
+
+    Returns:
+        The declaration.
+
+    Raises:
+        UnreadableRecordsError: If a file is unreadable or does not hold a list of strings.
+    """
+    return FactTopic(
+        kinds=_load_names(kinds_path, what="kind names", allow_empty=False),
+        copied_attributes=_load_names(copied_path, what="attribute names", allow_empty=True),
+    )
 
 
 def _files(paths: list[Path]) -> list[Path]:
@@ -152,12 +168,12 @@ def _files(paths: list[Path]) -> list[Path]:
     return found
 
 
-def run_paths(paths: list[Path], *, fact_kinds: frozenset[str] | None) -> int:
+def run_paths(paths: list[Path], *, topic: FactTopic | None) -> int:
     """Validate the given files and directories and print the check lines.
 
     Args:
         paths: Files, or directories searched for ``.json`` and ``.jsonl`` files.
-        fact_kinds: The topic's closed list of fact kinds.
+        topic: The topic's declaration for its facts.
 
     Returns:
         The exit code.
@@ -165,7 +181,7 @@ def run_paths(paths: list[Path], *, fact_kinds: frozenset[str] | None) -> int:
     report = Report()
     try:
         for path in _files(paths):
-            validate_file(path, report, fact_kinds=fact_kinds)
+            validate_file(path, report, topic=topic)
     except UnreadableRecordsError as exc:
         print(f"read FAIL {exc}")
         return 1
@@ -197,11 +213,11 @@ def selftest() -> int:
         and every plant is caught by the check ``expected-errors.json`` declares for it.
     """
     try:
-        kinds = load_fact_kinds(FACT_KINDS_FILE)
+        topic = load_topic(FACT_KINDS_FILE, COPIED_ATTRIBUTES_FILE)
         expected = json.loads(EXPECTED_ERRORS_FILE.read_text(encoding="utf-8"))
         valid = Report()
         for path in _files([EXAMPLES_DIR / "valid"]):
-            validate_file(path, valid, fact_kinds=kinds)
+            validate_file(path, valid, topic=topic)
     except (UnreadableRecordsError, OSError, json.JSONDecodeError) as exc:
         print(f"read FAIL {exc}")
         return 1
@@ -223,10 +239,10 @@ def selftest() -> int:
     print(
         f"jsonschema.valid {'FAIL' if schema_errors else 'PASS'} {len(valid.valid_records)} records"
     )
-    return 0 if _plants(expected, kinds) and ok else 1
+    return 0 if _plants(expected, topic) and ok else 1
 
 
-def _plants(expected: dict[str, dict[str, str]], kinds: frozenset[str]) -> bool:
+def _plants(expected: dict[str, dict[str, str]], topic: FactTopic) -> bool:
     planted = {p.name: p for p in _files([EXAMPLES_DIR / "planted"])}
     caught = 0
     for name in sorted(set(planted) | set(expected)):
@@ -235,7 +251,7 @@ def _plants(expected: dict[str, dict[str, str]], kinds: frozenset[str]) -> bool:
             continue
         report = Report()
         try:
-            validate_file(planted[name], report, fact_kinds=kinds)
+            validate_file(planted[name], report, topic=topic)
         except UnreadableRecordsError as exc:
             print(f"plant {name} FAIL unreadable: {exc}")
             continue
@@ -282,6 +298,11 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("paths", nargs="*", type=Path, help="record files or directories")
     parser.add_argument("--fact-kinds", type=Path, help="JSON list of the topic's fact kinds")
+    parser.add_argument(
+        "--copied-attributes",
+        type=Path,
+        help="JSON list of the attributes the topic copies word for word from the source",
+    )
     parser.add_argument("--selftest", action="store_true", help="run the planted examples")
     args = parser.parse_args(argv)
     if args.selftest:
@@ -289,12 +310,15 @@ def main(argv: list[str] | None = None) -> int:
     if not args.paths:
         print("validate.records FAIL no paths given")
         return 1
+    if (args.fact_kinds is None) != (args.copied_attributes is None):
+        print("read FAIL --fact-kinds and --copied-attributes are given together, or neither")
+        return 1
     try:
-        kinds = load_fact_kinds(args.fact_kinds) if args.fact_kinds else None
+        topic = load_topic(args.fact_kinds, args.copied_attributes) if args.fact_kinds else None
     except UnreadableRecordsError as exc:
         print(f"read FAIL {exc}")
         return 1
-    return run_paths(args.paths, fact_kinds=kinds)
+    return run_paths(args.paths, topic=topic)
 
 
 if __name__ == "__main__":

@@ -2,9 +2,18 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from typing import Any, ClassVar, Literal, Self
 
-from pydantic import Field, StrictBool, StrictInt, StrictStr, ValidationInfo, model_validator
+from pydantic import (
+    Field,
+    PrivateAttr,
+    StrictBool,
+    StrictInt,
+    StrictStr,
+    ValidationInfo,
+    model_validator,
+)
 from pydantic_core import PydanticCustomError
 
 from fsi_common.records.base import (
@@ -21,9 +30,7 @@ from fsi_common.records.base import (
     SourceRef,
     VersionTag,
 )
-
-FACT_KINDS_CONTEXT_KEY = "fsi_common.fact_kinds"
-"""Validation context key holding the topic's closed list of fact kinds."""
+from fsi_common.records.topic import FactTopic, fact_id_basis, fact_topic
 
 AttributeValue = StrictStr | StrictInt | StrictBool | None | list[StrictStr]
 """A normalised attribute value: text, a whole number, a flag, none, or a list of texts."""
@@ -125,20 +132,46 @@ class CheckResult(Part):
     detail: NonBlank = Field(description="What the check compared and what it found")
 
 
+def fact_judged_basis(data: Mapping[str, Any]) -> dict[str, Any]:
+    """Return what a person judges in a fact, given the fact as JSON.
+
+    Args:
+        data: The fact's JSON, or its fields dumped as JSON.
+
+    Returns:
+        The kind, the subject, the quote, every attribute, and each check's name and outcome in
+        name order; never the provenance (model, prompt, extractor) or a check's detail.
+
+    Raises:
+        KeyError: If the JSON lacks one of those fields.
+    """
+    checks = sorted(
+        ({"check": c["check"], "outcome": c["outcome"]} for c in data["checks"]),
+        key=lambda item: (item["check"], item["outcome"]),
+    )
+    return {
+        "kind": data["kind"],
+        "subject": data["subject"],
+        "quote": data["quote"],
+        "attributes": data["attributes"],
+        "checks": checks,
+    }
+
+
 class Fact(Record):
     """One thing a source says about one of its units, quoted word for word and checked by code.
 
     ``kind`` comes from the closed list a topic supplies; ``fsi_common`` holds no list of its own.
-    The id is derived from the kind, the subject, the quote and the attributes, so a rerun that
-    finds the same thing gives the same id whatever produced it.
+    The id is derived from the kind, the subject, the quote and the attributes the topic declares
+    as copied from the source, so a rerun that finds the same thing gives the same id whatever
+    produced it and however a model worded it, and a changed quote or deadline is another fact.
+    Validating a fact from JSON needs the topic's declaration in the context
+    (``fact_topic_context``); a fact once validated keeps it, so it can be placed in another
+    record without the context being passed again.
     """
 
     SCHEMA: ClassVar[str] = "fact.v1"
     ID_PREFIX: ClassVar[str] = "fact"
-    ID_EXCLUDES: ClassVar[frozenset[str]] = frozenset(
-        {"id", "schema_id", "status", "provenance", "checks"}
-    )
-
     schema_id: Literal["fact.v1"] = Field(default="fact.v1", alias="schema")
     id: FactId
     kind: Snake = Field(description="The kind of fact, from the topic's closed list")
@@ -154,6 +187,8 @@ class Fact(Record):
         min_length=1, description="The plain-code checks run on the fact"
     )
 
+    _topic: FactTopic | None = PrivateAttr(default=None)
+
     @model_validator(mode="before")
     @classmethod
     def _has_quote(cls, data: Any) -> Any:
@@ -165,10 +200,35 @@ class Fact(Record):
                 )
         return data
 
+    def id_basis(self, context: Mapping[str, Any] | None = None) -> dict[str, Any]:
+        """Return the kind, subject, quote and copied attributes the id is derived from.
+
+        Args:
+            context: The validation context holding the topic's declaration.
+
+        Returns:
+            The id basis as JSON.
+
+        Raises:
+            pydantic_core.PydanticCustomError: ``fact.kind``, if the context holds no declaration.
+        """
+        data = self.model_dump(mode="json", by_alias=False)
+        return fact_id_basis(data, fact_topic(context, known=self._topic).copied_attributes)
+
+    def judged_basis(self) -> dict[str, Any]:
+        """Return what a person judges in a fact.
+
+        Returns:
+            The kind, the subject, the quote, every attribute, and each check's name and outcome
+            in name order; never the provenance (model, prompt, extractor) or a check's detail.
+        """
+        return fact_judged_basis(self.model_dump(mode="json", by_alias=False))
+
     @model_validator(mode="after")
     def _kind_and_provenance(self, info: ValidationInfo) -> Self:
-        kinds = (info.context or {}).get(FACT_KINDS_CONTEXT_KEY)
-        if kinds is not None and self.kind not in kinds:
+        topic = fact_topic(info.context, known=self._topic)
+        kinds = topic.kinds
+        if self.kind not in kinds:
             raise PydanticCustomError(
                 "fact.kind",
                 "kind '{kind}' is not in the topic's list: {kinds}",
@@ -186,6 +246,7 @@ class Fact(Record):
                     "subject": f"{self.subject.source_id} {self.subject.anchor}",
                 },
             )
+        self._topic = topic
         return self
 
     @property

@@ -1,10 +1,16 @@
 {
   "schema": "disagreement.v1",
-  "id": "disagreement:7943a2e924c2ff5b",
+  "id": "disagreement:75cf5fbae753d323",
   "about": "Which provider the firm's card payments run on",
   "claims": [
-    "fact:89d225126d85fbc8",
-    "fact:5f5a2c5eaa938cdf"
+    {
+      "fact_id": "fact:2433f9aa681aa619",
+      "judged_digest": "sha256:20e03c8725ebb32a9699ea80b0ffb7b99d662c0ae9f5715313b220180696a514"
+    },
+    {
+      "fact_id": "fact:460ab6a8123c6350",
+      "judged_digest": "sha256:db61aab591b2d22b37edc19a14537ed770f54b979689a731f8d1376889427d3d"
+    }
   ],
   "found_by": {
     "name": "provider-cross-check",

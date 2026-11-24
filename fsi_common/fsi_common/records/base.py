@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+from collections.abc import Mapping
 from datetime import date
 from typing import Annotated, Any, ClassVar, Self
 
@@ -81,13 +82,23 @@ IsoDate = Annotated[
 ]
 """A calendar date written as ``YYYY-MM-DD``."""
 
-MACHINE_WORDS = (
+MACHINE_IDENTITIES = (
     "agent",
-    "anthropic",
+    "ai",
     "assistant",
     "automated",
     "automation",
     "bot",
+    "chatbot",
+    "llm",
+    "machine",
+    "model",
+    "system",
+)
+"""Values that, standing alone as a name or a role, name a program or a service and no person."""
+
+MODEL_PRODUCTS = (
+    "anthropic",
     "chatgpt",
     "claude",
     "copilot",
@@ -96,27 +107,49 @@ MACHINE_WORDS = (
     "gpt",
     "haiku",
     "llama",
-    "llm",
-    "machine",
     "mistral",
-    "model",
     "mythos",
     "openai",
     "opus",
     "sonnet",
-    "system",
 )
-"""Words that mark a reviewer's name or role as a model, a program or a service."""
+"""Model products and their makers; alone, or followed only by model words and versions, a value
+naming one is a model (``claude``, ``GPT``, ``claude-sonnet-5-5``, ``Claude Opus 5.5``)."""
 
-MACHINE_PATTERN = re.compile(r"\b(" + "|".join(MACHINE_WORDS) + r")\b", re.IGNORECASE)
-
-
-def _case_free(word: str) -> str:
-    return "".join(f"[{c.lower()}{c.upper()}]" if c.isalpha() else re.escape(c) for c in word)
+MODEL_WORDS = ("code", "flash", "instant", "mini", "nano", "pro", "turbo", "ultra")
+"""Words that follow a product's name in a model's name, as in ``Claude Code`` or ``GPT mini``."""
 
 
-MACHINE_SCHEMA_PATTERN = r"\b(?:" + "|".join(_case_free(w) for w in MACHINE_WORDS) + r")\b"
-"""The same words for JSON Schema, whose regular expressions have no case-insensitive flag."""
+def _words(words: tuple[str, ...], *, case_free: bool) -> str:
+    if not case_free:
+        return "|".join(words)
+    return "|".join(
+        "".join(f"[{c.lower()}{c.upper()}]" if c.isalpha() else re.escape(c) for c in word)
+        for word in words
+    )
+
+
+def _machine_pattern(*, case_free: bool) -> str:
+    letters = "a-zA-Z" if case_free else "a-z"
+    version = rf"\d[{letters}0-9.]*"
+    token = rf"(?:{_words(MODEL_PRODUCTS + MODEL_WORDS, case_free=case_free)}|{version})"
+    model = (
+        rf"(?:{_words(MODEL_PRODUCTS, case_free=case_free)})(?:{version})?"
+        rf"(?:[\s_:/-]+{token})*(?:\[1{'[mM]' if case_free else 'm'}\])?"
+    )
+    return rf"^\s*(?:(?:{_words(MACHINE_IDENTITIES, case_free=case_free)})|{model})\s*$"
+
+
+MACHINE_PATTERN = re.compile(_machine_pattern(case_free=False), re.IGNORECASE)
+"""Matches a whole value, trimmed and in any case, that is a machine identity or a model's name.
+
+A value that only contains such a word is a person's ("Claude Dupont", "Head of Model Risk",
+"Compliance Assistant", "Transfer Agent", "AI and Automation Lead"). The control that keeps the
+machine from deciding is structural: only the reviewer's application writes a decision.
+"""
+
+MACHINE_SCHEMA_PATTERN = _machine_pattern(case_free=True)
+"""The same pattern for JSON Schema, whose regular expressions have no case-insensitive flag."""
 
 _PERSON_TEXT_SCHEMA = {"minLength": 1, "pattern": r"\S", "not": {"pattern": MACHINE_SCHEMA_PATTERN}}
 
@@ -145,13 +178,12 @@ class Person(Part):
             raise PydanticCustomError(
                 "person.empty", "the {field} of the person is empty", {"field": info.field_name}
             )
-        found = MACHINE_PATTERN.search(value)
-        if found:
+        if MACHINE_PATTERN.fullmatch(value):
             raise PydanticCustomError(
                 "person.machine",
-                "the {field} '{value}' names a model or a program ('{word}'); "
+                "the {field} '{value}' is a model, a program or a service; "
                 "only a person may decide",
-                {"field": info.field_name, "value": value, "word": found.group(0)},
+                {"field": info.field_name, "value": value.strip()},
             )
         return value
 
@@ -176,27 +208,45 @@ class Addressed(Part):
     ID_PREFIX: ClassVar[str] = ""
     ID_EXCLUDES: ClassVar[frozenset[str]] = frozenset({"id", "schema_id"})
 
-    def id_basis(self) -> dict[str, Any]:
+    def id_basis(self, context: Mapping[str, Any] | None = None) -> dict[str, Any]:
         """Return the fields the id is derived from, as JSON.
+
+        Args:
+            context: The validation context; a family whose id depends on a topic's declaration
+                (facts) reads it from here.
 
         Returns:
             The record as JSON without its id, its schema name and any field the family excludes.
         """
         return self.model_dump(mode="json", by_alias=False, exclude=set(self.ID_EXCLUDES))
 
-    def expected_id(self) -> str:
+    def judged_basis(self) -> dict[str, Any]:
+        """Return what a person judges when they decide on this record, as JSON.
+
+        A decision keeps this beside the digest of the whole record it was shown, so a rerun that
+        changes only what was not judged (a model's name, a check's wording) carries the decision.
+
+        Returns:
+            The fields the id is derived from; a fact returns its own judged fields.
+        """
+        return self.id_basis()
+
+    def expected_id(self, context: Mapping[str, Any] | None = None) -> str:
         """Return the id this content must carry.
+
+        Args:
+            context: The validation context, passed on to ``id_basis``.
 
         Returns:
             The content-derived id.
         """
-        return content_id(self.ID_PREFIX, self.id_basis())
+        return content_id(self.ID_PREFIX, self.id_basis(context))
 
     @model_validator(mode="after")
     def _id_recomputes(self, info: ValidationInfo) -> Self:
         if info.context and info.context.get(DRAFT_CONTEXT_KEY):
             return self
-        expected = self.expected_id()
+        expected = self.expected_id(info.context)
         given = getattr(self, "id", None)
         if given != expected:
             raise PydanticCustomError(
@@ -225,7 +275,7 @@ class Addressed(Part):
         placeholder = f"{cls.ID_PREFIX}:{'0' * ID_HEX_LENGTH}"
         draft = cls.model_validate({**fields, "id": placeholder}, context=draft_context)
         data = draft.to_json()
-        data["id"] = draft.expected_id()
+        data["id"] = draft.expected_id(context)
         return cls.model_validate(data, context=context)
 
     def to_json(self) -> dict[str, Any]:

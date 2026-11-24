@@ -279,7 +279,7 @@
   "$id": "fact.v1.schema.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
-  "description": "One thing a source says about one of its units, quoted word for word and checked by code.\n\n``kind`` comes from the closed list a topic supplies; ``fsi_common`` holds no list of its own.\nThe id is derived from the kind, the subject, the quote and the attributes, so a rerun that\nfinds the same thing gives the same id whatever produced it.",
+  "description": "One thing a source says about one of its units, quoted word for word and checked by code.\n\n``kind`` comes from the closed list a topic supplies; ``fsi_common`` holds no list of its own.\nThe id is derived from the kind, the subject, the quote and the attributes the topic declares\nas copied from the source, so a rerun that finds the same thing gives the same id whatever\nproduced it and however a model worded it, and a changed quote or deadline is another fact.\nValidating a fact from JSON needs the topic's declaration in the context\n(``fact_topic_context``); a fact once validated keeps it, so it can be placed in another\nrecord without the context being passed again.",
   "properties": {
     "attributes": {
       "description": "The fact's normalised attributes, for example a requirement and a deadline as written",

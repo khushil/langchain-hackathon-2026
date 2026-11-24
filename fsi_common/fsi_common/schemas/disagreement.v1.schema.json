@@ -1,5 +1,29 @@
 {
   "$defs": {
+    "ClaimRef": {
+      "additionalProperties": false,
+      "description": "One of the differing facts: its id, and the digest of what a person would judge in it.\n\nThe judged digest tells apart two contents written under one fact id (a rerun that worded a\nrequirement differently), and stays the same when only the model or a check's wording moves.",
+      "properties": {
+        "fact_id": {
+          "description": "The id of the fact",
+          "pattern": "^fact:[0-9a-f]{16}$",
+          "title": "Fact Id",
+          "type": "string"
+        },
+        "judged_digest": {
+          "description": "The digest of the fact's judged fields",
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "title": "Judged Digest",
+          "type": "string"
+        }
+      },
+      "required": [
+        "fact_id",
+        "judged_digest"
+      ],
+      "title": "ClaimRef",
+      "type": "object"
+    },
     "Extractor": {
       "additionalProperties": false,
       "description": "The named, versioned code or step that produced a record.",
@@ -29,7 +53,7 @@
   "$id": "disagreement.v1.schema.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
-  "description": "Two or more facts that differ about the same thing, kept side by side.\n\nThe record names no winner and has no field that could: a person reconciles it by a decision,\nand the facts stay as they are.",
+  "description": "Two or more facts that differ about the same thing, kept side by side.\n\nThe facts may have different ids, or one id with two contents told apart by their judged\ndigests. The record names no winner and has no field that could: a person reconciles it by a\ndecision, and the facts stay as they are.",
   "properties": {
     "about": {
       "description": "What the facts disagree on, in plain words",
@@ -41,8 +65,7 @@
     "claims": {
       "description": "The differing facts, two or more",
       "items": {
-        "pattern": "^fact:[0-9a-f]{16}$",
-        "type": "string"
+        "$ref": "#/$defs/ClaimRef"
       },
       "title": "Claims",
       "type": "array"

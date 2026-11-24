@@ -35,6 +35,14 @@
     "check": "decision.digest-stale",
     "reason": "a fact changed after the reviewer decided on it"
   },
+  "bundle-disagreement-claim-not-held.json": {
+    "check": "ref.resolves",
+    "reason": "a disagreement naming a fact by a judged digest no fact in the bundle has"
+  },
+  "bundle-fact-variant-without-disagreement.json": {
+    "check": "id.duplicate",
+    "reason": "two contents of one fact with no disagreement keeping them side by side"
+  },
   "bundle-id-duplicate.json": {
     "check": "id.duplicate",
     "reason": "two different sources under one id"
@@ -59,6 +67,10 @@
     "check": "decision.outcome",
     "reason": "an answer given to a fact, which is not a question"
   },
+  "decision-claude-alone-reviewer.json": {
+    "check": "person.machine",
+    "reason": "a decision whose reviewer's whole name is a model's"
+  },
   "decision-date-not-a-date.json": {
     "check": "schema.date",
     "reason": "a date that is not in the calendar"
@@ -66,6 +78,10 @@
   "decision-empty-reviewer.json": {
     "check": "person.empty",
     "reason": "a decision with an empty reviewer"
+  },
+  "decision-judged-digest-does-not-recompute.json": {
+    "check": "decision.judged-digest",
+    "reason": "a decision whose judged digest is not that of what it says was judged"
   },
   "decision-model-reviewer.json": {
     "check": "person.machine",
@@ -86,6 +102,10 @@
   "fact-accepted-by-machine.json": {
     "check": "schema.extra",
     "reason": "a fact carrying an accepted state, which no record type allows"
+  },
+  "fact-deadline-changed-after-id.json": {
+    "check": "id.recompute",
+    "reason": "the deadline as written was changed after the id was derived"
   },
   "fact-documented-with-rule.json": {
     "check": "status.extra",

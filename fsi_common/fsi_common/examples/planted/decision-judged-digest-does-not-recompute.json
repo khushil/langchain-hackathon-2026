@@ -1,0 +1,39 @@
+{
+  "schema": "decision.v1",
+  "id": "decision:aefc9f9fd094574d",
+  "subject_id": "fact:7d0607968a1b5c72",
+  "seen_digest": "sha256:3c0ee96904534270bade856c5c3077eaf98de4709e8027d704149b6456fe7ddb",
+  "judged": {
+    "kind": "obligation",
+    "subject": {
+      "source_id": "source:c9690d260c586cbb",
+      "anchor": "para:7.1"
+    },
+    "quote": "Firms must submit an initial notification to the FSOA within 4 hours of classifying an incident as a major incident",
+    "attributes": {
+      "requirement": "Notify the regulator of a major incident",
+      "actor": "firm",
+      "deadline": "within 4 hours of classifying an incident as a major incident, and in any case no later than 24 hours after the incident is first detected"
+    },
+    "checks": [
+      {
+        "check": "deadline-verbatim.v1",
+        "outcome": "pass"
+      },
+      {
+        "check": "quote-verbatim.v1",
+        "outcome": "pass"
+      }
+    ]
+  },
+  "judged_digest": "sha256:e74f7968cbab494d94155836bfd75832ff6596340737ea6c4b043c225e9273ff",
+  "outcome": "accept",
+  "amendment": null,
+  "answer": null,
+  "reason": "The quote and the deadline match paragraph 7.1.",
+  "reviewer": {
+    "name": "Dana Whitfield",
+    "role": "Head of Compliance"
+  },
+  "date": "2026-11-25"
+}

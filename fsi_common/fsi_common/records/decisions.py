@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
-from typing import ClassVar, Literal, Self
+from typing import Any, ClassVar, Literal, Self
 
-from pydantic import Field, model_validator
+from pydantic import Field, JsonValue, model_validator
 from pydantic_core import PydanticCustomError
 
+from fsi_common.ids import digest_json
 from fsi_common.records.base import (
+    Addressed,
     AnyRecordId,
     BriefId,
     DecisionId,
@@ -27,7 +29,13 @@ class Decision(Record):
 
     ``accept``, ``amend`` and ``reject`` apply to a fact, a statement or a disagreement;
     ``answer`` applies to an open question. The reviewer is always a named person, and the
-    schema refuses an empty name and the name of a model or a program.
+    schema refuses an empty name and a value that is a model or a program.
+
+    Two digests are kept. ``seen_digest`` is of the whole record as it was on the screen, for
+    the audit. ``judged_digest`` is of ``judged``, the part the person judged (for a fact: kind,
+    subject, quote, attributes, and each check's name and outcome), so a rerun that finds the
+    same fact with another model, prompt, extractor or check wording carries the decision, and a
+    rerun that changes what was judged asks again with the difference named.
     """
 
     SCHEMA: ClassVar[str] = "decision.v1"
@@ -36,7 +44,18 @@ class Decision(Record):
     schema_id: Literal["decision.v1"] = Field(default="decision.v1", alias="schema")
     id: DecisionId
     subject_id: AnyRecordId = Field(description="The id of the record decided on")
-    seen_digest: Digest = Field(description="The digest of the record as the person saw it")
+    seen_digest: Digest = Field(
+        description="The digest of the whole record as the person saw it, kept for the audit"
+    )
+    judged: dict[str, JsonValue] = Field(
+        description="What the person judged, as JSON: for a fact its kind, subject, quote, "
+        "attributes and each check's name and outcome, with no model, prompt, extractor or "
+        "check detail"
+    )
+    judged_digest: Digest = Field(
+        description="The digest of what the person judged; the same fact id with this digest on "
+        "a rerun carries the decision"
+    )
     outcome: Literal["accept", "amend", "reject", "answer"] = Field(
         description="What the person decided"
     )
@@ -49,6 +68,78 @@ class Decision(Record):
     reason: NonBlank = Field(description="Why, in the person's own words")
     reviewer: Person = Field(description="The person who decided")
     date: IsoDate = Field(description="The date of the decision")
+
+    @classmethod
+    def build(cls, *, context: dict[str, Any] | None = None, **fields: Any) -> Self:
+        """Build a decision, deriving its judged digest from ``judged`` and its id.
+
+        Args:
+            context: Validation context passed on to the checks.
+            **fields: Every field except ``id`` and ``judged_digest``.
+
+        Returns:
+            The validated decision.
+
+        Raises:
+            pydantic.ValidationError: If any field breaks a rule of the record.
+        """
+        judged = fields.get("judged")
+        if isinstance(judged, dict) and "judged_digest" not in fields:
+            fields["judged_digest"] = digest_json(judged)
+        return super().build(context=context, **fields)
+
+    @classmethod
+    def on(
+        cls,
+        subject: Addressed,
+        *,
+        outcome: str,
+        reason: str,
+        reviewer: Any,
+        date: str,
+        amendment: str | None = None,
+        answer: str | None = None,
+    ) -> Self:
+        """Build a person's decision on a record as they were shown it.
+
+        Args:
+            subject: The fact, statement, disagreement or open question decided on.
+            outcome: ``accept``, ``amend``, ``reject`` or ``answer``.
+            reason: Why, in the person's own words.
+            reviewer: The person, as a ``Person`` or its fields.
+            date: The date of the decision, ``YYYY-MM-DD``.
+            amendment: For amend, the change in the person's words.
+            answer: For answer, the answer in the person's words.
+
+        Returns:
+            The decision, with both digests taken from the subject.
+
+        Raises:
+            pydantic.ValidationError: If any field breaks a rule of the record.
+        """
+        return cls.build(
+            subject_id=subject.id,
+            seen_digest=digest_json(subject.to_json()),
+            judged=subject.judged_basis(),
+            outcome=outcome,
+            amendment=amendment,
+            answer=answer,
+            reason=reason,
+            reviewer=reviewer,
+            date=date,
+        )
+
+    @model_validator(mode="after")
+    def _judged_digest_recomputes(self) -> Self:
+        expected = digest_json(self.judged)
+        if self.judged_digest != expected:
+            raise PydanticCustomError(
+                "decision.judged-digest",
+                "the judged digest {given} does not recompute from what was judged, which gives "
+                "{expected}",
+                {"given": self.judged_digest, "expected": expected},
+            )
+        return self
 
     @model_validator(mode="after")
     def _outcome_fits(self) -> Self:

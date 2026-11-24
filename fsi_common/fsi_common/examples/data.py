@@ -20,8 +20,8 @@ from fsi_common.records import (
     SourceUnit,
     Statement,
     UnitAccounting,
-    fact_kinds_context,
-    record_digest,
+    fact_topic_context,
+    judged_digest,
 )
 
 FACT_KINDS = (
@@ -38,7 +38,10 @@ FACT_KINDS = (
 )
 """The closed list the examples are validated with (topic 03's list)."""
 
-KINDS = fact_kinds_context(FACT_KINDS)
+COPIED_ATTRIBUTES = ("deadline",)
+"""The attributes copied word for word from the source, which enter a fact's id (topic 03's)."""
+
+FACT_CONTEXT = fact_topic_context(kinds=FACT_KINDS, copied_attributes=COPIED_ATTRIBUTES)
 STARTER = "github.com/langchain-samples/fsi-hackathon-london-2026"
 TERMS = f"Fictional sample data from the FSI hackathon starter ({STARTER}), carried with credit"
 REVIEWER = {"name": "Dana Whitfield", "role": "Head of Compliance"}
@@ -86,8 +89,11 @@ class Examples:
     fact_notes: Fact
     fact_service: Fact
     fact_small_firm: Fact
+    fact_7_1_rerun: Fact
+    fact_7_1_variant: Fact
     question: OpenQuestion
     disagreement: Disagreement
+    variant_disagreement: Disagreement
     accept_7_1: Decision
     answer: Decision
     brief: Brief
@@ -106,15 +112,17 @@ def _unit(source: Source, anchor: str, text: str) -> SourceUnit:
     return SourceUnit.build(source_id=source.id, anchor=anchor, text_digest=digest_text(text))
 
 
-def _provenance(source: Source, anchor: str, *, by_model: bool) -> dict[str, object]:
+def _provenance(
+    source: Source, anchor: str, *, by_model: bool, version: str = "0.1.0", prompt: str = "1"
+) -> dict[str, object]:
     if by_model:
-        extractor = {"name": "section-reader", "version": "0.1.0"}
+        extractor = {"name": "section-reader", "version": version}
         return {
             "source_id": source.id,
             "anchor": anchor,
             "extractor": extractor,
             "model": "claude-sonnet-5-5",
-            "prompt_version": "1",
+            "prompt_version": prompt,
             "as_of": source.digest,
         }
     extractor = {"name": "table-reader", "version": "0.1.0"}
@@ -126,28 +134,28 @@ def _provenance(source: Source, anchor: str, *, by_model: bool) -> dict[str, obj
     }
 
 
-def _checks(*names: str) -> list[dict[str, str]]:
-    return [
-        {"check": name, "outcome": "pass", "detail": "found word for word in the unit's text"}
-        for name in names
-    ]
+def _checks(*names: str, detail: str = "found word for word in the unit's text") -> list[dict]:
+    return [{"check": name, "outcome": "pass", "detail": detail} for name in names]
 
 
 def _fact(
     source: Source, anchor: str, kind: str, quote: str, attributes: dict, **extra: object
 ) -> Fact:
+    by_model = kind not in {"firm_attribute", "provider_attribute"}
     return Fact.build(
-        context=KINDS,
+        context=FACT_CONTEXT,
         kind=kind,
         subject={"source_id": source.id, "anchor": anchor},
         quote=quote,
         attributes=attributes,
         status=extra.get("status", {"status": "documented"}),
-        provenance=_provenance(
-            source, anchor, by_model=kind not in {"firm_attribute", "provider_attribute"}
-        ),
+        provenance=extra.get("provenance", _provenance(source, anchor, by_model=by_model)),
         checks=extra.get("checks", _checks("quote-verbatim.v1")),
     )
+
+
+def _claim(fact: Fact) -> dict[str, str]:
+    return {"fact_id": fact.id, "judged_digest": judged_digest(fact)}
 
 
 def paragraph_anchors() -> list[str]:
@@ -192,17 +200,40 @@ def build_examples() -> Examples:
         f"{data}/third_party_providers.jsonl",
     )
     deadline_7_1 = PARA_7_1.split("FSOA ", 1)[1].removesuffix(".")
+    quote_7_1 = (
+        "Firms must submit an initial notification to the FSOA within 4 hours of classifying an "
+        "incident as a major incident"
+    )
+    attributes_7_1 = {
+        "requirement": "Notify the regulator of a major incident",
+        "actor": "firm",
+        "deadline": deadline_7_1,
+    }
     fact_7_1 = _fact(
         document,
         "para:7.1",
         "obligation",
-        "Firms must submit an initial notification to the FSOA within 4 hours of classifying an "
-        "incident as a major incident",
-        {
-            "requirement": "Notify the regulator of a major incident",
-            "actor": "firm",
-            "deadline": deadline_7_1,
-        },
+        quote_7_1,
+        attributes_7_1,
+        checks=_checks("quote-verbatim.v1", "deadline-verbatim.v1"),
+    )
+    fact_7_1_rerun = _fact(
+        document,
+        "para:7.1",
+        "obligation",
+        quote_7_1,
+        attributes_7_1,
+        provenance=_provenance(document, "para:7.1", by_model=True, version="0.2.0", prompt="2"),
+        checks=_checks(
+            "quote-verbatim.v1", "deadline-verbatim.v1", detail="matched against paragraph 7.1"
+        ),
+    )
+    fact_7_1_variant = _fact(
+        document,
+        "para:7.1",
+        "obligation",
+        quote_7_1,
+        attributes_7_1 | {"requirement": "Tell the FSOA about a major incident"},
         checks=_checks("quote-verbatim.v1", "deadline-verbatim.v1"),
     )
     fact_9_3 = _fact(
@@ -265,21 +296,27 @@ def build_examples() -> Examples:
     )
     disagreement = Disagreement.build(
         about="Which provider the firm's card payments run on",
-        claims=[fact_notes.id, fact_service.id],
+        claims=[_claim(fact_notes), _claim(fact_service)],
         found_by={"name": "provider-cross-check", "version": "0.1.0"},
         status="open",
     )
-    accept_7_1 = Decision.build(
-        subject_id=fact_7_1.id,
-        seen_digest=record_digest(fact_7_1),
+    variant_disagreement = Disagreement.build(
+        about="Two readings of paragraph 7.1 word the requirement differently",
+        claims=sorted(
+            (_claim(fact_7_1), _claim(fact_7_1_variant)), key=lambda c: c["judged_digest"]
+        ),
+        found_by={"name": "fact-variants", "version": "0.1.0"},
+        status="open",
+    )
+    accept_7_1 = Decision.on(
+        fact_7_1,
         outcome="accept",
         reason="The quote and the deadline match paragraph 7.1.",
         reviewer=REVIEWER,
         date=REVIEW_DATE,
     )
-    answer = Decision.build(
-        subject_id=question.id,
-        seen_digest=record_digest(question),
+    answer = Decision.on(
+        question,
         outcome="answer",
         answer="Both contracts were made in 2024, before 1 January 2027; neither renews before "
         "its end date.",
@@ -351,8 +388,11 @@ def build_examples() -> Examples:
         fact_notes=fact_notes,
         fact_service=fact_service,
         fact_small_firm=fact_small_firm,
+        fact_7_1_rerun=fact_7_1_rerun,
+        fact_7_1_variant=fact_7_1_variant,
         question=question,
         disagreement=disagreement,
+        variant_disagreement=variant_disagreement,
         accept_7_1=accept_7_1,
         answer=answer,
         brief=brief,
