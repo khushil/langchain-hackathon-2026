@@ -57,3 +57,22 @@ class ReplayMissError(ModelError):
             f"Replay has {reason} for request {request_hash}. Record it with a live call "
             "in mode 'record' first; replay never invents an answer."
         )
+
+
+class RecordingShapeError(ModelError):
+    """A recording departs from the allow-list, so it is neither written nor read."""
+
+    def __init__(self, name: str, keys: list[str]) -> None:
+        """Build the error.
+
+        Args:
+            name: The recording's file name or request hash.
+            keys: The path of every field outside the allow-list or in another shape.
+        """
+        self.keys = keys
+        super().__init__(
+            f"The recording {name} holds fields a recording never keeps, or keeps in another "
+            f"shape: {', '.join(keys)}. "
+            "A recording keeps the request, the reply's content, tool calls, reported model and "
+            "token counts, and the run's start evidence, time and duration; nothing else."
+        )

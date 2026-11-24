@@ -14,6 +14,7 @@ from fsi_common.model.errors import (
     MalformedResponseError,
     ModelConfigError,
     ModelError,
+    RecordingShapeError,
     ReplayMissError,
 )
 from fsi_common.model.gate import PROCESS_CAP, process_gate
@@ -28,6 +29,7 @@ __all__ = [
     "MalformedResponseError",
     "ModelConfigError",
     "ModelError",
+    "RecordingShapeError",
     "ReplayMissError",
     "call_records",
     "make_chat_model",

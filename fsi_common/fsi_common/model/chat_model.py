@@ -40,6 +40,8 @@ from fsi_common.model.headless import (
     resolve_claude,
 )
 from fsi_common.model.recording import (
+    INIT_FIELDS,
+    TOKEN_FIELDS,
     Recording,
     RecordingStore,
     canonical_request,
@@ -89,6 +91,11 @@ def _empty_workdir() -> str:
             atexit.register(shutil.rmtree, path, True)
             _WORKDIR.append(path)
         return _WORKDIR[0]
+
+
+def _token_counts(raw: dict[str, Any] | None) -> dict[str, int]:
+    """Keep only the token counts of a reply's usage; the rest describes the account."""
+    return {k: int(raw[k]) for k in TOKEN_FIELDS if raw and raw.get(k) is not None}
 
 
 def _usage(raw: dict[str, Any] | None) -> UsageMetadata | None:
@@ -218,8 +225,7 @@ class ChatClaudeHeadless(BaseChatModel):
         response = {
             "content": content,
             "tool_calls": [{"name": name, "args": args} for name, args in calls],
-            "usage": result.get("usage"),
-            "total_cost_usd": result.get("total_cost_usd"),
+            "usage": _token_counts(result.get("usage")),
             "model_reported": parsed.init.get("model"),
         }
         duration = time.monotonic() - started[1]
@@ -232,22 +238,7 @@ class ChatClaudeHeadless(BaseChatModel):
                     meta={
                         "recorded_at": started[0],
                         "duration_s": round(duration, 3),
-                        "num_turns": result.get("num_turns"),
-                        "init": {
-                            k: parsed.init.get(k)
-                            for k in (
-                                "model",
-                                "tools",
-                                "mcp_servers",
-                                "plugins",
-                                "slash_commands",
-                                "skills",
-                                "agents",
-                                "apiKeySource",
-                                "claude_code_version",
-                            )
-                        },
-                        "rate_limit": parsed.rate_limit,
+                        "init": {k: parsed.init.get(k) for k in INIT_FIELDS},
                     },
                 )
             )
@@ -272,7 +263,6 @@ class ChatClaudeHeadless(BaseChatModel):
                 "mode": mode,
                 "request_hash": key,
                 "model_name": response.get("model_reported") or self.model,
-                "total_cost_usd": response.get("total_cost_usd"),
             },
         )
         return ChatResult(generations=[ChatGeneration(message=message)])

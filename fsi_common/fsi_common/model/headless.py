@@ -95,7 +95,6 @@ class HeadlessResult:
 
     init: dict[str, Any]
     result: dict[str, Any]
-    rate_limit: dict[str, Any] | None
 
 
 def build_argv(
@@ -170,7 +169,6 @@ def parse_stream(stdout: str, *, exit_code: int, stderr: str) -> HeadlessResult:
         )
     init: dict[str, Any] | None = None
     result: dict[str, Any] | None = None
-    rate_limit: dict[str, Any] | None = None
     for number, line in enumerate(stdout.splitlines(), start=1):
         if not line.strip():
             continue
@@ -183,8 +181,6 @@ def parse_stream(stdout: str, *, exit_code: int, stderr: str) -> HeadlessResult:
             init = event
         elif kind == "result":
             result = event
-        elif kind == "rate_limit_event":
-            rate_limit = event.get("rate_limit_info")
     if result is None:
         raise MalformedResponseError("The output has no result event.")
     if init is None:
@@ -195,7 +191,7 @@ def parse_stream(stdout: str, *, exit_code: int, stderr: str) -> HeadlessResult:
             exit_code=exit_code,
             stderr=stderr,
         )
-    return HeadlessResult(init=init, result=result, rate_limit=rate_limit)
+    return HeadlessResult(init=init, result=result)
 
 
 def _model_matches(reported: str, expected: str) -> bool:

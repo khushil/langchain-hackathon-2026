@@ -268,3 +268,11 @@ def test_the_schema_tool_is_allowed_only_with_a_schema() -> None:
             expected_model="sonnet",
             has_schema=True,
         )
+
+
+def test_the_parser_keeps_no_account_state() -> None:
+    from dataclasses import fields
+
+    from fsi_common.model.headless import HeadlessResult
+
+    assert [f.name for f in fields(HeadlessResult)] == ["init", "result"]

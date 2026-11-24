@@ -11,12 +11,118 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
 
-from fsi_common.model.errors import ReplayMissError
+from fsi_common.model.errors import RecordingShapeError, ReplayMissError
 
 FORMAT_VERSION = 2
 """Bumped whenever the prompt the adapter renders changes, so old recordings stop matching."""
 
 _HEX64 = re.compile(r"^[0-9a-f]{64}$")
+
+INIT_FIELDS = (
+    "model",
+    "tools",
+    "mcp_servers",
+    "plugins",
+    "slash_commands",
+    "skills",
+    "agents",
+    "apiKeySource",
+    "claude_code_version",
+)
+"""The fields of the run's start event kept as evidence that the call ran isolated."""
+
+TOKEN_FIELDS = (
+    "input_tokens",
+    "output_tokens",
+    "cache_creation_input_tokens",
+    "cache_read_input_tokens",
+)
+"""The token counts kept from a reply's usage."""
+
+RECORDING_SHAPE: dict[str, Any] = {
+    "request_sha256": "str",
+    "request": {
+        "format": "int",
+        "model": "str",
+        "effort": "str|null",
+        "system": "str",
+        "messages": "any",
+        "schema": "any",
+    },
+    "response": {
+        "content": "str",
+        "tool_calls": [{"name": "str", "args": "any"}],
+        "model_reported": "str|null",
+        "usage": dict.fromkeys(TOKEN_FIELDS, "int"),
+    },
+    "meta": {
+        "recorded_at": "str",
+        "duration_s": "number",
+        "init": {
+            "model": "str|null",
+            "tools": ["str"],
+            "mcp_servers": ["str"],
+            "plugins": ["str"],
+            "slash_commands": ["str"],
+            "skills": ["str"],
+            "agents": ["str"],
+            "apiKeySource": "str|null",
+            "claude_code_version": "str|null",
+        },
+    },
+}
+"""Every field a recording may hold, and its shape; JSON-ready, so a check outside the product
+can keep a copy and compare it.
+
+A dict admits only its own keys, each optional; a one-item list is a list whose every item has
+that shape; a string names a value's type: "str", "int", "number", "str|null", or "any" for the
+free content of the model's messages, schemas and tool-call arguments. A recording never keeps
+the account's rate-limit state, its usage windows, plan or overage settings, or a call's cost:
+those describe the signed-in account, not the call.
+"""
+
+_TYPES: dict[str, Any] = {
+    "str": lambda v: isinstance(v, str),
+    "int": lambda v: isinstance(v, int) and not isinstance(v, bool),
+    "number": lambda v: isinstance(v, int | float) and not isinstance(v, bool),
+    "str|null": lambda v: v is None or isinstance(v, str),
+    "any": lambda v: True,
+}
+
+
+def recording_problems(data: Any, *, shape: Any = RECORDING_SHAPE, path: str = "") -> list[str]:
+    """Return every place `data` departs from the recording's shape, sorted.
+
+    Args:
+        data: A recording as read from disk, or a part of one.
+        shape: The part of `RECORDING_SHAPE` that applies to `data`.
+        path: Where `data` sits in the recording, for example `response.tool_calls[0]`.
+
+    Returns:
+        The path of each field outside the allow-list (`meta.rate_limit`), and of each value in
+        another shape, followed by what was expected (`response.usage (expected an object)`);
+        empty when the recording is clean.
+    """
+    where = path or "the recording"
+    if isinstance(shape, str):
+        return [] if _TYPES[shape](data) else [f"{where} (expected {shape})"]
+    if isinstance(shape, list):
+        if not isinstance(data, list):
+            return [f"{where} (expected a list)"]
+        found: list[str] = []
+        for index, item in enumerate(data):
+            found.extend(recording_problems(item, shape=shape[0], path=f"{path}[{index}]"))
+        return sorted(found)
+    if not isinstance(data, dict):
+        return [f"{where} (expected an object)"]
+    found = []
+    for key, value in data.items():
+        inner = f"{path}.{key}" if path else str(key)
+        if key not in shape:
+            found.append(inner)
+        else:
+            found.extend(recording_problems(value, shape=shape[key], path=inner))
+    return sorted(found)
 
 
 def _canonical_json(value: Any) -> str:
@@ -98,8 +204,16 @@ class RecordingStore:
         return self.root / f"{key}.json"
 
     def save(self, recording: Recording) -> Path:
-        """Write a recording atomically and return its path."""
+        """Write a recording atomically and return its path.
+
+        Raises:
+            RecordingShapeError: If the recording holds a field outside the allow-list, or a value
+                in another shape.
+        """
         path = self._path(recording.request_sha256)
+        extra = recording_problems(asdict(recording))
+        if extra:
+            raise RecordingShapeError(recording.request_sha256, extra)
         self.root.mkdir(parents=True, exist_ok=True)
         text = json.dumps(asdict(recording), indent=1, sort_keys=True, ensure_ascii=False)
         handle, temp = tempfile.mkstemp(dir=self.root, prefix=".tmp-", suffix=".json")
@@ -117,6 +231,8 @@ class RecordingStore:
 
         Raises:
             ReplayMissError: If no recording exists, or the file holds another request.
+            RecordingShapeError: If the file holds a field outside the allow-list, or a value in
+                another shape.
             ValueError: If the key is not a SHA-256 hex digest.
         """
         path = self._path(key)
@@ -125,4 +241,7 @@ class RecordingStore:
         data = json.loads(path.read_text(encoding="utf-8"))
         if data.get("request_sha256") != key or request_hash(data.get("request", {})) != key:
             raise ReplayMissError(key, reason="a file that holds a different request")
+        extra = recording_problems(data)
+        if extra:
+            raise RecordingShapeError(path.name, extra)
         return Recording(**data)

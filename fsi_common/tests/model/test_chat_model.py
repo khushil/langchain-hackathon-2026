@@ -13,6 +13,7 @@ from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, Tool
 from langchain_core.tools import tool
 from model_test_support import (
     ISOLATED_INIT,
+    USAGE,
     FakeCall,
     FakeRunner,
     envelope_reply,
@@ -187,6 +188,47 @@ def test_record_then_replay_reproduces_the_call_without_the_runner(
     assert recorded.response_metadata["mode"] == "record"
     stored = json.loads(files[0].read_text(encoding="utf-8"))
     assert stored["meta"]["init"]["tools"] == ["StructuredOutput"]
+
+
+def test_a_recording_keeps_no_account_state_or_cost(tmp_path: Path, fake_runner) -> None:
+    usage = {
+        **USAGE,
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "fallback_credit": None,
+        "speed": "standard",
+        "cache_creation": {"ephemeral_1h_input_tokens": 100},
+        "server_tool_use": {"web_search_requests": 0},
+        "iterations": [{"input_tokens": 10}],
+    }
+    limit = {"type": "rate_limit_event", "rate_limit_info": {"utilization": 0.46}}
+    lines = make_stream(result="Hi", usage=usage).splitlines()
+    stream = "\n".join([lines[0], json.dumps(limit), *lines[1:]]) + "\n"
+    runner = fake_runner(lambda call: RawRun(0, stream, ""))
+    recorded = _model(tmp_path, runner, mode="record").invoke("Hi")
+    (path,) = (tmp_path / "recordings").glob("*.json")
+    stored = json.loads(path.read_text(encoding="utf-8"))
+    assert sorted(stored) == ["meta", "request", "request_sha256", "response"]
+    assert sorted(stored["meta"]) == ["duration_s", "init", "recorded_at"]
+    assert sorted(stored["meta"]["init"]) == [
+        "agents",
+        "apiKeySource",
+        "claude_code_version",
+        "mcp_servers",
+        "model",
+        "plugins",
+        "skills",
+        "slash_commands",
+        "tools",
+    ]
+    assert sorted(stored["response"]) == ["content", "model_reported", "tool_calls", "usage"]
+    assert stored["response"]["usage"] == USAGE
+    text = path.read_text(encoding="utf-8")
+    for word in ("rate_limit", "utilization", "cost", "overage", "service_tier", "geo"):
+        assert word not in text
+    replayed = _model(tmp_path, fake_runner(text_reply("unused")), mode="replay").invoke("Hi")
+    for reply in (recorded, replayed):
+        assert set(reply.response_metadata) == {"mode", "request_hash", "model_name"}
 
 
 def test_replay_miss_names_the_hash_and_never_calls(tmp_path: Path, fake_runner) -> None:
