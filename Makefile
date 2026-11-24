@@ -5,6 +5,11 @@
 PYTHON ?= .venv/bin/python
 PYTEST_WORKERS ?= 3
 
+# The checks never send traces: a test of a graph on a fake model is not a run worth recording, and a
+# shell that holds a LangSmith key would otherwise spend the project's monthly trace allowance.
+export LANGSMITH_TRACING = false
+export LANGCHAIN_TRACING_V2 = false
+
 .PHONY: lint test schemas-check examples-check selftest planted-faults dataset-check gate
 
 lint:
