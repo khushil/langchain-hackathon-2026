@@ -29,8 +29,8 @@ Every id is the record's family, a colon and the first 16 hex characters of the 
 its content (`fact:9ff827e1365632d7`), never a clock, a counter or a position. A fact's id comes from its kind,
 subject, quote and the attributes its topic declares as copied word for word from the source (for the compliance
 brief, the deadline as written), so a rerun that finds the same obligation gives it the same id however a model
-words its requirement, and a reviewer's earlier decision still attaches to it. A brief's id is the start of its content digest. `Record.build(...)`
-derives the id; reading a record checks that it recomputes.
+words its requirement, and a reviewer's earlier decision still attaches to it. A brief's id is the start of its
+content digest. `Record.build(...)` derives the id; reading a record checks that it recomputes.
 
 ## The rules a record cannot break
 
