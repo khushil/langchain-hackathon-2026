@@ -65,17 +65,21 @@ rebuilds the examples and `python -m fsi_common.export_schemas` the schemas; bot
 The examples use the starter's fictional policy statement and firm tables; the reviewer in them and her
 decisions are invented.
 
+## The model adapter
+
+`fsi_common.model` is the chat model every agent of the repository runs on. Each call is one isolated, capped run of headless Claude Code (`claude -p`) on the signed-in account, with no tools of its own, no connectors and none of the user's files or settings; the adapter reads each call's start event and refuses the answer if anything else was loaded. At most four calls run at once across the process. A call can be recorded to a folder and replayed from it: a recording is named by the SHA-256 of its request (`request_sha256`), and replay answers a request with no recording by failing by name, never by inventing an answer. `MODEL_BACKEND` chooses between `replay`, `claude-code`, `record` and `langchain`; the repository README describes each.
+
+## The evaluation runner
+
+`fsi_common.evals` holds the pieces of measuring a topic that do not depend on the topic: a measure (a key, a numerator, a denominator and the population counted), a runner that applies code evaluators to pairs of a reference example and an output, and an upload of a dataset to LangSmith that runs once and refuses to change on a rerun. A denominator of zero is reported as "none in scope". Topic 03's measures are in `03_document_summary_agent/evals/`.
+
+## The application
+
+`fsi_common.app` is the shell of the reviewer's application, Review desk. It serves the home page, About, sign-in and sign-out, and mounts every topic folder that holds a `review_app/plugin.py` at the topic's own address. A person signs in by typing a name and a role; a name or role that is empty or names a model, a program or a service is refused. Each page opens with one sentence and at most three tiles, built from the same counts. `make serve` starts it, and `docs/user-guide.md` at the repository root walks through it.
+
 ## How the compliance brief uses it
 
-Each section's sub-agent in topic 03 still returns the starter's `SectionSummary`. `utils/records.py` turns each
-`Obligation` into a fact anchored on its paragraph and quoting its evidence, and turns the facts back into the
-same `SectionSummary` with nothing lost; the topic's graph state (`utils/state.py`) holds these records as JSON.
-The workflow being built on them will read PS26-4 into one source and 48 paragraph units, record on each fact
-whether plain code found its quote and deadline word for word in the paragraph, and raise an open question for a
-named role wherever the document and the firm's tables leave something open (for example, whether a provider
-contract was made before 1 January 2027). The brief will cite only facts that passed their checks, and the
-reviewer's decisions and sign-off will be kept in the LangGraph store under the firm and the document, so a
-rerun finds them.
+The context layer of topic 03 reads PS26-4 into one source with a unit for each of its 48 paragraphs, and the firm and provider tables into a unit for each row. A run on one section accounts for that section's paragraphs, 5 of them for section 7. Each obligation that a section's sub-agent returns becomes a fact anchored on its paragraph and quoting its evidence, with the starter's `SectionSummary` as the sub-agent's output shape. Plain code records on each fact whether its quote and its deadline are found word for word in the paragraph. Every unit ends with a fact or on a list of units that hold none, each with its reason, and a run stops when the counts do not close. An obligation that cites a paragraph the section does not have becomes an open question for a named role. The brief cites only facts that passed their checks. The reviewer's decisions and sign-off are kept in the LangGraph store under the firm and the document, so a rerun on the same firm and document finds them, and a decision is carried only while the fact it judged is unchanged.
 
 ## How a KYC application would use it
 

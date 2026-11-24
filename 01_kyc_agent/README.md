@@ -14,3 +14,5 @@ screening match would be a fact citing the application field and the list entry 
 recorded on the fact. A name that matches a list entry only in part, or a field the application leaves empty,
 would be an open question for the compliance officer. The officer's risk decision would be a decision record with
 their name, role and date, and the memo would be signed off the same way a compliance brief is.
+
+The reviewer's application serves every topic folder that holds a `review_app/plugin.py`, as topic 03 does. This topic would add one, and its decisions and sign-offs would then be made on the same pages and in the same records.

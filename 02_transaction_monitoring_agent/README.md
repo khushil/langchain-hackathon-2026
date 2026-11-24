@@ -15,3 +15,5 @@ or score that raised it recorded on the fact. A transaction the agent cannot pla
 the analyst, and the analyst's approve or block answer would be a decision record with their name, role and date.
 The unit accounting would show, for every transaction in the stream, whether it raised an alert or was cleared
 with a reason, so no transaction goes unreviewed without a record.
+
+Review desk, the shared reviewer's application, serves every topic folder that holds a `review_app/plugin.py`, as topic 03 does. This topic would add one, and its decisions and sign-offs would then be made on the same pages and in the same records.
