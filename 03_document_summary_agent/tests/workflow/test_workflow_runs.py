@@ -258,3 +258,16 @@ def test_a_failure_before_the_review_is_still_a_failed_run():
     runs = BriefRuns(models=ScriptedModels(fail_sections=("7",)))
     thread_id = runs.start(REQUEST)
     assert wait_until(runs, thread_id, {"failed"}) == "failed"
+
+
+def test_result_holds_the_request_before_the_graph_writes_its_first_checkpoint(monkeypatch):
+    held = threading.Event()
+    monkeypatch.setattr(BriefRuns, "_execute", lambda self, run, graph_input: held.wait(10))
+    runs = BriefRuns(models=ScriptedModels())
+    thread_id = runs.start(REQUEST)
+    try:
+        state = runs.result(thread_id)
+        assert state["request"]["firm_id"] == "FIRM-001"
+        assert state["request"]["sections"] == ["7"]
+    finally:
+        held.set()

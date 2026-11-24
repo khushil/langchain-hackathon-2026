@@ -47,6 +47,7 @@ class RunInProgressError(Exception):
 class _Run:
     thread_id: str
     config: dict[str, Any]
+    request: dict[str, Any] = field(default_factory=dict)
     status: RunStatus = "running"
     error: str | None = None
     worker: threading.Thread | None = field(default=None, repr=False)
@@ -111,7 +112,11 @@ class BriefRuns:
             if any(run.status == "running" for run in self._runs.values()):
                 raise RunInProgressError("A run is still running; wait for it to reach the review.")
             thread_id = str(uuid.uuid4())
-            run = _Run(thread_id=thread_id, config=self._config(thread_id, request, document))
+            run = _Run(
+                thread_id=thread_id,
+                config=self._config(thread_id, request, document),
+                request=dict(request),
+            )
             self._runs[thread_id] = run
             self._order.append(thread_id)
             run.worker = threading.Thread(
@@ -249,13 +254,17 @@ class BriefRuns:
             thread_id: The run's thread id.
 
         Returns:
-            The state at the run's latest checkpoint.
+            The state at the run's latest checkpoint; before the graph has written one, the state
+            holds the request the run was started with, so a caller can always name the run.
 
         Raises:
             RunNotFoundError: If the thread id is unknown.
         """
         run = self._get(thread_id)
-        return self._graph.get_state(run.config).values
+        state = self._graph.get_state(run.config).values
+        if "request" not in state:
+            return {**state, "request": dict(run.request)}
+        return state
 
     def error(self, thread_id: str) -> str | None:
         """Return the failure of a failed run, in words.
