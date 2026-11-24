@@ -81,3 +81,22 @@ def test_the_attribute_list_of_a_fact_writes_its_requirements_the_same_way():
     fact = _two_requirement_fact(section_seven_review())
     assert dict(attribute_rows(fact))["Requirement"] == f"(1) {FIRST}; (2) {SECOND}"
     assert attribute_value(["7.1", "7.2"]) == "7.1, 7.2"
+
+
+def test_a_fact_about_a_table_row_reads_does_not_apply_for_requirement_and_deadline():
+    from review_app.routes_facts import fact_cells
+
+    review = section_seven_review()
+    paragraph = next(iter(review.facts.values()))
+    row = paragraph.model_copy(
+        update={
+            "subject": paragraph.subject.model_copy(update={"anchor": "row:FIRM-001"}),
+            "kind": "firm_attribute",
+            "attributes": {"name": "Harbour Mutual Bank"},
+        }
+    )
+    cells = fact_cells(row, "Awaiting a decision", "normal", None)
+    assert cells["requirement"].text == "Does not apply"
+    assert cells["deadline"].text == "Does not apply"
+    kept = fact_cells(paragraph, "Awaiting a decision", "normal", None)
+    assert kept["requirement"].text != "Does not apply"

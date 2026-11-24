@@ -42,6 +42,8 @@ OUTCOME_WORDS = {
     "answer": "Answered",
 }
 NONE_STATED = "None stated in the paragraph"
+DOES_NOT_APPLY = "Does not apply"
+"""What the Requirement and Deadline columns read for a fact about a table row, not a paragraph."""
 
 
 @dataclass(frozen=True)

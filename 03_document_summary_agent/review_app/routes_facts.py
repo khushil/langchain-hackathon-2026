@@ -16,6 +16,7 @@ from fsi_common.records import Decision, Fact, Person, SignOff
 from review_app.context import RunInfo, Services, read_run, run_tabs, run_url
 from review_app.routes_review import load_review
 from review_app.source_view import (
+    DOES_NOT_APPLY,
     anchor_label,
     attribute_value,
     decision_line,
@@ -59,8 +60,16 @@ def fact_cells(fact: Fact, decision_text: str, status: str, href: str | None) ->
             title=f"Open {anchor_label(fact.subject.anchor)} and its quoted words",
         ),
         "kind": Cell(kind_label(fact.kind)),
-        "requirement": Cell(requirements_text(fact.attributes.get("requirement"))),
-        "deadline": Cell(attribute_value(fact.attributes.get("deadline"))),
+        "requirement": Cell(
+            requirements_text(fact.attributes.get("requirement"))
+            if fact.subject.anchor.startswith("para:")
+            else DOES_NOT_APPLY
+        ),
+        "deadline": Cell(
+            attribute_value(fact.attributes.get("deadline"))
+            if fact.subject.anchor.startswith("para:")
+            else DOES_NOT_APPLY
+        ),
         "checks": Cell(checks, status="failed" if failed else "normal"),
         "decision": Cell(decision_text, status=status),  # type: ignore[arg-type]
     }
@@ -253,7 +262,11 @@ def decisions_view(request: Request, info: RunInfo):
             continue
         if subject_id in facts:
             about = anchor_label(facts[subject_id]["subject"]["anchor"])
-            requirement = requirements_text(facts[subject_id]["attributes"].get("requirement"))
+            requirement = (
+                requirements_text(facts[subject_id]["attributes"].get("requirement"))
+                if facts[subject_id]["subject"]["anchor"].startswith("para:")
+                else DOES_NOT_APPLY
+            )
         else:
             about = questions.get(subject_id, {}).get("question", subject_id)
             requirement = ""
