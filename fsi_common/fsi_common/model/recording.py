@@ -79,7 +79,7 @@ def mint_tool_call_id(key: str, position: int, name: str, args: dict[str, Any]) 
 class Recording:
     """One recorded call: its canonical request, the reply it produced, and how it ran."""
 
-    key: str
+    request_sha256: str
     request: dict[str, Any]
     response: dict[str, Any]
     meta: dict[str, Any]
@@ -99,7 +99,7 @@ class RecordingStore:
 
     def save(self, recording: Recording) -> Path:
         """Write a recording atomically and return its path."""
-        path = self._path(recording.key)
+        path = self._path(recording.request_sha256)
         self.root.mkdir(parents=True, exist_ok=True)
         text = json.dumps(asdict(recording), indent=1, sort_keys=True, ensure_ascii=False)
         handle, temp = tempfile.mkstemp(dir=self.root, prefix=".tmp-", suffix=".json")
@@ -123,6 +123,6 @@ class RecordingStore:
         if not path.is_file():
             raise ReplayMissError(key)
         data = json.loads(path.read_text(encoding="utf-8"))
-        if data.get("key") != key or request_hash(data.get("request", {})) != key:
+        if data.get("request_sha256") != key or request_hash(data.get("request", {})) != key:
             raise ReplayMissError(key, reason="a file that holds a different request")
         return Recording(**data)

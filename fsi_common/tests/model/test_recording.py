@@ -77,7 +77,7 @@ def test_tool_call_ids_are_deterministic_and_distinct() -> None:
 
 def _recording(key: str) -> Recording:
     return Recording(
-        key=key,
+        request_sha256=key,
         request=_request(),
         response={"content": "Hi", "tool_calls": [], "usage": {"output_tokens": 1}},
         meta={"recorded_at": "2026-11-24T18:00:00Z", "duration_s": 1.5},
@@ -91,7 +91,7 @@ def test_store_round_trips_a_recording(tmp_path: Path) -> None:
     loaded = store.load(key)
     assert loaded == _recording(key)
     on_disk = json.loads((tmp_path / "rec" / f"{key}.json").read_text(encoding="utf-8"))
-    assert on_disk["key"] == key
+    assert on_disk["request_sha256"] == key
     assert list((tmp_path / "rec").iterdir()) == [tmp_path / "rec" / f"{key}.json"]
 
 

@@ -226,7 +226,7 @@ class ChatClaudeHeadless(BaseChatModel):
         if self.mode == "record":
             RecordingStore(self.recordings_dir).save(
                 Recording(
-                    key=key,
+                    request_sha256=key,
                     request=request,
                     response=response,
                     meta={
