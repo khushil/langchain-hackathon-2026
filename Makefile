@@ -9,8 +9,10 @@ PYTEST_WORKERS ?= 3
 # shell that holds a LangSmith key would otherwise spend the project's monthly trace allowance.
 export LANGSMITH_TRACING = false
 export LANGCHAIN_TRACING_V2 = false
+# The browser tests fail, rather than skip, when no browser can start.
+export REQUIRE_BROWSER = 1
 
-.PHONY: lint test schemas-check examples-check selftest planted-faults dataset-check notebook gate
+.PHONY: serve lint test schemas-check examples-check selftest planted-faults dataset-check notebook gate
 
 lint:
 	$(PYTHON) -m ruff check .
@@ -45,5 +47,9 @@ dataset-check:
 # The notebook must run top to bottom on the recorded model calls, with no key and no live call.
 notebook:
 	NOTEBOOK_RUN=1 MODEL_BACKEND=replay $(PYTHON) -m pytest -q -o "pythonpath=fsi_common 03_document_summary_agent" 03_document_summary_agent/tests/notebook
+
+# The reviewer's application, on APP_HOST and APP_PORT (default 0.0.0.0:4803).
+serve:
+	PYTHONPATH=fsi_common:03_document_summary_agent $(PYTHON) -m fsi_common.app
 
 gate: lint test schemas-check examples-check selftest planted-faults dataset-check notebook
