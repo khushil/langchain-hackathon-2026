@@ -12,7 +12,7 @@ export LANGCHAIN_TRACING_V2 = false
 # The browser tests fail, rather than skip, when no browser can start.
 export REQUIRE_BROWSER = 1
 
-.PHONY: serve lint test schemas-check examples-check selftest planted-faults dataset-check notebook gate
+.PHONY: serve offline lint test schemas-check examples-check selftest planted-faults dataset-check notebook gate
 
 lint:
 	$(PYTHON) -m ruff check .
@@ -51,5 +51,10 @@ notebook:
 # The reviewer's application, on APP_HOST and APP_PORT (default 0.0.0.0:4803).
 serve:
 	PYTHONPATH=fsi_common:03_document_summary_agent $(PYTHON) -m fsi_common.app
+
+# The offline edition: the application's pages for the recorded run, in one HTML file.
+OFFLINE_OUT ?= build/compliance-brief-offline.html
+offline:
+	PYTHONPATH=fsi_common:03_document_summary_agent $(PYTHON) -m fsi_common.app.offline --topic compliance-brief --out $(OFFLINE_OUT)
 
 gate: lint test schemas-check examples-check selftest planted-faults dataset-check notebook
