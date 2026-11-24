@@ -1,0 +1,47 @@
+{% extends "compliance_brief/page.html" %}
+{% import "macros.html" as ui %}
+{% block main %}
+{{ ui.answer(answer) }}
+<div class="start-grid">
+<div class="exhibit" data-hook="exhibit">
+  {{ ui.table(table) }}
+</div>
+<section class="panel" aria-labelledby="start-heading">
+  <h2 id="start-heading">Start a brief</h2>
+  {% if problem %}<p class="problem" role="alert" data-hook="form-problem">{{ ui.badge("failed", problem) }}</p>{% endif %}
+  <form method="post" action="/compliance-brief/runs" class="start-form">
+    <div class="start-fields">
+      <div>
+        <label for="document_id">Document</label>
+        <select id="document_id" name="document_id">
+          {% for document in library.documents %}
+          <option value="{{ document.document_id }}">{{ document.document_id }}: {{ document.title }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label for="firm_id">Firm</label>
+        <select id="firm_id" name="firm_id">
+          {% for firm_id, name in library.firms.items() %}
+          <option value="{{ firm_id }}">{{ name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+    <fieldset>
+      <legend>Sections to read</legend>
+      <div class="section-grid">
+        {% for section in library.documents[0].sections %}
+        <label class="choice" title="Include section {{ section.number }}, {{ section.title }}"><input type="checkbox" name="sections" value="{{ section.number }}"{% if ticked is none or section.number in ticked %} checked{% endif %}>{{ section.number }}. {{ section.title }}</label>
+        {% endfor %}
+      </div>
+    </fieldset>
+    {% if person %}
+    <button class="button" type="submit" title="Start a brief for the chosen document, firm and sections">Start the brief</button>
+    {% else %}
+    <p><a href="{{ sign_in }}" title="Sign in with your name and role to start a brief">Sign in</a> to start a brief.</p>
+    {% endif %}
+  </form>
+</section>
+</div>
+{% endblock %}

@@ -1,0 +1,64 @@
+{% macro badge(status, text=None) %}
+{% if status == "needs_person" %}
+<span class="badge badge-needs" data-status="needs_person"><svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M8 1.5 15 14H1z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8 6v4M8 11.6v.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>{{ text or "Needs a person" }}</span>
+{% elif status == "failed" %}
+<span class="badge badge-failed" data-status="failed"><svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="m5.6 5.6 4.8 4.8m0-4.8-4.8 4.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>{{ text or "Failed" }}</span>
+{% else %}
+<span class="badge">{{ text }}</span>
+{% endif %}
+{% endmacro %}
+
+{% macro answer(a) %}
+<section class="answer" data-hook="answer" aria-labelledby="answer-sentence">
+  <h1 id="answer-sentence" class="sentence" data-hook="sentence">{{ a.sentence }}</h1>
+  {% if a.tiles %}
+  <div class="tiles">
+    {% for tile in a.tiles %}
+    <div class="tile tile-{{ tile.status }}" data-hook="tile" {% if tile.title %}title="{{ tile.title }}"{% endif %}>
+      <span class="tile-value">{{ tile.value }}</span>
+      <span class="tile-label">{{ tile.label }}</span>
+      {% if tile.status != "normal" %}{{ badge(tile.status) }}{% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+</section>
+{% endmacro %}
+
+{% macro table(view) %}
+<div class="table-wrap">
+  <div class="table-tools">
+    <span class="table-caption">{{ view.caption }}</span>
+    <a class="button button-quiet" href="{{ view.export_href }}" title="Download these rows as a CSV file" data-hook="export">Export CSV</a>
+  </div>
+  {% if view.rows %}
+  <table class="data" data-hook="table">
+    <thead>
+      <tr>
+        {% for h in view.headers %}
+        <th scope="col" aria-sort="{{ h.sorted_as }}">
+          <a href="{{ h.href }}" title="Sort by {{ h.label|lower }}">{{ h.label }}{% if h.sorted_as == "ascending" %} <span aria-hidden="true">↑</span>{% elif h.sorted_as == "descending" %} <span aria-hidden="true">↓</span>{% endif %}</a>
+        </th>
+        {% endfor %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in view.rows %}
+      <tr>
+        {% for column in view.columns %}
+        {% set cell = row[column.key] %}
+        <td>
+          {% if cell.href %}<a href="{{ cell.href }}" title="{{ cell.title or 'Open ' ~ cell.text }}">{{ cell.text }}</a>
+          {% elif cell.status != "normal" %}{{ badge(cell.status, cell.text) }}
+          {% else %}<span {% if cell.title %}title="{{ cell.title }}"{% endif %}>{{ cell.text }}</span>{% endif %}
+        </td>
+        {% endfor %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="empty">{{ view.empty }}</p>
+  {% endif %}
+</div>
+{% endmacro %}

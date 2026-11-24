@@ -185,8 +185,9 @@ def apply_response(
     """Return the state update for a validated review response.
 
     Decisions the reviewer made, and the earlier decisions the request carried, go into the
-    state's decisions; each question a decision answers moves to answered; a sign-off, when
-    sent, is stored as it is.
+    state's decisions; an earlier decision is left out when the reviewer decided the same fact
+    again, so a fact has one decision in the run; each question a decision answers moves to
+    answered; a sign-off, when sent, is stored as it is.
 
     Args:
         response: The validated response.
@@ -197,11 +198,14 @@ def apply_response(
         The update for ``decisions``, ``open_questions`` and, when sent, ``sign_off``.
     """
     decisions = {d.id: d.to_json() for d in response.decisions}
+    decided = {d.subject_id for d in response.decisions}
     carried = [
         cited.carry.decision
         for statement in request.statements
         for cited in statement.facts
-        if cited.carry.outcome == "carried" and cited.carry.decision is not None
+        if cited.carry.outcome == "carried"
+        and cited.carry.decision is not None
+        and cited.fact.id not in decided
     ]
     answers = {d.subject_id: d for d in response.decisions if d.outcome == "answer"}
     questions = {}

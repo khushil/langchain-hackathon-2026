@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% import "macros.html" as ui %}
+{% block main %}
+{{ ui.answer(answer) }}
+<div class="exhibit prose" data-hook="exhibit">
+  <p>Every document, firm and provider in this demonstration is fictional. They come from the starter that LangChain published for its financial services hackathon in London on 25 November 2026, which is credited here, and from data made for this build. No customer data and no confidential data is used.</p>
+  {% for topic in topics %}
+  <h2>{{ topic.title }}</h2>
+  {% for paragraph in topic.about %}
+  <p>{{ paragraph }}</p>
+  {% endfor %}
+  {% endfor %}
+  <p data-hook="advice">Outputs of this product are not legal, compliance or regulatory advice.</p>
+</div>
+{% endblock %}

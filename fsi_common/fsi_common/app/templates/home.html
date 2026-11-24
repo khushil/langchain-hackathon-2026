@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% import "macros.html" as ui %}
+{% block main %}
+{{ ui.answer(answer) }}
+<div class="exhibit" data-hook="exhibit">
+  <ul class="topic-list">
+    {% for topic in topics %}
+    <li>
+      <a class="topic-link" href="{{ topic.prefix }}/" title="Open {{ topic.title }}">{{ topic.title }}</a>
+      <p>{{ topic.summary }}</p>
+    </li>
+    {% endfor %}
+  </ul>
+</div>
+{% endblock %}

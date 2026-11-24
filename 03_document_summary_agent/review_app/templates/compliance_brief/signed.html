@@ -1,0 +1,23 @@
+{% extends "compliance_brief/page.html" %}
+{% import "macros.html" as ui %}
+{% import "compliance_brief/_parts.html" as parts %}
+{% block main %}
+{{ ui.answer(answer) }}
+{{ parts.tab_bar(tabs_for, "signed") }}
+<div class="exhibit" data-hook="exhibit">
+  <dl class="record" data-hook="sign-off-record">
+    <dt>Reviewer</dt><dd>{{ sign_off.reviewer.name }}</dd>
+    <dt>Role</dt><dd>{{ sign_off.reviewer.role }}</dd>
+    <dt>Date</dt><dd>{{ sign_off.date|long_date }}</dd>
+    <dt>Outcome</dt><dd>{{ "Signed" if sign_off.outcome == "signed" else "Returned" }}</dd>
+    <dt>Digest signed</dt><dd><code class="digest">{{ sign_off.brief_digest }}</code></dd>
+    {% if sign_off.reason %}<dt>Reason for returning</dt><dd>{{ sign_off.reason }}</dd>{% endif %}
+    {% for assumption in sign_off.assumptions %}
+    <dt>Accepted as an assumption</dt><dd>{{ assumption.words }}</dd>
+    {% endfor %}
+  </dl>
+</div>
+<section class="panel" aria-label="Decisions made on the brief">
+  {{ ui.table(table) }}
+</section>
+{% endblock %}

@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% import "macros.html" as ui %}
+{% block main %}
+{{ ui.answer(answer) }}
+<div class="exhibit" data-hook="exhibit">
+  <p><a href="/" title="Go to the home page">Go to the home page</a></p>
+</div>
+{% endblock %}

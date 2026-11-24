@@ -1,0 +1,21 @@
+{% extends "compliance_brief/page.html" %}
+{% import "macros.html" as ui %}
+{% block head_extra %}{% if refresh %}<meta http-equiv="refresh" content="3">{% endif %}{% endblock %}
+{% block main %}
+{{ ui.answer(answer) }}
+<div class="exhibit" data-hook="exhibit">
+  {% if error %}
+  <p class="problem" role="alert" data-hook="run-error">{{ ui.badge("failed", "Stopped") }} <span>{{ error }}</span></p>
+  <p><a href="/compliance-brief/" title="Go back to the briefs and start another">Back to the briefs</a></p>
+  {% endif %}
+  <table class="data" data-hook="sections">
+    <caption class="table-caption">Sections of {{ info.document_title }}</caption>
+    <thead><tr><th scope="col">Section</th><th scope="col">Title</th><th scope="col">State</th></tr></thead>
+    <tbody>
+      {% for number, title, read in rows %}
+      <tr><td>{{ number }}</td><td>{{ title }}</td><td>{{ "Read" if read else ("Waiting" if not error else "Not read") }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% import "macros.html" as ui %}
+{% block main %}
+{{ ui.answer(answer) }}
+<div class="exhibit" data-hook="exhibit">
+  {% if problem %}<p class="problem" role="alert" data-hook="problem">{{ ui.badge("failed", problem) }}</p>{% endif %}
+  <form class="stack form-narrow" method="post" action="/signin">
+    <input type="hidden" name="next" value="{{ next }}">
+    <label for="name">Your name</label>
+    <input id="name" name="name" type="text" autocomplete="name" required value="{{ name or '' }}">
+    <label for="role">Your role</label>
+    <input id="role" name="role" type="text" required value="{{ role or '' }}" placeholder="for example, Head of Compliance">
+    <button class="button" type="submit" title="Sign in as this person">Sign in</button>
+  </form>
+</div>
+{% endblock %}

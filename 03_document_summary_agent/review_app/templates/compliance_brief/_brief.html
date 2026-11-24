@@ -1,0 +1,77 @@
+<div class="exhibit review-grid" data-hook="exhibit">
+  <section class="pane statements" aria-label="The brief" data-hook="statements">
+    {% for statement in model.request.statements %}
+    <article class="statement" data-hook="statement">
+      {% if statement.heading %}<h2 class="statement-heading">{{ statement.heading }}</h2>{% endif %}
+      <p class="statement-text">{{ statement.text }}</p>
+      <ul class="cites">
+        {% for cited in statement.facts %}
+        {% set fid = cited.fact.id %}
+        <li>
+          <a class="fact-link" href="{{ fact_href(fid) }}" data-fact="{{ fid }}" title="Open {{ place_of(cited) }} and its quoted words" {% if panel and panel.cited.fact.id == fid %}aria-current="true"{% endif %}>{{ place_of(cited) }}</a>
+          {{ parts.fact_state(model.fact_states[fid], person) }}
+        </li>
+        {% endfor %}
+      </ul>
+    </article>
+    {% endfor %}
+  </section>
+  {% if panel %}
+  {% set fact = panel.cited.fact %}
+  {% set st = panel.state %}
+  <aside class="pane source" aria-label="Source paragraph" data-hook="source">
+    <h2 class="source-title">{{ panel.place }}</h2>
+    <p class="meta">{{ panel.source_title }}</p>
+    <p class="paragraph" data-hook="paragraph">{% if panel.segments %}{% for seg in panel.segments %}{% if seg.marked %}<mark>{{ seg.text }}</mark>{% else %}{{ seg.text }}{% endif %}{% endfor %}{% else %}{{ panel.cited.unit_text }}{% endif %}</p>
+    {% if not panel.segments %}<p>{{ ui.badge("failed", "The quoted words are not in this paragraph") }}</p>{% endif %}
+    <p class="meta">Document digest <code class="digest" data-hook="digest">{{ panel.digest }}</code></p>
+    {% if panel.cited.carry.outcome == "carried" %}
+    <p class="note" data-hook="carried">{{ decision_line(panel.cited.carry.decision) }}. Reason given: {{ panel.cited.carry.decision.reason }}</p>
+    {% elif panel.cited.carry.outcome == "ask_again" %}
+    <div class="note" data-hook="ask-again">
+      <p>{{ decision_line(panel.cited.carry.decision) }}. Reason given: {{ panel.cited.carry.decision.reason }}</p>
+      <p>Since then these changed: {{ panel.cited.carry.differences|map("difference_label")|join(", ") }}.</p>
+    </div>
+    {% endif %}
+    {% if st.kind == "yours" %}
+    <p class="note" data-hook="your-decision">Your decision: {{ decision_line(st.decision) }}. {% if st.decision.amendment %}Your wording: {{ st.decision.amendment }}. {% endif %}Your reason: {{ st.decision.reason }}</p>
+    {% endif %}
+    {% if person %}
+    <form method="post" action="/compliance-brief/runs/{{ thread }}/decide" class="decision-form" data-hook="decision-form">
+      <input type="hidden" name="brief_digest" value="{{ brief_digest }}">
+      <input type="hidden" name="fact_id" value="{{ fact.id }}">
+      {% if form_error and error_target == fact.id %}{{ parts.form_problem(form_error) }}{% endif %}
+      <fieldset>
+        <legend>{{ "Change your decision" if st.kind == "yours" else "Your decision" }}</legend>
+        {% for value, label in [("accept", "Accept"), ("amend", "Amend"), ("reject", "Reject")] %}
+        <label class="choice" title="{{ label }} this fact"><input type="radio" name="outcome" value="{{ value }}" {% if form_values.get("outcome") == value %}checked{% endif %} required>{{ label }}</label>
+        {% endfor %}
+      </fieldset>
+      <label for="amendment">Amended wording, if you amend</label>
+      <textarea id="amendment" name="amendment">{{ form_values.get("amendment", "") }}</textarea>
+      <label for="reason">Your reason</label>
+      <textarea id="reason" name="reason" required>{{ form_values.get("reason", "") }}</textarea>
+      <button class="button" type="submit" title="Record your decision on this fact">Record my decision</button>
+      {% if panel.next_href %}<a class="button button-quiet" href="{{ panel.next_href }}" title="Open the next fact that needs a decision">Next fact to decide</a>{% endif %}
+    </form>
+    {% else %}
+    <p><a href="{{ sign_in }}" title="Sign in with your name and role to decide">Sign in</a> to decide on this fact.</p>
+    {% endif %}
+    <dl class="record">
+      {% for label, value in attribute_rows(fact) %}
+      <dt>{{ label }}</dt><dd>{{ value }}</dd>
+      {% endfor %}
+      <dt>Known as</dt>
+      <dd>{% if fact.status.status == "inferred" %}<span class="badge badge-inferred" title="{{ fact.status.rule.statement }}">Inferred by {{ fact.status.rule.id }}, matched {{ fact.status.rule.match_rate.matched }} of {{ fact.status.rule.match_rate.population }}</span>{% elif fact.status.status == "observed" %}Observed on {{ fact.status.observed_at|long_date }}{% elif fact.status.status == "unknown" %}Not known: {{ fact.status.unknown_reason }}{% else %}Stated in the document{% endif %}</dd>
+      <dt>Checks</dt>
+      <dd>
+        <ul class="plain">
+          {% for check in fact.checks %}
+          <li>{% if check.outcome == "pass" %}<span class="badge">Passed</span>{% else %}{{ ui.badge("failed") }}{% endif %} <span title="{{ check.detail }}">{{ check_label(check) }}</span></li>
+          {% endfor %}
+        </ul>
+      </dd>
+    </dl>
+  </aside>
+  {% endif %}
+</div>

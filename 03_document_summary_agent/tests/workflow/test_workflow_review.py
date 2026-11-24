@@ -94,6 +94,45 @@ def test_a_rerun_on_the_same_firm_and_document_carries_the_earlier_decisions():
     assert values["sign_off"]["outcome"] == "signed"
 
 
+def test_a_decision_on_a_fact_that_also_has_a_carried_decision_replaces_it_in_the_run():
+    harness = Harness()
+    first = harness.start("7")
+    harness.resume(first, respond(harness.review_request(first)))
+    second = harness.start("7")
+    request = harness.review_request(second)
+    target = request.statements[0].facts[0]
+    assert target.carry.outcome == "carried"
+    sam = {"name": "Sam Okoye", "role": "Compliance Officer"}
+    amend = Decision.on(
+        target.fact,
+        outcome="amend",
+        reason="Checked against the paragraph.",
+        reviewer=sam,
+        date="2026-11-26",
+        amendment="Reworded.",
+    )
+    response = respond(request, reviewer=sam)
+    harness.resume(second, response.model_copy(update={"decisions": [amend]}))
+    values = harness.values(second)
+    on_target = [d for d in values["decisions"].values() if d["subject_id"] == target.fact.id]
+    assert [(d["outcome"], d["reviewer"]["name"]) for d in on_target] == [("amend", "Sam Okoye")]
+    others = [d for d in values["decisions"].values() if d["subject_id"] != target.fact.id]
+    assert {d["reviewer"]["name"] for d in others} == {REVIEWER["name"]}
+    assert len(values["decisions"]) == 5
+    assert check_bundle(bundle_records(values), where="state") == []
+
+
+def test_a_response_that_decides_no_carried_fact_keeps_every_carried_decision():
+    harness = Harness()
+    first = harness.start("7")
+    harness.resume(first, respond(harness.review_request(first)))
+    second = harness.start("7")
+    harness.resume(second, respond(harness.review_request(second)))
+    values = harness.values(second)
+    assert len(values["decisions"]) == 5
+    assert {d["reviewer"]["name"] for d in values["decisions"].values()} == {REVIEWER["name"]}
+
+
 def test_a_rerun_that_rewords_a_requirement_asks_again_with_the_difference_named():
     harness = Harness()
     first = harness.start("7")
