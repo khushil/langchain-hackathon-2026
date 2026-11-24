@@ -14,6 +14,7 @@ from fsi_common.ids import digest_json
 from fsi_common.records import Decision, OpenQuestion, Person
 from fsi_common.records.questions import SETTLED_STATES
 from review_app.drafts import Draft
+from review_app.profile import ProfileDecision, is_profile, shared_decision
 from utils.state import CitedFact, ReviewRequest
 
 FactKind = Literal["yours", "carried", "needs"]
@@ -78,6 +79,7 @@ class ReviewModel:
         for statement in request.statements:
             for cited in statement.facts:
                 self.cited.setdefault(cited.fact.id, cited)
+        self.profile_ids = tuple(fid for fid, c in self.cited.items() if is_profile(c.fact))
         self._draft_facts = self.valid_fact_decisions(draft)
         self.fact_states = {fid: self._fact_state(c) for fid, c in self.cited.items()}
         self._draft_answers = self.valid_answers(draft)
@@ -146,9 +148,50 @@ class ReviewModel:
         ids = list(self.cited)
         start = ids.index(current_id) + 1 if current_id in ids else 0
         for fid in ids[start:] + ids[:start]:
-            if fid != current_id and not self.fact_states[fid].settled:
+            if (
+                fid != current_id
+                and fid not in self.profile_ids
+                and not self.fact_states[fid].settled
+            ):
                 return fid
         return None
+
+    def first_waiting(self, decided_id: str) -> str | None:
+        """Return the id of the first fact, in the brief's order, that still needs a decision.
+
+        The facts of the firm profile are decided together, not one by one, so they are not offered.
+
+        Args:
+            decided_id: The fact the reviewer has just decided, counted as decided.
+
+        Returns:
+            The id, or None when no other fact is waiting.
+        """
+        for fid, state in self.fact_states.items():
+            if fid != decided_id and fid not in self.profile_ids and not state.settled:
+                return fid
+        return None
+
+    @property
+    def profile_waiting(self) -> bool:
+        """Whether any fact of the firm profile still needs a decision."""
+        return any(not self.fact_states[fid].settled for fid in self.profile_ids)
+
+    @property
+    def profile_decision(self) -> ProfileDecision | None:
+        """The one decision that settles the whole profile, when the decisions on it agree."""
+        return shared_decision(
+            self.profile_ids,
+            {
+                fid: self.fact_states[fid].decision if self.fact_states[fid].settled else None
+                for fid in self.profile_ids
+            },
+        )
+
+    @property
+    def profile_yours(self) -> bool:
+        """Whether the person signed in has decided any fact of the profile."""
+        return any(self.fact_states[fid].kind == "yours" for fid in self.profile_ids)
 
     @property
     def questions_waiting(self) -> list[OpenQuestion]:

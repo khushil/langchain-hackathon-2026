@@ -13,14 +13,18 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
+from context.tables import read_tables
 from fsi_common.examples.data import build_examples
+from fsi_common.ids import digest_text
 from fsi_common.records import (
     Brief,
     Decision,
     Fact,
     OpenQuestion,
     Source,
+    SourceUnit,
     Statement,
+    UnitAccounting,
     carry_over,
     record_digest,
 )
@@ -111,7 +115,51 @@ class Review:
     brief: Brief | None = None
 
 
-def _state(sources: list[Source], facts: list[Fact], brief: Brief, question: OpenQuestion) -> dict:
+def row_texts() -> dict[str, str]:
+    """Return the text of each row of the firm and provider tables, by anchor."""
+    tables = read_tables("FIRM-001")
+    return {u.anchor: tables.unit_text[u.id] for u in tables.units}
+
+
+def unit_text_of(fact: Fact) -> str:
+    """Return the text of the unit a fact quotes: its paragraph, or its table row."""
+    scheme, _, rest = fact.subject.anchor.partition(":")
+    return paragraph_text(rest) if scheme == "para" else row_texts()[fact.subject.anchor]
+
+
+def units_of(facts: list[Fact]) -> tuple[dict, dict]:
+    """Return the units and unit texts a finished run holds for its facts."""
+    units, texts = {}, {}
+    for fact in facts:
+        text = unit_text_of(fact)
+        unit = SourceUnit.build(
+            source_id=fact.subject.source_id,
+            anchor=fact.subject.anchor,
+            text_digest=digest_text(text),
+        )
+        units[unit.id], texts[unit.id] = unit.to_json(), text
+    return units, texts
+
+
+def accounting_of(facts: list[Fact]) -> dict:
+    """Return the unit accounting of each source the facts quote: every unit with facts."""
+    anchors: dict[str, list[str]] = {}
+    for fact in facts:
+        held = anchors.setdefault(fact.subject.source_id, [])
+        if fact.subject.anchor not in held:
+            held.append(fact.subject.anchor)
+    return {
+        sid: UnitAccounting.build(
+            source_id=sid, units_in=len(found), with_facts=found, without_facts=[]
+        ).to_json()
+        for sid, found in anchors.items()
+    }
+
+
+def _state(
+    sources: list[Source], facts: list[Fact], brief: Brief, question: OpenQuestion | None
+) -> dict:
+    units, unit_text = units_of(facts)
     return {
         "request": {
             "document_id": "PS26-4",
@@ -121,10 +169,13 @@ def _state(sources: list[Source], facts: list[Fact], brief: Brief, question: Ope
         },
         "sources": {s.id: s.to_json() for s in sources},
         "facts": {f.id: [f.to_json()] for f in facts},
-        "open_questions": {question.id: question.to_json()},
+        "open_questions": {question.id: question.to_json()} if question else {},
         "draft_brief": brief.to_json(),
         "decisions": {},
         "section_results": {},
+        "units": units,
+        "unit_text": unit_text,
+        "accounting": accounting_of(facts),
     }
 
 

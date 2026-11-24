@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 DATA_DIR = Path(__file__).resolve().parents[1] / "data"
@@ -37,6 +37,7 @@ class Library:
 
     documents: tuple[LibraryDocument, ...]
     firms: dict[str, str]
+    providers: dict[str, str] = field(default_factory=dict)
 
     def document(self, document_id: str) -> LibraryDocument | None:
         """Return a document by its id, or None."""
@@ -86,4 +87,7 @@ def read_library(data_dir: Path = DATA_DIR) -> Library:
         )
         documents.append(LibraryDocument(row["document_id"], title, sections))
     firms = {row["firm_id"]: row["name"] for row in _lines(data_dir / "firms.jsonl")}
-    return Library(documents=tuple(documents), firms=firms)
+    providers = {
+        row["provider_id"]: row["name"] for row in _lines(data_dir / "third_party_providers.jsonl")
+    }
+    return Library(documents=tuple(documents), firms=firms, providers=providers)

@@ -84,7 +84,11 @@ def test_the_attribute_list_of_a_fact_writes_its_requirements_the_same_way():
 
 
 def test_a_fact_about_a_table_row_reads_does_not_apply_for_requirement_and_deadline():
+    from review_app.library import read_library
+    from review_app.naming import Naming
     from review_app.routes_facts import fact_cells
+
+    naming = Naming.of(read_library())
 
     review = section_seven_review()
     paragraph = next(iter(review.facts.values()))
@@ -95,8 +99,8 @@ def test_a_fact_about_a_table_row_reads_does_not_apply_for_requirement_and_deadl
             "attributes": {"name": "Harbour Mutual Bank"},
         }
     )
-    cells = fact_cells(row, "Awaiting a decision", "normal", None)
+    cells = fact_cells(row, "Awaiting a decision", "normal", None, naming)
     assert cells["requirement"].text == "Does not apply"
     assert cells["deadline"].text == "Does not apply"
-    kept = fact_cells(paragraph, "Awaiting a decision", "normal", None)
+    kept = fact_cells(paragraph, "Awaiting a decision", "normal", None, naming)
     assert kept["requirement"].text != "Does not apply"

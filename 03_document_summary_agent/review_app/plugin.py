@@ -9,17 +9,10 @@ from starlette.routing import Mount, Route
 from fsi_common.app import TopicPlugin
 from review_app import routes_facts, routes_review, routes_start
 from review_app.context import PREFIX, Services
+from review_app.naming import Naming
 from review_app.seed import seed_compliance_brief
 from review_app.service import EngineMissingError
-from review_app.source_view import (
-    anchor_label,
-    attribute_rows,
-    check_label,
-    decision_by,
-    decision_line,
-    difference_label,
-    place_of,
-)
+from review_app.source_view import check_label, decision_by, decision_line, difference_label
 
 HERE = Path(__file__).parent
 ABOUT = (
@@ -63,6 +56,7 @@ def build_plugin(services: Services | None = None) -> TopicPlugin:
     services = services or Services()
     loaded = services.library()  # read once, here; the data does not change while the app runs
     services.library = lambda: loaded
+    naming = Naming.of(loaded)
     routes: list[Route | Mount] = [
         *routes_start.routes(services),
         *routes_review.routes(services),
@@ -80,12 +74,12 @@ def build_plugin(services: Services | None = None) -> TopicPlugin:
         static_dir=HERE / "static",
         about=ABOUT,
         template_globals={
-            "attribute_rows": attribute_rows,
+            "attribute_rows": naming.attribute_rows,
             "check_label": check_label,
             "decision_by": decision_by,
             "decision_line": decision_line,
-            "place_of": place_of,
-            "anchor_label_of": anchor_label,
+            "place_of": naming.place_of,
+            "anchor_label_of": naming.place,
         },
         template_filters={"difference_label": difference_label},
         waiting=lambda: count_waiting(services),

@@ -1,5 +1,5 @@
 /* The compliance brief's pages. Tokens come from the shell's app.css. */
-.tabs { display: flex; gap: 4px; margin: 0 0 10px; border-bottom: 1px solid var(--line); }
+.tabs { display: flex; flex-wrap: wrap; gap: 4px; margin: 0 0 10px; border-bottom: 1px solid var(--line); }
 .tabs a {
   padding: 6px 14px; text-decoration: none; border: 1px solid transparent; border-bottom: none;
   border-radius: 4px 4px 0 0; margin-bottom: -1px;
@@ -56,3 +56,49 @@ mark { background: var(--mark); color: var(--ink); border-bottom: 2px solid var(
 
 .decision-form fieldset { display: flex; flex-wrap: wrap; gap: 4px 22px; padding: 4px 12px 6px; }
 .decision-form textarea { min-height: 3rem; }
+
+.row-table { margin: 8px 0; }
+.row-table th { width: 38%; white-space: normal; font-weight: 600; color: var(--muted); }
+.decision-form .amend-field { display: none; }
+.decision-form:has(input[value="amend"]:checked) .amend-field { display: block; }
+.panel .review-grid { margin-top: 0; }
+
+/* The decision form is in view, without a scroll in the pane, when a fact is opened at 1366 by 768. */
+.source .meta { margin: 0 0 4px; }
+.source .paragraph { margin: 6px 0; padding: 8px 10px; }
+.decision-form { margin-top: 6px; padding-top: 0; }
+.decision-form fieldset { margin: 4px 0; padding: 2px 12px 4px; }
+.decision-form label:not(.choice) { margin: 6px 0 2px; }
+.decision-form textarea { min-height: 2.6rem; }
+.decision-form .problem { margin: 6px 0; }
+
+.digest-details { display: block; }
+.digest-details summary { cursor: pointer; font-family: var(--mono); font-size: 0.867rem; }
+.digest-details[open] summary { margin-bottom: 4px; }
+
+.profile-heading { font-size: 1.1rem; margin: 0 0 6px; }
+.profile-owner { font-size: 0.933rem; margin: 10px 0 2px; color: var(--muted); font-weight: 600; }
+.profile-table th { width: 34%; white-space: normal; font-weight: 600; }
+.profile .decision-form { margin-top: 10px; }
+
+/* The picture of the document: grey by default, amber and coral only for a question or a failed check. */
+.left-column { display: flex; flex-direction: column; min-width: 0; max-height: calc(100vh - 372px); }
+.left-column .pane { flex: 1 1 auto; max-height: none; min-height: 7rem; }
+.map { flex: none; max-height: 10rem; overflow: auto; margin: 0 0 8px; padding-right: 4px; }
+.exhibit > .map { max-height: none; }
+.map-count { margin: 0 0 4px; font-weight: 600; }
+.map-section { margin: 0 0 4px; }
+.map-title { font-size: 0.867rem; margin: 2px 0; color: var(--muted); font-weight: 600; }
+.map-cells { list-style: none; display: flex; flex-wrap: wrap; gap: 4px; margin: 0; padding: 0; }
+.map-cell {
+  display: flex; flex-direction: column; min-width: 5.4rem; padding: 2px 8px; text-decoration: none;
+  border: 1px solid var(--line); border-radius: 4px; background: var(--surface); font-size: 0.867rem;
+}
+.map-number { font-weight: 700; }
+.map-mark { display: inline-flex; align-items: center; gap: 4px; }
+.map-mark .icon { width: 12px; height: 12px; flex: none; }
+.map-nothing { background: var(--bg); color: var(--muted); }
+.map-question { background: var(--amber-bg); color: var(--amber-ink); border-color: var(--amber-line); }
+.map-failed { background: var(--coral-bg); color: var(--coral-ink); border-color: var(--coral-line); }
+.map-cell[aria-current="true"] { border-width: 3px; padding: 0 6px; }
+@media (max-width: 1100px) { .left-column { max-height: none; } }

@@ -6,6 +6,7 @@
 {{ parts.tab_bar(tabs_for, tab) }}
 {% if form_error and not error_target %}{{ parts.form_problem(form_error) }}{% endif %}
 {% if tab == "brief" %}{% include "compliance_brief/_brief.html" %}
+{% elif tab == "profile" %}{% include "compliance_brief/_profile.html" %}
 {% elif tab == "questions" %}{% include "compliance_brief/_questions.html" %}
 {% else %}{% include "compliance_brief/_signoff.html" %}
 {% endif %}

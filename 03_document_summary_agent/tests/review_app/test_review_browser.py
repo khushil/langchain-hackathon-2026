@@ -26,7 +26,7 @@ PAGES = {
     "review": (f"{BASE}/runs/run-1/review", False),
     "questions": (f"{BASE}/runs/run-1/review?tab=questions", False),
     "signoff": (f"{BASE}/runs/run-1/review?tab=signoff", False),
-    "facts": (f"{BASE}/runs/run-1/facts", False),
+    "facts": (f"{BASE}/runs/run-1/facts", True),
     "signed": (f"{BASE}/runs/run-4/signed", True),
     "about": ("/about", False),
     "home": ("/", False),
@@ -43,6 +43,7 @@ OTHER_ROUTES = {
     f"{BASE}/runs.csv": CSV,
     f"{BASE}/runs/{{thread}}": "pages: test_a_run_waiting_for_review_leads_to_the_review",
     f"{BASE}/runs/{{thread}}/decide": FLOW,
+    f"{BASE}/runs/{{thread}}/profile": "pages: test_walk_profile.py",
     f"{BASE}/runs/{{thread}}/answer": FLOW,
     f"{BASE}/runs/{{thread}}/assume": "pages: test_an_open_question_is_answered_or_accepted",
     f"{BASE}/runs/{{thread}}/sign": FLOW,
@@ -186,7 +187,9 @@ def test_the_whole_review_through_the_browser(browser, served):
     page.wait_for_url(re.compile(r"/signed$"))
     record = page.inner_text("[data-hook=sign-off-record]")
     assert "Dana Whitfield" in record and "Head of Compliance" in record
-    assert review.request.brief_digest in record
+    digest = review.request.brief_digest
+    assert digest[:15] in record and digest not in record
+    assert page.get_attribute("[data-hook=sign-off-record] summary", "title") == digest
     [(thread, response)] = [s for s in served.runs.submitted if s[0] == "run-1"]
     assert len(response.decisions) == len(facts) + 1
     assert response.sign_off.outcome == "signed"

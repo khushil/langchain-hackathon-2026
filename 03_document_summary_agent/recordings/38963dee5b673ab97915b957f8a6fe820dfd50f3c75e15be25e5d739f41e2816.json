@@ -1,6 +1,6 @@
 {
  "meta": {
-  "duration_s": 4.542,
+  "duration_s": 5.301,
   "init": {
    "agents": [],
    "apiKeySource": "none",
@@ -14,7 +14,7 @@
     "StructuredOutput"
    ]
   },
-  "recorded_at": "2026-11-24T20:53:21.155513+00:00"
+  "recorded_at": "2026-11-24T22:24:29.463564+00:00"
  },
  "request": {
   "effort": "medium",
@@ -136,10 +136,16 @@
      "number": "7",
      "obligations": [
       {
-       "deadline": "within 4 hours of classifying an incident as a major incident, and in any case no later than 24 hours after the incident is first detected",
+       "deadline": "within 4 hours of classifying an incident as a major incident",
        "evidence": "Firms must submit an initial notification to the FSOA within 4 hours of classifying an incident as a major incident",
        "paragraph": "7.1",
-       "requirement": "Submit an initial notification to the FSOA within 4 hours of classifying an incident as major, and in any case no later than 24 hours after the incident is first detected"
+       "requirement": "Submit an initial notification to the FSOA after classifying an incident as a major incident"
+      },
+      {
+       "deadline": "no later than 24 hours after the incident is first detected",
+       "evidence": "in any case no later than 24 hours after the incident is first detected",
+       "paragraph": "7.1",
+       "requirement": "Submit the initial notification no later than 24 hours after the incident is first detected, whatever the classification timing"
       },
       {
        "deadline": "within 72 hours of the initial notification",
@@ -158,19 +164,25 @@
        "evidence": "The final report must include a root-cause analysis and the lessons learned.",
        "paragraph": "7.3",
        "requirement": "Include a root-cause analysis and the lessons learned in the final report"
+      },
+      {
+       "deadline": null,
+       "evidence": "the firm remains responsible for reporting it",
+       "paragraph": "7.4",
+       "requirement": "Remain responsible for reporting a major incident caused by a third-party provider"
       }
      ],
-     "summary": "Firms must report major incidents to the FSOA in three stages: an initial notification, an intermediate report and a final report. Responsibility for reporting stays with the firm when a third-party provider causes the incident. The FSOA will publish a template, and firms may use their existing formats until then.",
+     "summary": "Firms must give the FSOA an initial notification, an intermediate report and a final report for major incidents, each with set deadlines. Responsibility for reporting stays with the firm when a third-party provider causes the incident. The FSOA will publish a template, and until then firms may use their existing formats.",
      "title": "Incident reporting"
     },
     "name": "SectionSummary"
    }
   ],
   "usage": {
-   "cache_creation_input_tokens": 314,
-   "cache_read_input_tokens": 2446,
+   "cache_creation_input_tokens": 2760,
+   "cache_read_input_tokens": 0,
    "input_tokens": 2,
-   "output_tokens": 626
+   "output_tokens": 751
   }
  }
 }

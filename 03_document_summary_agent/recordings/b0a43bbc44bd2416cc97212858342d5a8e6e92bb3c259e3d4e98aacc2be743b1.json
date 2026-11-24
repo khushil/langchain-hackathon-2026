@@ -1,6 +1,6 @@
 {
  "meta": {
-  "duration_s": 4.532,
+  "duration_s": 3.956,
   "init": {
    "agents": [],
    "apiKeySource": "none",
@@ -14,14 +14,14 @@
     "StructuredOutput"
    ]
   },
-  "recorded_at": "2026-11-24T20:52:35.038889+00:00"
+  "recorded_at": "2026-11-24T22:23:44.954268+00:00"
  },
  "request": {
   "effort": "medium",
   "format": 2,
   "messages": [
    {
-    "content": "Summarise ONE section of regulatory document PS26-4 (Policy Statement PS26/4: Operational resilience and third-party technology risk) and extract its obligations. Only analyse; do not create files. Return a SectionSummary.\n\nSection number: 7\nSection title: Incident reporting\nFull text:\n7.1 Firms must submit an initial notification to the FSOA within 4 hours of classifying an incident as a major incident, and in any case no later than 24 hours after the incident is first detected.\n\n7.2 Firms must submit an intermediate report within 72 hours of the initial notification, setting out the cause of the incident as far as it is known, the services and customers affected, and the actions taken so far.\n\n7.3 Firms must submit a final report within 30 business days of the incident being resolved. The final report must include a root-cause analysis and the lessons learned.\n\n7.4 Where a major incident is caused by a third-party provider, the firm remains responsible for reporting it. Firms should not delay a notification while they wait for information from the provider.\n\n7.5 We will publish an incident reporting template before the rules take effect. Until then, firms may use their existing incident reporting formats.",
+    "content": "Summarise ONE section of a regulatory document and extract its obligations. Analysis only: do not create or edit files. Return a SectionSummary with the section number, title, a short summary, and every obligation in the section (who must do what, by when, and any thresholds or conditions). Treat 'must' as a binding obligation and 'should'/'we expect' as guidance, and label each one. If the section has no obligations for firms, return an empty obligations list.\n\nDocument: Policy Statement PS26/4: Operational resilience and third-party technology risk\nSection number: 10\nSection title: Next steps and contacts\nFull text:\n10.1 We will host a series of webinars for firms in the first quarter of 2027 and will publish frequently asked questions on our website.\n\n10.2 Firms with questions about this policy statement should contact their usual supervisory contact. General questions can be sent to our operational resilience team.\n\n10.3 We will consult separately in 2027 on whether to extend these requirements to insurers and investment firms.",
     "role": "user"
    }
   ],
@@ -397,51 +397,26 @@
   },
   "system": "# Section summariser agent\nYou are given one section: its number, title and text. Return a `SectionSummary` as a single JSON object, with no text before or after it:\n\n- `number`: the section number, for example `\"4\"`.\n- `title`: the section title.\n- `summary`: one to three sentences on what the section says.\n- `obligations`: every obligation in the section. Use an empty list if there are none.\n\nEach `Obligation` has four fields:\n\n- `requirement`: what the firm must do, in plain English.\n- `paragraph`: the paragraph number it comes from, for example `\"4.2\"`.\n- `deadline`: the deadline exactly as written in the document, or `null` if there is none.\n- `evidence`: a quote copied word for word from that paragraph, at most 30 words.\n\nFor example:\n\n```json\n{\n  \"number\": \"7\",\n  \"title\": \"Incident reporting\",\n  \"summary\": \"Firms must report major incidents to the regulator quickly.\",\n  \"obligations\": [\n    {\n      \"requirement\": \"Report major incidents to the regulator\",\n      \"paragraph\": \"7.1\",\n      \"deadline\": \"within 4 hours\",\n      \"evidence\": \"Firms must notify the FSOA of a major incident within 4 hours\"\n    }\n  ]\n}\n```\n\n### What counts as an obligation\n\nAn obligation is something a firm must do. Look for \"must\", \"shall\", \"is required to\" and \"will need to\".\n\n- Do not list recommendations or guidance (\"should\", \"may\", \"we expect\") as obligations.\n- Do not list things only the regulator does.\n- If one paragraph sets several separate requirements, list each one separately.\n- If the section changes a requirement or deadline from an earlier section, say so in the summary.\n\n### Rules for accuracy\n\n- Copy `evidence` word for word. Never paraphrase, correct or shorten the wording inside a quote.\n- Copy `deadline` exactly as written. Do not convert dates or durations, for example \"within 4 hours\" stays as it is.\n- Use only the section you were given. Do not use outside knowledge of the regulation.\n- Do not guess. If a paragraph is ambiguous, say so in the summary rather than inventing a requirement.\n\nThese fields are checked automatically against the source text afterwards. A quote that isn't word for word, or a\ndeadline that isn't in the section, will be flagged.\n"
  },
- "request_sha256": "d4bc136a06d549a6f3745785b9ddffddb056cf40415cc998ea2c2e4132db0f33",
+ "request_sha256": "b0a43bbc44bd2416cc97212858342d5a8e6e92bb3c259e3d4e98aacc2be743b1",
  "response": {
-  "content": "",
+  "content": "{\"number\":\"10\",\"title\":\"Next steps and contacts\",\"summary\":\"The regulator will host webinars in Q1 2027 and publish FAQs, and firms with questions should contact their supervisory contact or the operational resilience team. A separate consultation in 2027 will consider extending the requirements to insurers and investment firms. The section contains no binding obligations (no 'must') or guidance ('should') directed at firms; all commitments are the regulator's own.\",\"obligations\":[]}",
   "model_reported": "claude-sonnet-5-5",
   "tool_calls": [
    {
     "args": {
-     "number": "7",
-     "obligations": [
-      {
-       "deadline": "within 4 hours of classifying an incident as a major incident, and in any case no later than 24 hours after the incident is first detected",
-       "evidence": "Firms must submit an initial notification to the FSOA within 4 hours of classifying an incident as a major incident",
-       "paragraph": "7.1",
-       "requirement": "Submit an initial notification to the FSOA after classifying an incident as major, and in any case no later than 24 hours after the incident is first detected"
-      },
-      {
-       "deadline": "within 72 hours of the initial notification",
-       "evidence": "Firms must submit an intermediate report within 72 hours of the initial notification",
-       "paragraph": "7.2",
-       "requirement": "Submit an intermediate report setting out the cause of the incident as far as it is known, the services and customers affected, and the actions taken so far"
-      },
-      {
-       "deadline": "within 30 business days of the incident being resolved",
-       "evidence": "Firms must submit a final report within 30 business days of the incident being resolved.",
-       "paragraph": "7.3",
-       "requirement": "Submit a final report after the incident is resolved"
-      },
-      {
-       "deadline": null,
-       "evidence": "The final report must include a root-cause analysis and the lessons learned.",
-       "paragraph": "7.3",
-       "requirement": "Include a root-cause analysis and the lessons learned in the final report"
-      }
-     ],
-     "summary": "Firms must report major incidents to the FSOA in three stages: an initial notification, an intermediate report and a final report. Firms stay responsible for reporting incidents caused by third-party providers. The FSOA will publish a reporting template, and firms may use their existing formats until then.",
-     "title": "Incident reporting"
+     "number": "10",
+     "obligations": [],
+     "summary": "The regulator will host webinars in Q1 2027 and publish FAQs, and firms with questions should contact their supervisory contact or the operational resilience team. A separate consultation in 2027 will consider extending the requirements to insurers and investment firms. The section contains no binding obligations (no 'must') for firms; all commitments are the regulator's own, and para 10.2 is only an informal pointer on whom to contact.",
+     "title": "Next steps and contacts"
     },
     "name": "SectionSummary"
    }
   ],
   "usage": {
-   "cache_creation_input_tokens": 941,
+   "cache_creation_input_tokens": 887,
    "cache_read_input_tokens": 6399,
    "input_tokens": 2,
-   "output_tokens": 621
+   "output_tokens": 409
   }
  }
 }

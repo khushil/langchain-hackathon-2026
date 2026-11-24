@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
 from urllib.parse import urlencode
 
@@ -10,6 +10,8 @@ from starlette.exceptions import HTTPException
 
 from review_app.drafts import DraftStore
 from review_app.library import Library, read_library
+from review_app.naming import Naming
+from review_app.paragraph_map import DocumentMap, build_map
 from review_app.review_route import today
 from review_app.service import EngineMissingError, RunNotFoundError, RunsService, get_runs
 from utils.state import BriefState
@@ -70,6 +72,11 @@ def run_url(thread_id: str, *parts: str, **query: str) -> str:
     return path + (f"?{urlencode(kept)}" if kept else "")
 
 
+def naming_of(services: Services) -> Naming:
+    """Return the names the pages use for firms, providers and the places facts come from."""
+    return Naming.of(services.library())
+
+
 def runs_of(services: Services) -> RunsService:
     """Return the run service, or stop the page with a message in words when there is none.
 
@@ -88,20 +95,25 @@ def runs_of(services: Services) -> RunsService:
         raise HTTPException(503, str(exc)) from exc
 
 
-def run_tabs(thread_id: str, status: str) -> list[tuple[str, str, str]]:
+def run_tabs(
+    thread_id: str, status: str, *, has_profile: bool = False
+) -> list[tuple[str, str, str]]:
     """Return the parts of a run's pages as key, label and address.
 
     Args:
         thread_id: The run.
         status: The run's status.
+        has_profile: Whether the brief cites firm or provider facts, which are decided together.
 
     Returns:
         The tabs for a brief awaiting review, or for one that has been signed or returned.
     """
     facts = ("facts", "Facts", run_url(thread_id, "facts"))
     if status == "awaiting_review":
+        profile = [("profile", "Firm profile", run_url(thread_id, "review", tab="profile"))]
         return [
             ("brief", "Brief", run_url(thread_id, "review")),
+            *(profile if has_profile else []),
             ("questions", "Open questions", run_url(thread_id, "review", tab="questions")),
             facts,
             ("signoff", "Sign-off", run_url(thread_id, "review", tab="signoff")),
@@ -140,4 +152,28 @@ def read_run(services: Services, thread_id: str) -> RunInfo:
         firm_name=library.firm_name(request.get("firm_id", "")),
         sections=tuple(sections) if sections else None,
         state=state,
+    )
+
+
+def document_map(
+    services: Services,
+    info: RunInfo,
+    href_for: Callable[[str, Sequence[str]], str],
+    current: str | None = None,
+) -> DocumentMap | None:
+    """Draw the picture of the document a run was asked to read.
+
+    Args:
+        services: The services, whose library names the sections.
+        info: The run.
+        href_for: Gives the address that opens a paragraph, from its anchor and first fact.
+        current: The anchor of the paragraph open now, if any.
+
+    Returns:
+        The picture, or None when the run holds no accounting of the document.
+    """
+    document = services.library().document(info.document_id)
+    titles = {s.number: s.title for s in document.sections} if document else {}
+    return build_map(
+        info.state, sections=info.sections, titles=titles, href_for=href_for, current=current
     )

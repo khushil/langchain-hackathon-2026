@@ -1,6 +1,6 @@
 {
  "meta": {
-  "duration_s": 10.573,
+  "duration_s": 9.251,
   "init": {
    "agents": [],
    "apiKeySource": "none",
@@ -14,14 +14,14 @@
     "StructuredOutput"
    ]
   },
-  "recorded_at": "2026-11-24T20:52:36.871575+00:00"
+  "recorded_at": "2026-11-24T22:23:44.472686+00:00"
  },
  "request": {
   "effort": "medium",
   "format": 2,
   "messages": [
    {
-    "content": "Summarise ONE section of regulatory document PS26-4 (Policy Statement PS26/4: Operational resilience and third-party technology risk) and extract its obligations. Only analyse; do not create files. Return a SectionSummary.\n\nSection number: 6\nSection title: Third-party technology providers\nFull text:\n6.1 Firms must maintain a register of all material third-party providers by 31 March 2027. The register must record, for each provider, the services it supports, the data it holds, its location, and the date the contract expires.\n\n6.2 Firms must notify the FSOA at least 60 days before entering into a new arrangement with a material third-party provider, or materially changing an existing one.\n\n6.3 Contracts with material third-party providers must give the firm and the FSOA rights of access and audit, require the provider to report incidents to the firm without undue delay, and set out how the service will be transferred or wound down if the arrangement ends.\n\n6.4 Firms must have a documented exit plan for each material third-party provider and must test each exit plan at least once every two years.\n\n6.5 Where a firm uses the same material third-party provider for more than one important business service, it must assess the concentration risk and explain to the board how it would manage the failure of that provider.\n\n6.6 Firms remain fully responsible for meeting their regulatory obligations when they outsource. Outsourcing a service does not transfer the firm's responsibility for it.",
+    "content": "Summarise ONE section of a regulatory document and extract its obligations. Analysis only: do not create or edit files. Return a SectionSummary with the section number, title, a short summary, and every obligation in the section (who must do what, by when, and any thresholds or conditions). Treat 'must' as a binding obligation and 'should'/'we expect' as guidance, and label each one.\n\nDocument: Policy Statement PS26/4: Operational resilience and third-party technology risk\nSection number: 8\nSection title: Governance and accountability\nFull text:\n8.1 Firms must name a senior manager who is responsible for operational resilience by 31 January 2027, and must notify the FSOA of that person's name within 14 days of appointing them.\n\n8.2 Firms must complete an annual self-assessment of their operational resilience, which must be approved by the board. The first self-assessment must be completed and approved by 31 March 2028.\n\n8.3 The self-assessment must cover the firm's important business services, impact tolerances, mapping, scenario testing results, vulnerabilities and remediation actions, and its management of material third-party providers.\n\n8.4 Boards should receive regular management information on operational resilience, at least quarterly, and should challenge it.\n\n8.5 Firms must keep each self-assessment for at least 5 years and provide it to the FSOA on request.",
     "role": "user"
    }
   ],
@@ -397,93 +397,63 @@
   },
   "system": "# Section summariser agent\nYou are given one section: its number, title and text. Return a `SectionSummary` as a single JSON object, with no text before or after it:\n\n- `number`: the section number, for example `\"4\"`.\n- `title`: the section title.\n- `summary`: one to three sentences on what the section says.\n- `obligations`: every obligation in the section. Use an empty list if there are none.\n\nEach `Obligation` has four fields:\n\n- `requirement`: what the firm must do, in plain English.\n- `paragraph`: the paragraph number it comes from, for example `\"4.2\"`.\n- `deadline`: the deadline exactly as written in the document, or `null` if there is none.\n- `evidence`: a quote copied word for word from that paragraph, at most 30 words.\n\nFor example:\n\n```json\n{\n  \"number\": \"7\",\n  \"title\": \"Incident reporting\",\n  \"summary\": \"Firms must report major incidents to the regulator quickly.\",\n  \"obligations\": [\n    {\n      \"requirement\": \"Report major incidents to the regulator\",\n      \"paragraph\": \"7.1\",\n      \"deadline\": \"within 4 hours\",\n      \"evidence\": \"Firms must notify the FSOA of a major incident within 4 hours\"\n    }\n  ]\n}\n```\n\n### What counts as an obligation\n\nAn obligation is something a firm must do. Look for \"must\", \"shall\", \"is required to\" and \"will need to\".\n\n- Do not list recommendations or guidance (\"should\", \"may\", \"we expect\") as obligations.\n- Do not list things only the regulator does.\n- If one paragraph sets several separate requirements, list each one separately.\n- If the section changes a requirement or deadline from an earlier section, say so in the summary.\n\n### Rules for accuracy\n\n- Copy `evidence` word for word. Never paraphrase, correct or shorten the wording inside a quote.\n- Copy `deadline` exactly as written. Do not convert dates or durations, for example \"within 4 hours\" stays as it is.\n- Use only the section you were given. Do not use outside knowledge of the regulation.\n- Do not guess. If a paragraph is ambiguous, say so in the summary rather than inventing a requirement.\n\nThese fields are checked automatically against the source text afterwards. A quote that isn't word for word, or a\ndeadline that isn't in the section, will be flagged.\n"
  },
- "request_sha256": "862ae4322115e45c93418e9c9b3ae91c4530d61695a86462303a204df625d1c8",
+ "request_sha256": "190c8971aa841fe9872d13164e635bf9fadf4803e48c984c92d71cc4a559be2f",
  "response": {
-  "content": "{\"number\":\"6\",\"title\":\"Third-party technology providers\",\"summary\":\"Section 6 sets requirements for firms' use of material third-party providers: a register, advance notification to the FSOA, mandatory contract terms, exit plans and testing, and concentration risk assessment. Firms stay fully responsible for their regulatory obligations when outsourcing.\",\"obligations\":[{\"requirement\":\"Maintain a register of all material third-party providers\",\"paragraph\":\"6.1\",\"deadline\":\"by 31 March 2027\",\"evidence\":\"Firms must maintain a register of all material third-party providers by 31 March 2027.\"},{\"requirement\":\"Record in the register, for each provider, the services it supports, the data it holds, its location, and the contract expiry date\",\"paragraph\":\"6.1\",\"deadline\":null,\"evidence\":\"The register must record, for each provider, the services it supports, the data it holds, its location, and the date the contract expires.\"},{\"requirement\":\"Notify the FSOA before entering a new arrangement with a material third-party provider, or materially changing an existing one\",\"paragraph\":\"6.2\",\"deadline\":\"at least 60 days before\",\"evidence\":\"Firms must notify the FSOA at least 60 days before entering into a new arrangement with a material third-party provider\"},{\"requirement\":\"Ensure contracts with material third-party providers give the firm and the FSOA rights of access and audit\",\"paragraph\":\"6.3\",\"deadline\":null,\"evidence\":\"Contracts with material third-party providers must give the firm and the FSOA rights of access and audit\"},{\"requirement\":\"Ensure contracts require the provider to report incidents to the firm without undue delay\",\"paragraph\":\"6.3\",\"deadline\":\"without undue delay\",\"evidence\":\"require the provider to report incidents to the firm without undue delay\"},{\"requirement\":\"Ensure contracts set out how the service will be transferred or wound down if the arrangement ends\",\"paragraph\":\"6.3\",\"deadline\":null,\"evidence\":\"set out how the service will be transferred or wound down if the arrangement ends\"},{\"requirement\":\"Have a documented exit plan for each material third-party provider\",\"paragraph\":\"6.4\",\"deadline\":null,\"evidence\":\"Firms must have a documented exit plan for each material third-party provider\"},{\"requirement\":\"Test each exit plan regularly\",\"paragraph\":\"6.4\",\"deadline\":\"at least once every two years\",\"evidence\":\"must test each exit plan at least once every two years\"},{\"requirement\":\"Assess concentration risk where the same material provider supports more than one important business service\",\"paragraph\":\"6.5\",\"deadline\":null,\"evidence\":\"it must assess the concentration risk\"},{\"requirement\":\"Explain to the board how the firm would manage the failure of that provider\",\"paragraph\":\"6.5\",\"deadline\":null,\"evidence\":\"explain to the board how it would manage the failure of that provider\"},{\"requirement\":\"Remain fully responsible for meeting regulatory obligations when outsourcing\",\"paragraph\":\"6.6\",\"deadline\":null,\"evidence\":\"Firms remain fully responsible for meeting their regulatory obligations when they outsource.\"}]}",
+  "content": "{\"number\":\"8\",\"title\":\"Governance and accountability\",\"summary\":\"Firms must name a senior manager responsible for operational resilience and notify the FSOA, and must complete a board-approved annual self-assessment covering specified topics, which they must keep for at least 5 years and provide to the FSOA on request. Boards are only guided (should, not must) to receive regular management information, at least quarterly, and to challenge it.\",\"obligations\":[{\"requirement\":\"[Binding] Name a senior manager responsible for operational resilience\",\"paragraph\":\"8.1\",\"deadline\":\"by 31 January 2027\",\"evidence\":\"Firms must name a senior manager who is responsible for operational resilience by 31 January 2027\"},{\"requirement\":\"[Binding] Notify the FSOA of the senior manager's name\",\"paragraph\":\"8.1\",\"deadline\":\"within 14 days of appointing them\",\"evidence\":\"must notify the FSOA of that person's name within 14 days of appointing them\"},{\"requirement\":\"[Binding] Complete an annual self-assessment of operational resilience, approved by the board\",\"paragraph\":\"8.2\",\"deadline\":\"The first self-assessment must be completed and approved by 31 March 2028\",\"evidence\":\"Firms must complete an annual self-assessment of their operational resilience, which must be approved by the board.\"},{\"requirement\":\"[Binding] Ensure the self-assessment covers important business services, impact tolerances, mapping, scenario testing results, vulnerabilities and remediation actions, and management of material third-party providers\",\"paragraph\":\"8.3\",\"deadline\":null,\"evidence\":\"The self-assessment must cover the firm's important business services, impact tolerances, mapping, scenario testing results, vulnerabilities and remediation actions\"},{\"requirement\":\"[Binding] Keep each self-assessment for at least 5 years\",\"paragraph\":\"8.5\",\"deadline\":\"at least 5 years\",\"evidence\":\"Firms must keep each self-assessment for at least 5 years\"},{\"requirement\":\"[Binding] Provide each self-assessment to the FSOA on request\",\"paragraph\":\"8.5\",\"deadline\":\"on request\",\"evidence\":\"provide it to the FSOA on request\"}]}",
   "model_reported": "claude-sonnet-5-5",
   "tool_calls": [
    {
     "args": {
-     "number": "6",
+     "number": "8",
      "obligations": [
       {
-       "deadline": "by 31 March 2027",
-       "evidence": "Firms must maintain a register of all material third-party providers by 31 March 2027.",
-       "paragraph": "6.1",
-       "requirement": "Maintain a register of all material third-party providers"
+       "deadline": "by 31 January 2027",
+       "evidence": "Firms must name a senior manager who is responsible for operational resilience by 31 January 2027",
+       "paragraph": "8.1",
+       "requirement": "[Binding] Name a senior manager responsible for operational resilience"
+      },
+      {
+       "deadline": "within 14 days of appointing them",
+       "evidence": "must notify the FSOA of that person's name within 14 days of appointing them",
+       "paragraph": "8.1",
+       "requirement": "[Binding] Notify the FSOA of the senior manager's name"
+      },
+      {
+       "deadline": "by 31 March 2028",
+       "evidence": "Firms must complete an annual self-assessment of their operational resilience, which must be approved by the board.",
+       "paragraph": "8.2",
+       "requirement": "[Binding] Complete an annual self-assessment of operational resilience, approved by the board; first one due by the stated date"
       },
       {
        "deadline": null,
-       "evidence": "The register must record, for each provider, the services it supports, the data it holds, its location, and the date the contract expires.",
-       "paragraph": "6.1",
-       "requirement": "Record in the register, for each provider, the services it supports, the data it holds, its location, and the contract expiry date"
+       "evidence": "The self-assessment must cover the firm's important business services, impact tolerances, mapping, scenario testing results, vulnerabilities and remediation actions",
+       "paragraph": "8.3",
+       "requirement": "[Binding] Ensure the self-assessment covers important business services, impact tolerances, mapping, scenario testing results, vulnerabilities and remediation actions, and management of material third-party providers"
       },
       {
-       "deadline": "at least 60 days before",
-       "evidence": "Firms must notify the FSOA at least 60 days before entering into a new arrangement with a material third-party provider",
-       "paragraph": "6.2",
-       "requirement": "Notify the FSOA before entering a new arrangement with a material third-party provider, or materially changing an existing one"
+       "deadline": "at least 5 years",
+       "evidence": "Firms must keep each self-assessment for at least 5 years",
+       "paragraph": "8.5",
+       "requirement": "[Binding] Keep each self-assessment for at least 5 years"
       },
       {
-       "deadline": null,
-       "evidence": "Contracts with material third-party providers must give the firm and the FSOA rights of access and audit",
-       "paragraph": "6.3",
-       "requirement": "Ensure contracts with material third-party providers give the firm and the FSOA rights of access and audit"
-      },
-      {
-       "deadline": "without undue delay",
-       "evidence": "require the provider to report incidents to the firm without undue delay",
-       "paragraph": "6.3",
-       "requirement": "Ensure contracts require the provider to report incidents to the firm without undue delay"
-      },
-      {
-       "deadline": null,
-       "evidence": "set out how the service will be transferred or wound down if the arrangement ends",
-       "paragraph": "6.3",
-       "requirement": "Ensure contracts set out how the service will be transferred or wound down if the arrangement ends"
-      },
-      {
-       "deadline": null,
-       "evidence": "Firms must have a documented exit plan for each material third-party provider",
-       "paragraph": "6.4",
-       "requirement": "Have a documented exit plan for each material third-party provider"
-      },
-      {
-       "deadline": "at least once every two years",
-       "evidence": "must test each exit plan at least once every two years",
-       "paragraph": "6.4",
-       "requirement": "Test each exit plan regularly"
-      },
-      {
-       "deadline": null,
-       "evidence": "it must assess the concentration risk",
-       "paragraph": "6.5",
-       "requirement": "Assess concentration risk where the same material provider supports more than one important business service"
-      },
-      {
-       "deadline": null,
-       "evidence": "explain to the board how it would manage the failure of that provider",
-       "paragraph": "6.5",
-       "requirement": "Explain to the board how the firm would manage the failure of that provider"
-      },
-      {
-       "deadline": null,
-       "evidence": "Firms remain fully responsible for meeting their regulatory obligations when they outsource.",
-       "paragraph": "6.6",
-       "requirement": "Remain fully responsible for meeting regulatory obligations when outsourcing"
+       "deadline": "on request",
+       "evidence": "provide it to the FSOA on request",
+       "paragraph": "8.5",
+       "requirement": "[Binding] Provide each self-assessment to the FSOA on request"
       }
      ],
-     "summary": "Section 6 sets requirements for firms' use of material third-party providers: a register, advance notification to the FSOA, mandatory contract terms, exit plans and testing, and concentration risk assessment. Firms stay fully responsible for their regulatory obligations when outsourcing.",
-     "title": "Third-party technology providers"
+     "summary": "Firms must name a senior manager responsible for operational resilience and notify the FSOA, and must complete a board-approved annual self-assessment covering specified topics, which they must keep for at least 5 years and provide to the FSOA on request. Para 8.4 is guidance only (boards 'should' receive at least quarterly management information and challenge it), so it is not listed as an obligation.",
+     "title": "Governance and accountability"
     },
     "name": "SectionSummary"
    }
   ],
   "usage": {
-   "cache_creation_input_tokens": 1015,
+   "cache_creation_input_tokens": 997,
    "cache_read_input_tokens": 6399,
    "input_tokens": 2,
-   "output_tokens": 2103
+   "output_tokens": 1518
   }
  }
 }

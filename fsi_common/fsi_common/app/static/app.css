@@ -38,8 +38,8 @@ a:hover { background: var(--mark); }
 .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 
 .topbar {
-  display: flex; align-items: center; gap: 20px;
-  height: 52px; padding: 0 24px;
+  display: flex; flex-wrap: wrap; align-items: center; gap: 4px 20px;
+  min-height: 52px; padding: 6px 24px;
   background: var(--surface);
   border-bottom: 1px solid var(--line);
 }
@@ -66,7 +66,7 @@ main:focus { outline: none; }
   align-self: start;
 }
 .tile-value { font-size: 1.6rem; font-weight: 700; line-height: 1.2; }
-.tile-label { color: var(--muted); font-size: 0.933rem; }
+.tile-label { color: var(--muted); font-size: 0.933rem; overflow-wrap: anywhere; }
 .tile .badge { grid-column: 1 / -1; margin-top: 4px; justify-self: start; }
 .tile-needs_person { border-color: var(--amber-line); background: var(--amber-bg); }
 .tile-failed { border-color: var(--coral-line); background: var(--coral-bg); }
@@ -118,6 +118,7 @@ legend { font-weight: 600; padding: 0 4px; }
 .stack > * + * { margin-top: 2px; }
 .form-narrow { max-width: 28rem; }
 .problem { margin: 0 0 10px; }
+.problem .badge { white-space: normal; align-items: flex-start; }
 
 .table-wrap { overflow-x: auto; }
 .table-tools { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; gap: 12px; }
@@ -127,3 +128,13 @@ table.data th, table.data td { text-align: left; padding: 6px 10px; border-botto
 table.data th { font-weight: 700; border-bottom: 1px solid var(--line); white-space: nowrap; }
 table.data th a { text-decoration: none; }
 .empty { color: var(--muted); margin: 6px 0; }
+
+/* A phone: the top bar wraps, the tiles stack and nothing lies beyond the window. */
+@media (max-width: 640px) {
+  .topbar { padding: 6px 12px; gap: 4px 14px; }
+  .topbar-end { margin-left: 0; flex-wrap: wrap; gap: 6px 12px; }
+  .who { max-width: none; white-space: normal; overflow: visible; }
+  main { padding: 12px 12px 20px; }
+  .sentence { font-size: 1.25rem; }
+  .tiles { grid-template-columns: minmax(0, 1fr); }
+}

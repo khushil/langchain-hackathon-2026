@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import html
 import os
 import re
 
@@ -36,21 +37,25 @@ def served_review(real: RealExport) -> str:
     return real.served(real.export.entry)
 
 
-def cited_fact_ids(real: RealExport) -> list[str]:
-    """The facts the brief cites, read from the served review page by its own markup."""
-    return list(dict.fromkeys(re.findall(r'data-fact="([^"]+)"', served_review(real))))
+def cited_fact_links(real: RealExport) -> dict[str, str]:
+    """Where each cited fact opens, read from the links of the served review page."""
+    found = re.findall(r'href="([^"]+)" data-fact="([^"]+)"', served_review(real))
+    return {fact: html.unescape(href) for href, fact in found}
 
 
 def test_the_file_holds_every_cited_fact_with_the_paragraph_it_rests_on(real):
-    facts = cited_fact_ids(real)
+    facts = cited_fact_links(real)
     assert facts, "the replayed brief cites no fact, so there is nothing to compare"
     with_paragraph = 0
-    for fact in facts:
-        address = f"{real.export.entry}?fact={fact.replace(':', '%3A')}"
+    for fact, address in facts.items():
         assert address in real.export.addresses, f"{fact} has no page in the file"
-        panel = re.search(r'data-hook="paragraph">(.*?)</p>', real.served(address), re.S)
+        panel = re.search(
+            r'data-hook="paragraph">(.*?)</p>|data-hook="row-table">(.*?)</table>',
+            real.served(address),
+            re.S,
+        )
         assert panel, fact
-        words = body_text(f"<html><body>{panel.group(1)}</body></html>")
+        words = body_text(f"<html><body>{panel.group(1) or panel.group(2)}</body></html>")
         section = body_text(section_html(real.export.html, real.export.ids[address]))
         assert words and words in section, f"the paragraph of {fact} is not on its page"
         with_paragraph += 1

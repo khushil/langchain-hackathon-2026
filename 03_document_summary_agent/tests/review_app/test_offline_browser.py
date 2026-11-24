@@ -123,7 +123,9 @@ def test_a_real_click_on_a_cited_fact_opens_its_paragraph_in_the_file(offline, r
     assert page.evaluate("location.hash") == target
     shown = page.evaluate(VISIBLE)
     assert [s["id"] for s in shown] == [target[1:]]
-    paragraph = page.locator(".offline-page:visible [data-hook='paragraph']").inner_text()
+    visible = ".offline-page:visible"
+    source = f"{visible} [data-hook='paragraph'], {visible} [data-hook='row-table']"
+    paragraph = page.locator(source).inner_text()
     assert paragraph.strip()
     assert refused == []
 

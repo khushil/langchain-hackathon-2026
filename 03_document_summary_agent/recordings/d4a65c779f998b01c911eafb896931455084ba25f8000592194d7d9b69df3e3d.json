@@ -1,0 +1,594 @@
+{
+ "meta": {
+  "duration_s": 35.521,
+  "init": {
+   "agents": [],
+   "apiKeySource": "none",
+   "claude_code_version": "2.1.302",
+   "mcp_servers": [],
+   "model": "claude-opus-5-5",
+   "plugins": [],
+   "skills": [],
+   "slash_commands": [],
+   "tools": [
+    "StructuredOutput"
+   ]
+  },
+  "recorded_at": "2026-11-24T22:23:53.740775+00:00"
+ },
+ "request": {
+  "effort": "medium",
+  "format": 2,
+  "messages": [
+   {
+    "content": "Summarise document PS26-4 for FIRM-001",
+    "role": "user"
+   },
+   {
+    "content": "",
+    "role": "assistant",
+    "tool_calls": [
+     {
+      "args": {
+       "document_id": "PS26-4"
+      },
+      "id": "call_68dd489b26aa0c437808b3d1",
+      "name": "get_document"
+     },
+     {
+      "args": {
+       "firm_id": "FIRM-001"
+      },
+      "id": "call_ff3cb7326cfea18825856912",
+      "name": "get_firm_profile"
+     }
+    ]
+   },
+   {
+    "content": "{\"document_id\": \"PS26-4\", \"title\": \"Policy Statement PS26/4: Operational resilience and third-party technology risk\", \"sections\": [{\"number\": \"1\", \"title\": \"Introduction and purpose\", \"text\": \"1.1 This policy statement sets out the final rules and guidance on operational resilience and the management of third-party technology risk for firms authorised by the Financial Services Oversight Authority. It follows Consultation Paper CP25/11, which closed in March 2026, and reflects the feedback we received from firms, trade bodies and consumer groups.\\n\\n1.2 Disruption to financial services can cause serious harm to consumers and to market integrity. Recent incidents have shown that firms increasingly depend on a small number of technology providers, and that an outage at one provider can affect many firms at the same time. Firms have also told us that they find it hard to assess the resilience of services they do not run themselves.\\n\\n1.3 Our objective is that firms can continue to deliver their most important services through severe but plausible disruption, and that when disruption does happen, it is contained, reported promptly and learned from. We expect firms to treat operational resilience as a matter for the board, not only for technology teams.\\n\\n1.4 This policy statement takes effect on 1 January 2027. The deadlines for individual requirements are set out in the relevant sections, and transitional arrangements for some firms are set out in section 9.\\n\\n1.5 We will review the effectiveness of these rules two years after they take effect, and we will publish our findings.\"}, {\"number\": \"2\", \"title\": \"Scope and application\", \"text\": \"2.1 This policy statement applies to all banks, building societies, payment institutions and electronic money institutions authorised by the FSOA.\\n\\n2.2 It applies to the firm's activities in all jurisdictions where the failure of an activity could cause harm to consumers in our jurisdiction or to the stability of our financial system.\\n\\n2.3 Some requirements are applied proportionately. For the purposes of this policy statement, a small firm is a firm that has fewer than 250,000 customers and total assets of less than £5 billion on 31 December 2026. A firm that exceeds either threshold is not a small firm.\\n\\n2.4 A firm that becomes a small firm, or stops being a small firm, after 31 December 2026 must notify the FSOA within 30 days of the change. Its status for the purposes of the transitional arrangements in section 9 is fixed on 31 December 2026 and does not change.\\n\\n2.5 Groups may meet these requirements at group level, provided that each authorised firm in the group can show how the group arrangements apply to its own important business services.\"}, {\"number\": \"3\", \"title\": \"Definitions\", \"text\": \"3.1 An important business service is a service that a firm provides to an external end user, where disruption to the service could cause intolerable harm to consumers or risk to market integrity. Internal services, such as human resources or internal reporting, are not important business services on their own.\\n\\n3.2 An impact tolerance is the maximum tolerable level of disruption to an important business service, expressed as a maximum length of time and, where relevant, a maximum number of affected customers or transactions.\\n\\n3.3 A material third-party provider is a provider of technology services whose failure would cause the firm to breach an impact tolerance for one or more important business services.\\n\\n3.4 A major incident is an operational incident that has caused, or is likely to cause, a breach of an impact tolerance, or that affects more than 10% of the firm's customers.\\n\\n3.5 Business days are days other than weekends and public holidays in our jurisdiction.\"}, {\"number\": \"4\", \"title\": \"Important business services and impact tolerances\", \"text\": \"4.1 Firms must identify their important business services by 31 March 2027. In doing so, firms should consider the number and type of customers using each service, the availability of alternatives, and the time sensitivity of payments or other transactions.\\n\\n4.2 Firms must set an impact tolerance for each important business service by 31 March 2027. Impact tolerances must be set at the point at which harm becomes intolerable, not at the point at which the firm expects to be able to recover.\\n\\n4.3 The board must approve the list of important business services and their impact tolerances, and must review both at least once every 12 months, or sooner if there is a material change to the firm's business.\\n\\n4.4 We expect most retail banks to identify between 6 and 15 important business services. Firms that identify fewer than 4 should be prepared to explain why.\\n\\n4.5 Firms must keep a record of how they identified each important business service and set each impact tolerance, and must provide it to the FSOA on request within 10 business days.\"}, {\"number\": \"5\", \"title\": \"Mapping and scenario testing\", \"text\": \"5.1 Firms must map the people, processes, technology, facilities and information that support each important business service, including those provided by third parties, by 31 March 2027.\\n\\n5.2 Mapping must be detailed enough to identify single points of failure and concentrations of risk, including where several important business services depend on the same third-party provider.\\n\\n5.3 Firms must test their ability to remain within impact tolerance under severe but plausible scenarios. The first round of scenario testing must be completed by 30 September 2027, and testing must be repeated at least once a year after that.\\n\\n5.4 Scenarios must include, at a minimum, the failure of a material third-party provider, a cyber attack that makes key systems unavailable, and the loss of a key site.\\n\\n5.5 Where testing shows that a firm cannot remain within an impact tolerance, the firm must record the vulnerability, set out the actions it will take to address it, and report the vulnerability to the board at its next meeting.\"}, {\"number\": \"6\", \"title\": \"Third-party technology providers\", \"text\": \"6.1 Firms must maintain a register of all material third-party providers by 31 March 2027. The register must record, for each provider, the services it supports, the data it holds, its location, and the date the contract expires.\\n\\n6.2 Firms must notify the FSOA at least 60 days before entering into a new arrangement with a material third-party provider, or materially changing an existing one.\\n\\n6.3 Contracts with material third-party providers must give the firm and the FSOA rights of access and audit, require the provider to report incidents to the firm without undue delay, and set out how the service will be transferred or wound down if the arrangement ends.\\n\\n6.4 Firms must have a documented exit plan for each material third-party provider and must test each exit plan at least once every two years.\\n\\n6.5 Where a firm uses the same material third-party provider for more than one important business service, it must assess the concentration risk and explain to the board how it would manage the failure of that provider.\\n\\n6.6 Firms remain fully responsible for meeting their regulatory obligations when they outsource. Outsourcing a service does not transfer the firm's responsibility for it.\"}, {\"number\": \"7\", \"title\": \"Incident reporting\", \"text\": \"7.1 Firms must submit an initial notification to the FSOA within 4 hours of classifying an incident as a major incident, and in any case no later than 24 hours after the incident is first detected.\\n\\n7.2 Firms must submit an intermediate report within 72 hours of the initial notification, setting out the cause of the incident as far as it is known, the services and customers affected, and the actions taken so far.\\n\\n7.3 Firms must submit a final report within 30 business days of the incident being resolved. The final report must include a root-cause analysis and the lessons learned.\\n\\n7.4 Where a major incident is caused by a third-party provider, the firm remains responsible for reporting it. Firms should not delay a notification while they wait for information from the provider.\\n\\n7.5 We will publish an incident reporting template before the rules take effect. Until then, firms may use their existing incident reporting formats.\"}, {\"number\": \"8\", \"title\": \"Governance and accountability\", \"text\": \"8.1 Firms must name a senior manager who is responsible for operational resilience by 31 January 2027, and must notify the FSOA of that person's name within 14 days of appointing them.\\n\\n8.2 Firms must complete an annual self-assessment of their operational resilience, which must be approved by the board. The first self-assessment must be completed and approved by 31 March 2028.\\n\\n8.3 The self-assessment must cover the firm's important business services, impact tolerances, mapping, scenario testing results, vulnerabilities and remediation actions, and its management of material third-party providers.\\n\\n8.4 Boards should receive regular management information on operational resilience, at least quarterly, and should challenge it.\\n\\n8.5 Firms must keep each self-assessment for at least 5 years and provide it to the FSOA on request.\"}, {\"number\": \"9\", \"title\": \"Transitional arrangements\", \"text\": \"9.1 Small firms, as defined in paragraph 2.3, may meet the requirements in paragraphs 4.1, 4.2, 5.1 and 6.1 by 31 March 2028 instead of 31 March 2027.\\n\\n9.2 Small firms may complete their first round of scenario testing under paragraph 5.3 by 30 September 2028 instead of 30 September 2027.\\n\\n9.3 For all firms, contracts with material third-party providers that were in place before 1 January 2027 must be updated to meet paragraph 6.3 at their next renewal, or by 31 December 2028, whichever is earlier.\\n\\n9.4 The transitional arrangements do not apply to the incident reporting requirements in section 7 or to the requirement to name a senior manager in paragraph 8.1. These apply to all firms from 1 January 2027.\"}, {\"number\": \"10\", \"title\": \"Next steps and contacts\", \"text\": \"10.1 We will host a series of webinars for firms in the first quarter of 2027 and will publish frequently asked questions on our website.\\n\\n10.2 Firms with questions about this policy statement should contact their usual supervisory contact. General questions can be sent to our operational resilience team.\\n\\n10.3 We will consult separately in 2027 on whether to extend these requirements to insurers and investment firms.\"}]}",
+    "name": "get_document",
+    "role": "tool",
+    "tool_call_id": "call_68dd489b26aa0c437808b3d1"
+   },
+   {
+    "content": "{\"firm_id\": \"FIRM-001\", \"name\": \"Harbour Mutual Bank\", \"type\": \"retail bank\", \"customers\": 1200000, \"total_assets\": \"£9 billion\", \"operational_resilience_senior_manager\": null, \"notes\": \"Mobile banking and card payments both run on NimbusCloud.\", \"third_party_providers\": [{\"provider_id\": \"PROVIDER-001\", \"name\": \"NimbusCloud\", \"service\": \"core banking hosting\", \"contract_end\": \"30 June 2027\", \"material\": true}, {\"provider_id\": \"PROVIDER-002\", \"name\": \"PayCore Ltd\", \"service\": \"card processing\", \"contract_end\": \"31 December 2029\", \"material\": true}]}",
+    "name": "get_firm_profile",
+    "role": "tool",
+    "tool_call_id": "call_ff3cb7326cfea18825856912"
+   },
+   {
+    "content": "I've retrieved PS26/4, which has 10 sections, and the profile for Harbour Mutual Bank. I'm sending each section to its own section-summariser now, all at the same time. When the summaries come back I'll put them in order and turn them into a brief for FIRM-001.",
+    "role": "assistant",
+    "tool_calls": [
+     {
+      "args": {
+       "description": "Summarise ONE section of a regulatory document and extract its obligations. Analysis only: do not create or edit files. Return a SectionSummary with the section number, title, a short summary, and every obligation in the section (who must do what, by when, and any thresholds or conditions). Treat 'must' as a binding obligation and 'should'/'we expect' as guidance, and label each one.\n\nDocument: Policy Statement PS26/4: Operational resilience and third-party technology risk\nSection number: 1\nSection title: Introduction and purpose\nFull text:\n1.1 This policy statement sets out the final rules and guidance on operational resilience and the management of third-party technology risk for firms authorised by the Financial Services Oversight Authority. It follows Consultation Paper CP25/11, which closed in March 2026, and reflects the feedback we received from firms, trade bodies and consumer groups.\n\n1.2 Disruption to financial services can cause serious harm to consumers and to market integrity. Recent incidents have shown that firms increasingly depend on a small number of technology providers, and that an outage at one provider can affect many firms at the same time. Firms have also told us that they find it hard to assess the resilience of services they do not run themselves.\n\n1.3 Our objective is that firms can continue to deliver their most important services through severe but plausible disruption, and that when disruption does happen, it is contained, reported promptly and learned from. We expect firms to treat operational resilience as a matter for the board, not only for technology teams.\n\n1.4 This policy statement takes effect on 1 January 2027. The deadlines for individual requirements are set out in the relevant sections, and transitional arrangements for some firms are set out in section 9.\n\n1.5 We will review the effectiveness of these rules two years after they take effect, and we will publish our findings.",
+       "subagent_type": "section-summariser"
+      },
+      "id": "call_d033e376411a2d4a97e4d507",
+      "name": "task"
+     },
+     {
+      "args": {
+       "description": "Summarise ONE section of a regulatory document and extract its obligations. Analysis only: do not create or edit files. Return a SectionSummary with the section number, title, a short summary, and every obligation in the section (who must do what, by when, and any thresholds or conditions). Treat 'must' as a binding obligation and 'should'/'we expect' as guidance, and label each one.\n\nDocument: Policy Statement PS26/4: Operational resilience and third-party technology risk\nSection number: 2\nSection title: Scope and application\nFull text:\n2.1 This policy statement applies to all banks, building societies, payment institutions and electronic money institutions authorised by the FSOA.\n\n2.2 It applies to the firm's activities in all jurisdictions where the failure of an activity could cause harm to consumers in our jurisdiction or to the stability of our financial system.\n\n2.3 Some requirements are applied proportionately. For the purposes of this policy statement, a small firm is a firm that has fewer than 250,000 customers and total assets of less than £5 billion on 31 December 2026. A firm that exceeds either threshold is not a small firm.\n\n2.4 A firm that becomes a small firm, or stops being a small firm, after 31 December 2026 must notify the FSOA within 30 days of the change. Its status for the purposes of the transitional arrangements in section 9 is fixed on 31 December 2026 and does not change.\n\n2.5 Groups may meet these requirements at group level, provided that each authorised firm in the group can show how the group arrangements apply to its own important business services.",
+       "subagent_type": "section-summariser"
+      },
+      "id": "call_f4b6da7078fe71f01c567efe",
+      "name": "task"
+     },
+     {
+      "args": {
+       "description": "Summarise ONE section of a regulatory document and extract its obligations. Analysis only: do not create or edit files. Return a SectionSummary with the section number, title, a short summary, and every obligation in the section (who must do what, by when, and any thresholds or conditions). Treat 'must' as a binding obligation and 'should'/'we expect' as guidance, and label each one. If the section only defines terms, say so and list the key definitions and thresholds.\n\nDocument: Policy Statement PS26/4: Operational resilience and third-party technology risk\nSection number: 3\nSection title: Definitions\nFull text:\n3.1 An important business service is a service that a firm provides to an external end user, where disruption to the service could cause intolerable harm to consumers or risk to market integrity. Internal services, such as human resources or internal reporting, are not important business services on their own.\n\n3.2 An impact tolerance is the maximum tolerable level of disruption to an important business service, expressed as a maximum length of time and, where relevant, a maximum number of affected customers or transactions.\n\n3.3 A material third-party provider is a provider of technology services whose failure would cause the firm to breach an impact tolerance for one or more important business services.\n\n3.4 A major incident is an operational incident that has caused, or is likely to cause, a breach of an impact tolerance, or that affects more than 10% of the firm's customers.\n\n3.5 Business days are days other than weekends and public holidays in our jurisdiction.",
+       "subagent_type": "section-summariser"
+      },
+      "id": "call_5a99bf7ac4d93f787a720ec4",
+      "name": "task"
+     },
+     {
+      "args": {
+       "description": "Summarise ONE section of a regulatory document and extract its obligations. Analysis only: do not create or edit files. Return a SectionSummary with the section number, title, a short summary, and every obligation in the section (who must do what, by when, and any thresholds or conditions). Treat 'must' as a binding obligation and 'should'/'we expect' as guidance, and label each one.\n\nDocument: Policy Statement PS26/4: Operational resilience and third-party technology risk\nSection number: 4\nSection title: Important business services and impact tolerances\nFull text:\n4.1 Firms must identify their important business services by 31 March 2027. In doing so, firms should consider the number and type of customers using each service, the availability of alternatives, and the time sensitivity of payments or other transactions.\n\n4.2 Firms must set an impact tolerance for each important business service by 31 March 2027. Impact tolerances must be set at the point at which harm becomes intolerable, not at the point at which the firm expects to be able to recover.\n\n4.3 The board must approve the list of important business services and their impact tolerances, and must review both at least once every 12 months, or sooner if there is a material change to the firm's business.\n\n4.4 We expect most retail banks to identify between 6 and 15 important business services. Firms that identify fewer than 4 should be prepared to explain why.\n\n4.5 Firms must keep a record of how they identified each important business service and set each impact tolerance, and must provide it to the FSOA on request within 10 business days.",
+       "subagent_type": "section-summariser"
+      },
+      "id": "call_e117c652146772c75be83070",
+      "name": "task"
+     },
+     {
+      "args": {
+       "description": "Summarise ONE section of a regulatory document and extract its obligations. Analysis only: do not create or edit files. Return a SectionSummary with the section number, title, a short summary, and every obligation in the section (who must do what, by when, and any thresholds or conditions). Treat 'must' as a binding obligation and 'should'/'we expect' as guidance, and label each one.\n\nDocument: Policy Statement PS26/4: Operational resilience and third-party technology risk\nSection number: 5\nSection title: Mapping and scenario testing\nFull text:\n5.1 Firms must map the people, processes, technology, facilities and information that support each important business service, including those provided by third parties, by 31 March 2027.\n\n5.2 Mapping must be detailed enough to identify single points of failure and concentrations of risk, including where several important business services depend on the same third-party provider.\n\n5.3 Firms must test their ability to remain within impact tolerance under severe but plausible scenarios. The first round of scenario testing must be completed by 30 September 2027, and testing must be repeated at least once a year after that.\n\n5.4 Scenarios must include, at a minimum, the failure of a material third-party provider, a cyber attack that makes key systems unavailable, and the loss of a key site.\n\n5.5 Where testing shows that a firm cannot remain within an impact tolerance, the firm must record the vulnerability, set out the actions it will take to address it, and report the vulnerability to the board at its next meeting.",
+       "subagent_type": "section-summariser"
+      },
+      "id": "call_5873a05a67c0a6fa70497c92",
+      "name": "task"
+     },
+     {
+      "args": {
+       "description": "Summarise ONE section of a regulatory document and extract its obligations. Analysis only: do not create or edit files. Return a SectionSummary with the section number, title, a short summary, and every obligation in the section (who must do what, by when, and any thresholds or conditions). Treat 'must' as a binding obligation and 'should'/'we expect' as guidance, and label each one.\n\nDocument: Policy Statement PS26/4: Operational resilience and third-party technology risk\nSection number: 6\nSection title: Third-party technology providers\nFull text:\n6.1 Firms must maintain a register of all material third-party providers by 31 March 2027. The register must record, for each provider, the services it supports, the data it holds, its location, and the date the contract expires.\n\n6.2 Firms must notify the FSOA at least 60 days before entering into a new arrangement with a material third-party provider, or materially changing an existing one.\n\n6.3 Contracts with material third-party providers must give the firm and the FSOA rights of access and audit, require the provider to report incidents to the firm without undue delay, and set out how the service will be transferred or wound down if the arrangement ends.\n\n6.4 Firms must have a documented exit plan for each material third-party provider and must test each exit plan at least once every two years.\n\n6.5 Where a firm uses the same material third-party provider for more than one important business service, it must assess the concentration risk and explain to the board how it would manage the failure of that provider.\n\n6.6 Firms remain fully responsible for meeting their regulatory obligations when they outsource. Outsourcing a service does not transfer the firm's responsibility for it.",
+       "subagent_type": "section-summariser"
+      },
+      "id": "call_8cae78bb3a3fdb492b65f689",
+      "name": "task"
+     },
+     {
+      "args": {
+       "description": "Summarise ONE section of a regulatory document and extract its obligations. Analysis only: do not create or edit files. Return a SectionSummary with the section number, title, a short summary, and every obligation in the section (who must do what, by when, and any thresholds or conditions). Treat 'must' as a binding obligation and 'should'/'we expect' as guidance, and label each one.\n\nDocument: Policy Statement PS26/4: Operational resilience and third-party technology risk\nSection number: 7\nSection title: Incident reporting\nFull text:\n7.1 Firms must submit an initial notification to the FSOA within 4 hours of classifying an incident as a major incident, and in any case no later than 24 hours after the incident is first detected.\n\n7.2 Firms must submit an intermediate report within 72 hours of the initial notification, setting out the cause of the incident as far as it is known, the services and customers affected, and the actions taken so far.\n\n7.3 Firms must submit a final report within 30 business days of the incident being resolved. The final report must include a root-cause analysis and the lessons learned.\n\n7.4 Where a major incident is caused by a third-party provider, the firm remains responsible for reporting it. Firms should not delay a notification while they wait for information from the provider.\n\n7.5 We will publish an incident reporting template before the rules take effect. Until then, firms may use their existing incident reporting formats.",
+       "subagent_type": "section-summariser"
+      },
+      "id": "call_4a3633c5accbdd0f2c6df94c",
+      "name": "task"
+     },
+     {
+      "args": {
+       "description": "Summarise ONE section of a regulatory document and extract its obligations. Analysis only: do not create or edit files. Return a SectionSummary with the section number, title, a short summary, and every obligation in the section (who must do what, by when, and any thresholds or conditions). Treat 'must' as a binding obligation and 'should'/'we expect' as guidance, and label each one.\n\nDocument: Policy Statement PS26/4: Operational resilience and third-party technology risk\nSection number: 8\nSection title: Governance and accountability\nFull text:\n8.1 Firms must name a senior manager who is responsible for operational resilience by 31 January 2027, and must notify the FSOA of that person's name within 14 days of appointing them.\n\n8.2 Firms must complete an annual self-assessment of their operational resilience, which must be approved by the board. The first self-assessment must be completed and approved by 31 March 2028.\n\n8.3 The self-assessment must cover the firm's important business services, impact tolerances, mapping, scenario testing results, vulnerabilities and remediation actions, and its management of material third-party providers.\n\n8.4 Boards should receive regular management information on operational resilience, at least quarterly, and should challenge it.\n\n8.5 Firms must keep each self-assessment for at least 5 years and provide it to the FSOA on request.",
+       "subagent_type": "section-summariser"
+      },
+      "id": "call_861a5825dcf9fc9a76985fdc",
+      "name": "task"
+     },
+     {
+      "args": {
+       "description": "Summarise ONE section of a regulatory document and extract its obligations. Analysis only: do not create or edit files. Return a SectionSummary with the section number, title, a short summary, and every obligation in the section (who must do what, by when, and any thresholds or conditions). Treat 'must' as a binding obligation and 'should'/'we expect' as guidance, and label each one. This section refers to paragraphs in other sections. Keep those paragraph references exactly as written so the orchestrator can link them.\n\nDocument: Policy Statement PS26/4: Operational resilience and third-party technology risk\nSection number: 9\nSection title: Transitional arrangements\nFull text:\n9.1 Small firms, as defined in paragraph 2.3, may meet the requirements in paragraphs 4.1, 4.2, 5.1 and 6.1 by 31 March 2028 instead of 31 March 2027.\n\n9.2 Small firms may complete their first round of scenario testing under paragraph 5.3 by 30 September 2028 instead of 30 September 2027.\n\n9.3 For all firms, contracts with material third-party providers that were in place before 1 January 2027 must be updated to meet paragraph 6.3 at their next renewal, or by 31 December 2028, whichever is earlier.\n\n9.4 The transitional arrangements do not apply to the incident reporting requirements in section 7 or to the requirement to name a senior manager in paragraph 8.1. These apply to all firms from 1 January 2027.",
+       "subagent_type": "section-summariser"
+      },
+      "id": "call_f8a0d44b11c4d7c97f8f6645",
+      "name": "task"
+     },
+     {
+      "args": {
+       "description": "Summarise ONE section of a regulatory document and extract its obligations. Analysis only: do not create or edit files. Return a SectionSummary with the section number, title, a short summary, and every obligation in the section (who must do what, by when, and any thresholds or conditions). Treat 'must' as a binding obligation and 'should'/'we expect' as guidance, and label each one. If the section has no obligations for firms, return an empty obligations list.\n\nDocument: Policy Statement PS26/4: Operational resilience and third-party technology risk\nSection number: 10\nSection title: Next steps and contacts\nFull text:\n10.1 We will host a series of webinars for firms in the first quarter of 2027 and will publish frequently asked questions on our website.\n\n10.2 Firms with questions about this policy statement should contact their usual supervisory contact. General questions can be sent to our operational resilience team.\n\n10.3 We will consult separately in 2027 on whether to extend these requirements to insurers and investment firms.",
+       "subagent_type": "section-summariser"
+      },
+      "id": "call_98dd28613df8ada5c2f6afec",
+      "name": "task"
+     }
+    ]
+   },
+   {
+    "content": "{\"number\":\"1\",\"title\":\"Introduction and purpose\",\"summary\":\"This section introduces PS26/4, which sets final rules and guidance on operational resilience and third-party technology risk for firms authorised by the Financial Services Oversight Authority, following CP25/11. It states the objective (firms can keep delivering their most important services through severe but plausible disruption) and says the policy takes effect on 1 January 2027, with individual deadlines in later sections and transitional arrangements in section 9. The regulator will review the rules two years after they take effect. There are no binding firm obligations in this section. Paragraph 1.3 is guidance only: 'We expect firms to treat operational resilience as a matter for the board, not only for technology teams.' The review in 1.5 is a regulator action, not a firm obligation.\",\"obligations\":[]}",
+    "name": "task",
+    "role": "tool",
+    "tool_call_id": "call_d033e376411a2d4a97e4d507"
+   },
+   {
+    "content": "{\"number\":\"2\",\"title\":\"Scope and application\",\"summary\":\"The policy statement applies to FSOA-authorised banks, building societies, payment institutions and e-money institutions, covering activities in any jurisdiction where failure could harm UK consumers or financial stability. A small firm has fewer than 250,000 customers and under £5 billion total assets on 31 December 2026, and firms must notify the FSOA within 30 days if their small-firm status changes afterwards. Transitional status under section 9 stays fixed at 31 December 2026. Groups may comply at group level, but only if each authorised firm can show how the group arrangements apply to its own important business services. Paragraphs 2.1 to 2.3 define scope and set no separate obligations. No guidance-only ('should' or 'we expect') statements appear in this section.\",\"obligations\":[{\"requirement\":\"[Binding] A firm that becomes, or stops being, a small firm after 31 December 2026 must notify the FSOA of the change.\",\"paragraph\":\"2.4\",\"deadline\":\"within 30 days of the change\",\"evidence\":\"A firm that becomes a small firm, or stops being a small firm, after 31 December 2026 must notify the FSOA within 30 days of the change.\"},{\"requirement\":\"[Binding, conditional] A group that meets the requirements at group level must ensure each authorised firm in the group can show how the group arrangements apply to its own important business services. The text frames this as a proviso on the permission, not as a standalone 'must'.\",\"paragraph\":\"2.5\",\"deadline\":null,\"evidence\":\"provided that each authorised firm in the group can show how the group arrangements apply to its own important business services\"}]}",
+    "name": "task",
+    "role": "tool",
+    "tool_call_id": "call_f4b6da7078fe71f01c567efe"
+   },
+   {
+    "content": "{\"number\":\"3\",\"title\":\"Definitions\",\"summary\":\"This section only defines terms and sets no firm obligations. Key definitions: an important business service is a service provided to an external end user whose disruption could cause intolerable harm to consumers or risk to market integrity, and internal services are not important business services on their own (3.1). An impact tolerance is the maximum tolerable disruption to an important business service, expressed as a maximum length of time and, where relevant, a maximum number of affected customers or transactions (3.2). A material third-party provider is a technology provider whose failure would cause the firm to breach an impact tolerance for one or more important business services (3.3). A major incident is an operational incident that has caused, or is likely to cause, a breach of an impact tolerance, or that affects more than 10% of the firm's customers (3.4). Business days exclude weekends and public holidays in our jurisdiction (3.5). The section contains no binding 'must' obligations and no 'should'/'we expect' guidance.\",\"obligations\":[]}",
+    "name": "task",
+    "role": "tool",
+    "tool_call_id": "call_5a99bf7ac4d93f787a720ec4"
+   },
+   {
+    "content": "{\"number\":\"4\",\"title\":\"Important business services and impact tolerances\",\"summary\":\"Firms must identify their important business services and set an impact tolerance for each by 31 March 2027, with board approval and at least 12-monthly review. Firms must keep records of how they did this and give them to the FSOA on request. Guidance only (not binding): in 4.1 firms should consider customer numbers and types, alternatives and time sensitivity of transactions; in 4.4 most retail banks are expected to identify 6 to 15 services, and firms identifying fewer than 4 should be prepared to explain why.\",\"obligations\":[{\"requirement\":\"[BINDING] Identify important business services\",\"paragraph\":\"4.1\",\"deadline\":\"by 31 March 2027\",\"evidence\":\"Firms must identify their important business services by 31 March 2027.\"},{\"requirement\":\"[BINDING] Set an impact tolerance for each important business service\",\"paragraph\":\"4.2\",\"deadline\":\"by 31 March 2027\",\"evidence\":\"Firms must set an impact tolerance for each important business service by 31 March 2027.\"},{\"requirement\":\"[BINDING] Set impact tolerances at the point at which harm becomes intolerable, not the expected recovery point\",\"paragraph\":\"4.2\",\"deadline\":null,\"evidence\":\"Impact tolerances must be set at the point at which harm becomes intolerable, not at the point at which the firm expects to be able to recover.\"},{\"requirement\":\"[BINDING] Board must approve the list of important business services and their impact tolerances\",\"paragraph\":\"4.3\",\"deadline\":null,\"evidence\":\"The board must approve the list of important business services and their impact tolerances\"},{\"requirement\":\"[BINDING] Board must review the list and impact tolerances at least every 12 months, or sooner if there is a material change to the business\",\"paragraph\":\"4.3\",\"deadline\":\"at least once every 12 months, or sooner if there is a material change to the firm's business\",\"evidence\":\"must review both at least once every 12 months, or sooner if there is a material change to the firm's business.\"},{\"requirement\":\"[BINDING] Keep a record of how each important business service was identified and each impact tolerance set\",\"paragraph\":\"4.5\",\"deadline\":null,\"evidence\":\"Firms must keep a record of how they identified each important business service and set each impact tolerance\"},{\"requirement\":\"[BINDING] Provide that record to the FSOA on request\",\"paragraph\":\"4.5\",\"deadline\":\"within 10 business days\",\"evidence\":\"must provide it to the FSOA on request within 10 business days.\"}]}",
+    "name": "task",
+    "role": "tool",
+    "tool_call_id": "call_e117c652146772c75be83070"
+   },
+   {
+    "content": "{\"number\":\"5\",\"title\":\"Mapping and scenario testing\",\"summary\":\"Firms must map the resources supporting each important business service (including third-party dependencies) in enough detail to expose single points of failure and concentrations of risk. They must also run severe but plausible scenario tests, including specified minimum scenarios, and escalate and remediate any failure to stay within impact tolerance. All items are binding ('must'); the section contains no 'should'/'we expect' guidance.\",\"obligations\":[{\"requirement\":\"[Binding] Map the people, processes, technology, facilities and information that support each important business service, including those provided by third parties.\",\"paragraph\":\"5.1\",\"deadline\":\"by 31 March 2027\",\"evidence\":\"Firms must map the people, processes, technology, facilities and information that support each important business service, including those provided by third parties, by 31 March 2027.\"},{\"requirement\":\"[Binding] Make mapping detailed enough to identify single points of failure and concentrations of risk, including where several important business services depend on the same third-party provider.\",\"paragraph\":\"5.2\",\"deadline\":null,\"evidence\":\"Mapping must be detailed enough to identify single points of failure and concentrations of risk\"},{\"requirement\":\"[Binding] Test ability to remain within impact tolerance under severe but plausible scenarios; complete the first round of scenario testing.\",\"paragraph\":\"5.3\",\"deadline\":\"by 30 September 2027\",\"evidence\":\"The first round of scenario testing must be completed by 30 September 2027\"},{\"requirement\":\"[Binding] Repeat scenario testing at least once a year after the first round.\",\"paragraph\":\"5.3\",\"deadline\":\"at least once a year after that\",\"evidence\":\"testing must be repeated at least once a year after that.\"},{\"requirement\":\"[Binding] Include in scenarios, as a minimum, failure of a material third-party provider, a cyber attack making key systems unavailable, and loss of a key site.\",\"paragraph\":\"5.4\",\"deadline\":null,\"evidence\":\"Scenarios must include, at a minimum, the failure of a material third-party provider, a cyber attack that makes key systems unavailable, and the loss of a key site.\"},{\"requirement\":\"[Binding] Where testing shows the firm cannot remain within impact tolerance, record the vulnerability.\",\"paragraph\":\"5.5\",\"deadline\":null,\"evidence\":\"the firm must record the vulnerability\"},{\"requirement\":\"[Binding] Set out the actions the firm will take to address the vulnerability.\",\"paragraph\":\"5.5\",\"deadline\":null,\"evidence\":\"set out the actions it will take to address it\"},{\"requirement\":\"[Binding] Report the vulnerability to the board.\",\"paragraph\":\"5.5\",\"deadline\":\"at its next meeting\",\"evidence\":\"report the vulnerability to the board at its next meeting\"}]}",
+    "name": "task",
+    "role": "tool",
+    "tool_call_id": "call_5873a05a67c0a6fa70497c92"
+   },
+   {
+    "content": "{\"number\":\"6\",\"title\":\"Third-party technology providers\",\"summary\":\"Section 6 requires firms to keep a register of material third-party providers, notify the FSOA before new or materially changed arrangements, include specified terms in contracts, and maintain and test exit plans. Firms must also assess concentration risk where one provider supports several important business services, and they stay fully responsible when they outsource. All items are binding ('must'); the section contains no 'should' or 'we expect' guidance.\",\"obligations\":[{\"requirement\":\"BINDING: Maintain a register of all material third-party providers\",\"paragraph\":\"6.1\",\"deadline\":\"by 31 March 2027\",\"evidence\":\"Firms must maintain a register of all material third-party providers by 31 March 2027.\"},{\"requirement\":\"BINDING: For each provider, the register must record the services it supports, the data it holds, its location, and the contract expiry date\",\"paragraph\":\"6.1\",\"deadline\":null,\"evidence\":\"The register must record, for each provider, the services it supports, the data it holds, its location, and the date the contract expires.\"},{\"requirement\":\"BINDING: Notify the FSOA before entering into a new arrangement with a material third-party provider, or materially changing an existing one\",\"paragraph\":\"6.2\",\"deadline\":\"at least 60 days before\",\"evidence\":\"Firms must notify the FSOA at least 60 days before entering into a new arrangement with a material third-party provider\"},{\"requirement\":\"BINDING: Ensure contracts with material third-party providers give the firm and the FSOA rights of access and audit\",\"paragraph\":\"6.3\",\"deadline\":null,\"evidence\":\"Contracts with material third-party providers must give the firm and the FSOA rights of access and audit\"},{\"requirement\":\"BINDING: Ensure contracts require the provider to report incidents to the firm without undue delay\",\"paragraph\":\"6.3\",\"deadline\":\"without undue delay\",\"evidence\":\"require the provider to report incidents to the firm without undue delay\"},{\"requirement\":\"BINDING: Ensure contracts set out how the service will be transferred or wound down if the arrangement ends\",\"paragraph\":\"6.3\",\"deadline\":null,\"evidence\":\"set out how the service will be transferred or wound down if the arrangement ends\"},{\"requirement\":\"BINDING: Have a documented exit plan for each material third-party provider\",\"paragraph\":\"6.4\",\"deadline\":null,\"evidence\":\"Firms must have a documented exit plan for each material third-party provider\"},{\"requirement\":\"BINDING: Test each exit plan\",\"paragraph\":\"6.4\",\"deadline\":\"at least once every two years\",\"evidence\":\"must test each exit plan at least once every two years\"},{\"requirement\":\"BINDING: Where one material provider serves more than one important business service, assess the concentration risk\",\"paragraph\":\"6.5\",\"deadline\":null,\"evidence\":\"Where a firm uses the same material third-party provider for more than one important business service, it must assess the concentration risk\"},{\"requirement\":\"BINDING: In that case, explain to the board how the firm would manage the failure of that provider\",\"paragraph\":\"6.5\",\"deadline\":null,\"evidence\":\"explain to the board how it would manage the failure of that provider\"},{\"requirement\":\"BINDING (stated as a continuing responsibility): Firms remain fully responsible for meeting their regulatory obligations when they outsource\",\"paragraph\":\"6.6\",\"deadline\":null,\"evidence\":\"Firms remain fully responsible for meeting their regulatory obligations when they outsource.\"}]}",
+    "name": "task",
+    "role": "tool",
+    "tool_call_id": "call_8cae78bb3a3fdb492b65f689"
+   },
+   {
+    "content": "{\"number\":\"7\",\"title\":\"Incident reporting\",\"summary\":\"Firms must report major incidents to the FSOA in three stages: an initial notification, an intermediate report and a final report. Firms remain responsible for reporting incidents caused by third-party providers. The FSOA will publish a reporting template before the rules take effect, and until then firms may use their existing formats (permissive). Paragraph 7.4 includes guidance (firms 'should not' delay notification while waiting for provider information), which is not listed as an obligation. Binding obligations are labelled 'binding' below.\",\"obligations\":[{\"requirement\":\"BINDING: Submit an initial notification to the FSOA within 4 hours of classifying an incident as a major incident, and in any case no later than 24 hours after the incident is first detected.\",\"paragraph\":\"7.1\",\"deadline\":\"within 4 hours of classifying an incident as a major incident, and in any case no later than 24 hours after the incident is first detected\",\"evidence\":\"Firms must submit an initial notification to the FSOA within 4 hours of classifying an incident as a major incident\"},{\"requirement\":\"BINDING: Submit an intermediate report within 72 hours of the initial notification.\",\"paragraph\":\"7.2\",\"deadline\":\"within 72 hours of the initial notification\",\"evidence\":\"Firms must submit an intermediate report within 72 hours of the initial notification\"},{\"requirement\":\"BINDING: The intermediate report must set out the cause of the incident as far as known, the services and customers affected, and the actions taken so far.\",\"paragraph\":\"7.2\",\"deadline\":\"within 72 hours of the initial notification\",\"evidence\":\"setting out the cause of the incident as far as it is known, the services and customers affected, and the actions taken so far\"},{\"requirement\":\"BINDING: Submit a final report within 30 business days of the incident being resolved.\",\"paragraph\":\"7.3\",\"deadline\":\"within 30 business days of the incident being resolved\",\"evidence\":\"Firms must submit a final report within 30 business days of the incident being resolved.\"},{\"requirement\":\"BINDING: The final report must include a root-cause analysis and the lessons learned.\",\"paragraph\":\"7.3\",\"deadline\":\"within 30 business days of the incident being resolved\",\"evidence\":\"The final report must include a root-cause analysis and the lessons learned.\"},{\"requirement\":\"BINDING: Where a major incident is caused by a third-party provider, the firm remains responsible for reporting it.\",\"paragraph\":\"7.4\",\"deadline\":null,\"evidence\":\"the firm remains responsible for reporting it\"}]}",
+    "name": "task",
+    "role": "tool",
+    "tool_call_id": "call_4a3633c5accbdd0f2c6df94c"
+   },
+   {
+    "content": "{\"number\":\"8\",\"title\":\"Governance and accountability\",\"summary\":\"Firms must name a senior manager responsible for operational resilience and notify the FSOA, and must complete a board-approved annual self-assessment covering specified topics, which they must keep for at least 5 years and provide to the FSOA on request. Para 8.4 is guidance only (boards 'should' receive at least quarterly management information and challenge it), so it is not listed as an obligation.\",\"obligations\":[{\"requirement\":\"[Binding] Name a senior manager responsible for operational resilience\",\"paragraph\":\"8.1\",\"deadline\":\"by 31 January 2027\",\"evidence\":\"Firms must name a senior manager who is responsible for operational resilience by 31 January 2027\"},{\"requirement\":\"[Binding] Notify the FSOA of the senior manager's name\",\"paragraph\":\"8.1\",\"deadline\":\"within 14 days of appointing them\",\"evidence\":\"must notify the FSOA of that person's name within 14 days of appointing them\"},{\"requirement\":\"[Binding] Complete an annual self-assessment of operational resilience, approved by the board; first one due by the stated date\",\"paragraph\":\"8.2\",\"deadline\":\"by 31 March 2028\",\"evidence\":\"Firms must complete an annual self-assessment of their operational resilience, which must be approved by the board.\"},{\"requirement\":\"[Binding] Ensure the self-assessment covers important business services, impact tolerances, mapping, scenario testing results, vulnerabilities and remediation actions, and management of material third-party providers\",\"paragraph\":\"8.3\",\"deadline\":null,\"evidence\":\"The self-assessment must cover the firm's important business services, impact tolerances, mapping, scenario testing results, vulnerabilities and remediation actions\"},{\"requirement\":\"[Binding] Keep each self-assessment for at least 5 years\",\"paragraph\":\"8.5\",\"deadline\":\"at least 5 years\",\"evidence\":\"Firms must keep each self-assessment for at least 5 years\"},{\"requirement\":\"[Binding] Provide each self-assessment to the FSOA on request\",\"paragraph\":\"8.5\",\"deadline\":\"on request\",\"evidence\":\"provide it to the FSOA on request\"}]}",
+    "name": "task",
+    "role": "tool",
+    "tool_call_id": "call_861a5825dcf9fc9a76985fdc"
+   },
+   {
+    "content": "{\"number\":\"9\",\"title\":\"Transitional arrangements\",\"summary\":\"Section 9 gives small firms (as defined in paragraph 2.3) extra time: the requirements in paragraphs 4.1, 4.2, 5.1 and 6.1 move from 31 March 2027 to 31 March 2028, and their first scenario testing round under paragraph 5.3 moves from 30 September 2027 to 30 September 2028. All firms must update pre-existing material third-party provider contracts to meet paragraph 6.3 at next renewal or by 31 December 2028, whichever is earlier. Incident reporting (section 7) and naming a senior manager (paragraph 8.1) get no transitional relief and apply to all firms from 1 January 2027. All items are binding; the section contains no guidance-only statements. Paragraphs 9.1 and 9.2 are permissive ('may') extensions that modify the earlier deadlines (31 March 2027 and 30 September 2027) rather than new duties.\",\"obligations\":[{\"requirement\":\"Small firms (as defined in paragraph 2.3) that use the transition must meet the requirements in paragraphs 4.1, 4.2, 5.1 and 6.1 by the extended date, instead of 31 March 2027. Binding, but the extension is permissive ('may'). It changes the earlier deadline for small firms only.\",\"paragraph\":\"9.1\",\"deadline\":\"by 31 March 2028 instead of 31 March 2027\",\"evidence\":\"Small firms, as defined in paragraph 2.3, may meet the requirements in paragraphs 4.1, 4.2, 5.1 and 6.1 by 31 March 2028 instead of 31 March 2027.\"},{\"requirement\":\"Small firms that use the transition may complete their first round of scenario testing under paragraph 5.3 by the extended date, instead of 30 September 2027. Binding, but the extension is permissive ('may'). It changes the earlier deadline for small firms only.\",\"paragraph\":\"9.2\",\"deadline\":\"by 30 September 2028 instead of 30 September 2027\",\"evidence\":\"Small firms may complete their first round of scenario testing under paragraph 5.3 by 30 September 2028 instead of 30 September 2027.\"},{\"requirement\":\"All firms must update contracts with material third-party providers that were in place before 1 January 2027 to meet paragraph 6.3. Binding. The deadline is the next renewal or 31 December 2028, whichever is earlier.\",\"paragraph\":\"9.3\",\"deadline\":\"at their next renewal, or by 31 December 2028, whichever is earlier\",\"evidence\":\"contracts with material third-party providers that were in place before 1 January 2027 must be updated to meet paragraph 6.3 at their next renewal, or by 31 December 2028, whichever is earlier.\"},{\"requirement\":\"All firms must comply with the incident reporting requirements in section 7 with no transitional relief. Binding.\",\"paragraph\":\"9.4\",\"deadline\":\"from 1 January 2027\",\"evidence\":\"The transitional arrangements do not apply to the incident reporting requirements in section 7 or to the requirement to name a senior manager in paragraph 8.1.\"},{\"requirement\":\"All firms must name a senior manager under paragraph 8.1 with no transitional relief. Binding.\",\"paragraph\":\"9.4\",\"deadline\":\"from 1 January 2027\",\"evidence\":\"These apply to all firms from 1 January 2027.\"}]}",
+    "name": "task",
+    "role": "tool",
+    "tool_call_id": "call_f8a0d44b11c4d7c97f8f6645"
+   },
+   {
+    "content": "{\"number\":\"10\",\"title\":\"Next steps and contacts\",\"summary\":\"The regulator will host webinars in Q1 2027 and publish FAQs, and firms with questions should contact their supervisory contact or the operational resilience team. A separate consultation in 2027 will consider extending the requirements to insurers and investment firms. The section contains no binding obligations (no 'must') for firms; all commitments are the regulator's own, and para 10.2 is only an informal pointer on whom to contact.\",\"obligations\":[]}",
+    "name": "task",
+    "role": "tool",
+    "tool_call_id": "call_98dd28613df8ada5c2f6afec"
+   }
+  ],
+  "model": "claude-opus-5-5",
+  "schema": {
+   "additionalProperties": false,
+   "properties": {
+    "content": {
+     "description": "Text of the reply; may be empty.",
+     "type": "string"
+    },
+    "tool_calls": {
+     "items": {
+      "anyOf": [
+       {
+        "additionalProperties": false,
+        "description": "Lists all files in a directory.\n\nThis is useful for exploring the filesystem and finding the right file to read or edit.\nYou should almost ALWAYS use this tool before using the read_file or edit_file tools.",
+        "properties": {
+         "args": {
+          "properties": {
+           "path": {
+            "description": "Absolute path to the directory to list. Must be absolute, not relative.",
+            "type": "string"
+           }
+          },
+          "required": [
+           "path"
+          ],
+          "type": "object"
+         },
+         "name": {
+          "const": "ls"
+         }
+        },
+        "required": [
+         "name",
+         "args"
+        ],
+        "type": "object"
+       },
+       {
+        "additionalProperties": false,
+        "description": "Reads a file from the filesystem. Assume any path the user provides is valid; reading a missing file returns an error.\n\nUsage:\n- By default, it reads up to 100 lines starting from the beginning of the file. Use `offset`/`limit` to page through large files instead of reading them whole.\n- A status header, `@@ field | field | ... @@`, sits above the file content, and every line after it is verbatim file content. When content is truncated, there may be an explanation before the header. Never include the header when editing.\n- Speculatively batch multiple `read_file` calls in one response when several files may be useful.\n- An empty file returns a system-reminder warning in place of contents.\n- Large tool results may be offloaded to a file; the tool message gives the path. Read that path here, paging with `offset`/`limit`.\n- Images (`.png`, `.jpg`, etc.), audio, video, and PDFs return multimodal content blocks (https://docs.langchain.com/oss/python/langchain/messages#multimodal).\n- For images and PDFs, pagination via `offset`/`limit` is text-only - supply `file_path` only\n- Always read a file before editing it.",
+        "properties": {
+         "args": {
+          "properties": {
+           "file_path": {
+            "description": "Absolute path to the file to read. Must be absolute, not relative.",
+            "type": "string"
+           },
+           "limit": {
+            "default": 100,
+            "description": "Maximum number of lines to read. Use for pagination of large files.",
+            "type": "integer"
+           },
+           "offset": {
+            "default": 0,
+            "description": "Line number to start reading from (0-indexed). Use for pagination of large files.",
+            "type": "integer"
+           }
+          },
+          "required": [
+           "file_path"
+          ],
+          "type": "object"
+         },
+         "name": {
+          "const": "read_file"
+         }
+        },
+        "required": [
+         "name",
+         "args"
+        ],
+        "type": "object"
+       },
+       {
+        "additionalProperties": false,
+        "description": "Writes content to a file. Creates the file if it does not exist; replaces it entirely if it does.\n\nUsage:\n- Use this tool when you intend to create a new file or replace the whole file. You do not need to read the file first.\n- Prefer to edit existing files (with the edit_file tool) over creating new ones when possible.",
+        "properties": {
+         "args": {
+          "properties": {
+           "content": {
+            "description": "The text content to write to the file. This parameter is required.",
+            "type": "string"
+           },
+           "file_path": {
+            "description": "Absolute path where the file should be written. Must be absolute, not relative.",
+            "type": "string"
+           }
+          },
+          "required": [
+           "file_path",
+           "content"
+          ],
+          "type": "object"
+         },
+         "name": {
+          "const": "write_file"
+         }
+        },
+        "required": [
+         "name",
+         "args"
+        ],
+        "type": "object"
+       },
+       {
+        "additionalProperties": false,
+        "description": "Performs exact string replacements in files.\n\nUsage:\n- You must read the file before editing; this tool errors otherwise.\n- Preserve the exact source indentation from the read output, and never include the read status header in old_string or new_string.\n- Prefer editing an existing file over creating a new one.\n- Only use emojis if the user explicitly requests it.",
+        "properties": {
+         "args": {
+          "properties": {
+           "file_path": {
+            "description": "Absolute path to the file to edit. Must be absolute, not relative.",
+            "type": "string"
+           },
+           "new_string": {
+            "description": "The text to replace old_string with. Must be different from old_string.",
+            "type": "string"
+           },
+           "old_string": {
+            "description": "The exact text to find and replace. Must be unique in the file unless replace_all is True.",
+            "type": "string"
+           },
+           "replace_all": {
+            "default": false,
+            "description": "If True, replace all occurrences of old_string. If False (default), old_string must be unique.",
+            "type": "boolean"
+           }
+          },
+          "required": [
+           "file_path",
+           "old_string",
+           "new_string"
+          ],
+          "type": "object"
+         },
+         "name": {
+          "const": "edit_file"
+         }
+        },
+        "required": [
+         "name",
+         "args"
+        ],
+        "type": "object"
+       },
+       {
+        "additionalProperties": false,
+        "description": "Deletes a file or directory from the filesystem.\n\nUsage:\n- Permanently removes the file or directory at the given absolute path.\n- Deleting a directory removes it and everything inside it, recursively. Prefer\n  deleting a directory in one call over deleting each file individually.\n- This cannot be undone, so only delete paths you are sure are no longer needed.",
+        "properties": {
+         "args": {
+          "properties": {
+           "file_path": {
+            "description": "Absolute path to the file to delete. Must be absolute, not relative.",
+            "type": "string"
+           }
+          },
+          "required": [
+           "file_path"
+          ],
+          "type": "object"
+         },
+         "name": {
+          "const": "delete"
+         }
+        },
+        "required": [
+         "name",
+         "args"
+        ],
+        "type": "object"
+       },
+       {
+        "additionalProperties": false,
+        "description": "Find files matching a glob pattern, returning absolute paths.\n\nSupports `*` (any characters within a path segment), `**` (any directories), `?` (single character), `[abc]` (one character from a set), and `{a,b}` (alternatives), e.g. `*.py`, `src/**/*.py`, `*.{yml,yaml}`.\n\nA pattern without `/` matches the file name at any depth under the search root (`*.py` matches `src/app/main.py`). A pattern containing `/` matches the search-root-relative path (`src/**/*.py`). A leading `/` anchors to the search root (`/*.py` matches only top-level Python files).\n\nLeading-dot names are only matched when the pattern segment itself starts with `.` (use `.env`, or `.github/**/*.yml`). Because `**` will not descend into dot-directories, the bare form `*.yml` is *broader* than `**/*.yml` and is usually what you want.",
+        "properties": {
+         "args": {
+          "properties": {
+           "path": {
+            "anyOf": [
+             {
+              "type": "string"
+             },
+             {
+              "type": "null"
+             }
+            ],
+            "default": null,
+            "description": "Base directory to search from. Defaults to the backend's default root."
+           },
+           "pattern": {
+            "description": "Glob pattern to match files (e.g., '*.py', '**/*.py', '/subdir/**/*.md'). A pattern without '/' matches the file name at any depth; a pattern containing '/' matches the search-root-relative path; a leading '/' anchors to the search root ('/*.py' matches only top-level files). Leading-dot names are excluded unless the pattern segment starts with '.', so prefer the bare form '*.py' over '**/*.py' -- '**' will not descend into dot-directories like '.github'.",
+            "type": "string"
+           }
+          },
+          "required": [
+           "pattern"
+          ],
+          "type": "object"
+         },
+         "name": {
+          "const": "glob"
+         }
+        },
+        "required": [
+         "name",
+         "args"
+        ],
+        "type": "object"
+       },
+       {
+        "additionalProperties": false,
+        "description": "Search for a LITERAL text pattern across files (NOT regex).\n\nThe pattern is matched verbatim: regex metacharacters are ordinary characters, not operators. To match any of several strings, run a separate grep for each; `grep(pattern=\"foo|bar\")` searches for the literal text \"foo|bar\", and `.*` or `\\.` match those characters literally.\n\nReturns matching files or content per `output_mode`. Offloaded large tool results live under the artifacts root (`/large_tool_results/` by default); grep that directory to search them when you do not know the exact path.",
+        "properties": {
+         "args": {
+          "properties": {
+           "glob": {
+            "anyOf": [
+             {
+              "type": "string"
+             },
+             {
+              "type": "null"
+             }
+            ],
+            "default": null,
+            "description": "Glob pattern (NOT regex) limiting which files are searched (e.g. '*.py', '*.ts'). A pattern without '/' matches the file name at any depth; a pattern containing '/' matches the search-root-relative path (e.g. 'src/**/*.py'). This is an in-tool file filter, not a call to the separate glob tool. Brace expansion (e.g. '*.{ts,tsx}') is not supported on all backends; run a separate search per extension for reliable results."
+           },
+           "max_count": {
+            "anyOf": [
+             {
+              "exclusiveMinimum": 0,
+              "type": "integer"
+             },
+             {
+              "type": "null"
+             }
+            ],
+            "default": null,
+            "description": "Optional cap on the total number of matches returned across all files. Leave unset to use the configured default. When the cap is hit, results are truncated and a note says so; narrow the pattern or path to see the rest."
+           },
+           "output_mode": {
+            "default": "files_with_matches",
+            "description": "Shape of the returned text. 'files_with_matches' (default): newline-separated matching file paths. 'content': matching lines grouped by file under a '<path>:' header, each line indented and formatted '<line_number>: <line text>' (only the matched line, no surrounding context). 'count': one '<path>: <match_count>' line per file.",
+            "enum": [
+             "files_with_matches",
+             "content",
+             "count"
+            ],
+            "type": "string"
+           },
+           "path": {
+            "anyOf": [
+             {
+              "type": "string"
+             },
+             {
+              "type": "null"
+             }
+            ],
+            "default": null,
+            "description": "Directory to search in. Defaults to current working directory."
+           },
+           "pattern": {
+            "description": "Text pattern to search for (literal string, not regex).",
+            "type": "string"
+           }
+          },
+          "required": [
+           "pattern"
+          ],
+          "type": "object"
+         },
+         "name": {
+          "const": "grep"
+         }
+        },
+        "required": [
+         "name",
+         "args"
+        ],
+        "type": "object"
+       },
+       {
+        "additionalProperties": false,
+        "description": "Launch an ephemeral subagent to handle a complex, multi-step task.\n\nAvailable agent types and the tools they have access to:\n- general-purpose: General-purpose agent for researching complex questions, searching for files and content, and executing multi-step tasks. When you are searching for a keyword or file and are not confident that you will find the right match in the first few tries use this agent to perform the search for you. This agent has access to all tools as the main agent.\n- section-summariser: Summarises ONE section of a regulatory document and extracts its obligations. Pass the section's number, title and full text in the task description. Returns a SectionSummary.\n\nSpecify subagent_type to select the agent. Usage notes:\n- Launch multiple agents concurrently when their tasks are independent, using a single message with multiple tool calls.\n- Each invocation is stateless by default: the agent sees only the prompt you give it and returns a single final report. Put full detail in the prompt and state exactly what it should return — unless an agent type below says it inherits your conversation instead.\n- The agent's report is not shown to the user; relay a summary yourself.\n- Tell the agent whether to create content, analyze, or only research, since it can't necessarily see the user's intent unless it inherits your conversation, as noted per agent type below.\n- If an agent's description says to use it proactively, do so without waiting to be asked.\n- When only general-purpose is available, use it for any complex, context-heavy task; it has the same capabilities as the main agent.",
+        "properties": {
+         "args": {
+          "properties": {
+           "description": {
+            "description": "A detailed description of the task for the subagent to perform autonomously. Include all necessary context and specify the expected output format.",
+            "type": "string"
+           },
+           "subagent_type": {
+            "description": "The type of subagent to use. Must be one of the available agent types listed in the tool description.",
+            "type": "string"
+           }
+          },
+          "required": [
+           "description",
+           "subagent_type"
+          ],
+          "type": "object"
+         },
+         "name": {
+          "const": "task"
+         }
+        },
+        "required": [
+         "name",
+         "args"
+        ],
+        "type": "object"
+       },
+       {
+        "additionalProperties": false,
+        "description": "A document in the library, for example \"PS26-4\", as a JSON object with its ID, title and sections.\n\n    Each section has its number, title and full text.",
+        "properties": {
+         "args": {
+          "properties": {
+           "document_id": {
+            "type": "string"
+           }
+          },
+          "required": [
+           "document_id"
+          ],
+          "type": "object"
+         },
+         "name": {
+          "const": "get_document"
+         }
+        },
+        "required": [
+         "name",
+         "args"
+        ],
+        "type": "object"
+       },
+       {
+        "additionalProperties": false,
+        "description": "The profile of a firm, for example \"FIRM-001\", as a JSON object, used to say what a document means for it.",
+        "properties": {
+         "args": {
+          "properties": {
+           "firm_id": {
+            "type": "string"
+           }
+          },
+          "required": [
+           "firm_id"
+          ],
+          "type": "object"
+         },
+         "name": {
+          "const": "get_firm_profile"
+         }
+        },
+        "required": [
+         "name",
+         "args"
+        ],
+        "type": "object"
+       }
+      ]
+     },
+     "type": "array"
+    }
+   },
+   "required": [
+    "content",
+    "tool_calls"
+   ],
+   "type": "object"
+  },
+  "system": "# Document summary agent\n\nYou are a compliance analyst summarising a regulatory document, one section at a time.\nThe document is split at its level-2 (`##`) headings. Each section is passed to a sub-agent, which summarises that section on\nits own, so a sub-agent only ever sees one section.\n\n## Orchestrator\n\nGiven a document ID:\n\n1. Look up the document and read its title.\n2. Split the document into sections. Each section keeps its number, title and full text.\n3. Pass each section to its own `section-summariser` sub-agent. Run the sub-agents in parallel.\n4. Collect one `SectionSummary` back from each sub-agent, and put them in section order.\n5. Combine the section summaries into a brief for the firm. Do not add obligations that no sub-agent found, and do not\n   drop any that they did.\n"
+ },
+ "request_sha256": "d4a65c779f998b01c911eafb896931455084ba25f8000592194d7d9b69df3e3d",
+ "response": {
+  "content": "# What PS26/4 means for Harbour Mutual Bank (FIRM-001)\n\n**Document:** Policy Statement PS26/4, *Operational resilience and third-party technology risk*. The rules take effect on **1 January 2027**.\n\n**Does it apply?** Yes. Harbour Mutual is a retail bank (2.1). It has 1.2 million customers and £9 billion in assets, so it is well over both small-firm limits of 250,000 customers and £5 billion (2.3). That means **none of the extra time for small firms in 9.1 or 9.2 applies**, and every 31 March 2027 and 30 September 2027 deadline below is the bank's own deadline.\n\n## Things to act on first\n\n1. **No senior manager is named yet.** The profile shows no one in the operational resilience senior manager role. The bank must name one by **31 January 2027**, about 9 weeks from today, and tell the FSOA within 14 days of the appointment (8.1). There is no extra time for this (9.4).\n2. **Mobile banking and card payments both run on NimbusCloud.** This is the kind of shared dependency that 5.2 requires the mapping to show. If both are important business services, the bank must also assess the concentration risk and explain to the board how it would handle a NimbusCloud failure (6.5). A NimbusCloud failure is also a good choice for the required provider-failure scenario test (5.4).\n3. **The NimbusCloud contract ends on 30 June 2027.** Contracts signed before 1 January 2027 must meet the 6.3 terms at their next renewal or by 31 December 2028, whichever comes first (9.3). For NimbusCloud that means the renewal in mid-2027. If the renewal counts as a new arrangement or a material change, the FSOA must be told at least 60 days in advance, so by about 1 May 2027 (6.2). *The document doesn't say whether a renewal counts, so this needs a legal view.*\n4. **The PayCore contract ends on 31 December 2029.** That is after 31 December 2028, so the contract must be updated to meet 6.3 by **31 December 2028**, before it expires (9.3).\n   *Points 3 and 4 assume both contracts were signed before 1 January 2027. The profile doesn't give start dates.*\n5. **Incident reporting starts on 1 January 2027**, with no extra time (9.4). The bank needs a process in place by then for classifying incidents and reporting within 4 hours.\n\n## Timeline\n- **1 Jan 2027:** Incident reporting rules (section 7) and the senior manager rule (8.1) apply.\n- **31 Jan 2027:** Senior manager named, then the FSOA told within 14 days.\n- **31 Mar 2027:** Important business services identified, impact tolerances set, mapping finished, and the register of material third-party providers in place.\n- **c. 1 May 2027:** Possible 60-day notice to the FSOA about the NimbusCloud renewal.\n- **30 Jun 2027:** NimbusCloud renewal, which must include the 6.3 contract terms.\n- **30 Sep 2027:** First round of scenario testing finished, then repeated every year.\n- **31 Mar 2028:** First board-approved self-assessment, then one every year.\n- **31 Dec 2028:** Last date for the PayCore contract to meet 6.3.\n\n## Binding obligations, by section\n\nThe sections were reviewed one at a time. Sections 1, 3 and 10 contain no obligations.\n\n**Section 2, Scope**\n- 2.4: If the bank becomes, or stops being, a small firm after 31 December 2026, it must tell the FSOA within 30 days. Its status for the section 9 extensions is fixed on 31 December 2026.\n- 2.5: If the bank meets the rules at group level, it must be able to show how the group arrangements apply to its own important business services.\n\n**Section 4, Important business services and impact tolerances**\n- 4.1: Identify important business services by 31 March 2027.\n- 4.2: Set an impact tolerance for each one by 31 March 2027.\n- 4.2: Set each tolerance at the point where harm becomes intolerable, not at the point where the bank expects to recover.\n- 4.3: The board must approve the list and the tolerances.\n- 4.3: The board must review both at least every 12 months, or sooner if the business changes materially.\n- 4.5: Keep a record of how each service was identified and each tolerance was set.\n- 4.5: Give that record to the FSOA within 10 business days of a request.\n\n**Section 5, Mapping and scenario testing**\n- 5.1: Map the people, processes, technology, facilities and information behind each important business service, including third parties, by 31 March 2027.\n- 5.2: Make the mapping detailed enough to show single points of failure and concentrations of risk, including several services relying on one provider.\n- 5.3: Test whether the bank can stay within its impact tolerances under severe but plausible scenarios, with the first round finished by 30 September 2027.\n- 5.3: Repeat the testing at least once a year after that.\n- 5.4: As a minimum, test failure of a material third-party provider, a cyber attack that takes key systems down, and loss of a key site.\n- 5.5: Where the bank cannot stay within a tolerance, record the weakness,\n- 5.5: set out the actions to fix it,\n- 5.5: and report it to the board at its next meeting.\n\n**Section 6, Third-party technology providers**\n- 6.1: Keep a register of all material third-party providers by 31 March 2027.\n- 6.1: For each provider, record the services it supports, the data it holds, its location and its contract end date. This covers NimbusCloud and PayCore at least.\n- 6.2: Tell the FSOA at least 60 days before entering into, or materially changing, an arrangement with a material provider.\n- 6.3: Contracts must give the bank and the FSOA rights of access and audit,\n- 6.3: require the provider to report incidents to the bank without undue delay,\n- 6.3: and set out how the service will be transferred or wound down if the arrangement ends.\n- 6.4: Have a written exit plan for each material provider,\n- 6.4: and test each plan at least once every two years.\n- 6.5: Where one material provider supports more than one important business service, assess the concentration risk,\n- 6.5: and explain to the board how the bank would cope if that provider failed.\n- 6.6: The bank stays fully responsible for its regulatory obligations when it outsources.\n\n**Section 7, Incident reporting**\n- 7.1: Send an initial notice to the FSOA within 4 hours of classing an incident as major, and in any case within 24 hours of first detecting it. A major incident is one that breaches or is likely to breach an impact tolerance, or that affects more than 10% of customers (3.4). For this bank that is more than about 120,000 customers.\n- 7.2: Send an intermediate report within 72 hours of the initial notice,\n- 7.2: covering the cause as far as it is known, the services and customers affected, and the actions taken so far.\n- 7.3: Send a final report within 30 business days of the incident being resolved,\n- 7.3: including a root-cause analysis and the lessons learned.\n- 7.4: The bank must still report incidents caused by a third-party provider.\n\n**Section 8, Governance**\n- 8.1: Name a senior manager for operational resilience by 31 January 2027,\n- 8.1: and tell the FSOA the person's name within 14 days of the appointment.\n- 8.2: Complete a yearly self-assessment, approved by the board, with the first one due by 31 March 2028.\n- 8.3: The self-assessment must cover important business services, impact tolerances, mapping, test results, weaknesses and fixes, and management of material third-party providers.\n- 8.5: Keep each self-assessment for at least 5 years,\n- 8.5: and give it to the FSOA on request.\n\n**Section 9, Transitional arrangements**\n- 9.1 and 9.2: Small firms get extra time for 4.1, 4.2, 5.1 and 6.1 (to 31 March 2028) and for the first scenario tests under 5.3 (to 30 September 2028). **This does not apply to Harbour Mutual.**\n- 9.3: All firms must update contracts signed before 2027 to meet 6.3 at the next renewal or by 31 December 2028, whichever is earlier.\n- 9.4: The incident reporting rules in section 7 get no extra time and apply from 1 January 2027.\n- 9.4: The senior manager rule in 8.1 gets no extra time and applies from 1 January 2027.\n\n## Guidance (not binding, but expected)\n- 1.3: The board, not just technology teams, should own operational resilience.\n- 4.1: When identifying services, consider the number and type of customers, whether alternatives exist, and how time-sensitive the transactions are.\n- 4.4: Most retail banks are expected to identify between 6 and 15 important business services. A firm with fewer than 4 should be ready to explain why.\n- 7.4: Don't hold back a notice while waiting for information from a provider.\n- 7.5: The FSOA will publish a reporting template before the rules take effect. Until then, the bank's existing formats are acceptable.\n- 8.4: The board should get management information on operational resilience at least every quarter and should challenge it.\n- 10.1 to 10.3: The FSOA will run webinars in Q1 2027 and publish FAQs. Questions should go to the bank's usual supervisory contact.",
+  "model_reported": "claude-opus-5-5",
+  "tool_calls": [],
+  "usage": {
+   "cache_creation_input_tokens": 17315,
+   "cache_read_input_tokens": 6990,
+   "input_tokens": 2,
+   "output_tokens": 4069
+  }
+ }
+}

@@ -355,19 +355,19 @@ def test_the_facts_table_lists_every_fact_sorts_and_exports_the_same_rows(client
     assert (
         "2 facts support the brief for Harbour Mutual Bank; 2 still need a decision." in page.text
     )
-    down = client.get(f"{RUN}/facts.csv?sort=paragraph&dir=desc")
+    down = client.get(f"{RUN}/facts.csv?sort=source&dir=desc")
     rows = list(csv.reader(io.StringIO(down.text)))
-    assert rows[0][:2] == ["Paragraph", "Kind"]
-    assert [r[0] for r in rows[1:]] == ["9.3", "7.1"]
+    assert rows[0][:2] == ["Source", "Kind"]
+    assert [r[0] for r in rows[1:]] == ["Paragraph 9.3", "Paragraph 7.1"]
     assert "attachment" in down.headers["content-disposition"]
     shown = [
         m
         for m in re.findall(
             r'<td>\s*<a href="[^"]+" title="[^"]+">([^<]+)</a>',
-            client.get(f"{RUN}/facts?sort=paragraph&dir=desc").text,
+            client.get(f"{RUN}/facts?sort=source&dir=desc").text,
         )
     ]
-    assert shown == ["9.3", "7.1"]
+    assert shown == ["Paragraph 9.3", "Paragraph 7.1"]
 
 
 def test_the_advice_sentence_is_on_no_page_of_the_topic(runs):

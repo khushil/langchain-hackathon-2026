@@ -144,7 +144,9 @@ def _two_decisions_on_one_fact(signer, *, first_date="2026-11-24", second_date="
 
 def _facts_row(page, paragraph):
     return next(
-        r for r in re.findall(r"<tr>.*?</tr>", page.text, flags=re.DOTALL) if f">{paragraph}<" in r
+        r
+        for r in re.findall(r"<tr>.*?</tr>", page.text, flags=re.DOTALL)
+        if f">Paragraph {paragraph}<" in r
     )
 
 

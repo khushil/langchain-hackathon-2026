@@ -1,0 +1,54 @@
+{% import "compliance_brief/_source.html" as source %}
+<div class="exhibit review-grid" data-hook="exhibit">
+  <section class="pane profile" aria-label="The firm profile" data-hook="profile">
+    <h2 class="profile-heading">The firm profile the brief was written against</h2>
+    {% for group in profile %}
+    <h3 class="profile-owner">{{ group.heading }}</h3>
+    <div class="table-wrap">
+    <table class="data profile-table">
+      <tbody>
+        {% for row in group.rows %}
+        <tr>
+          <th scope="row">{{ row.label }}</th>
+          <td>{{ row.value }}</td>
+          <td>{{ parts.fact_state(row.state, person) }}</td>
+          <td><a class="fact-link" href="{{ fact_href(row.fact_id) }}" data-fact="{{ row.fact_id }}" title="Open the source of {{ group.heading }}, {{ row.label|lower }}" {% if panel and panel.fact.id == row.fact_id %}aria-current="true"{% endif %}>Source</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    </div>
+    {% endfor %}
+    {% set shared = model.profile_decision %}
+    {% if shared %}
+    <p class="note" data-hook="profile-decision">{{ decision_line(shared.decision, person) }}, covering {{ shared.fact_ids|length }} {{ "fact" if shared.fact_ids|length == 1 else "facts" }}. {% if shared.decision.amendment %}{{ "Your wording" if shared.decision.reviewer == person else "Wording" }}: {{ shared.decision.amendment }}. {% endif %}Reason given: {{ shared.decision.reason }}</p>
+    {% endif %}
+    {% if person %}
+    <form method="post" action="/compliance-brief/runs/{{ thread }}/profile" class="decision-form" data-hook="profile-form">
+      <input type="hidden" name="brief_digest" value="{{ brief_digest }}">
+      {% if form_error and error_target == "profile" %}{{ parts.form_problem(form_error) }}{% endif %}
+      <fieldset>
+        <legend>{{ "Change your decision about the profile" if model.profile_yours else "Your decision about the profile" }}</legend>
+        {% for value, label in [("accept", "Accept"), ("amend", "Amend"), ("reject", "Reject")] %}
+        <label class="choice" title="{{ label }} the firm profile"><input type="radio" name="outcome" value="{{ value }}" {% if form_values.get("outcome") == value %}checked{% endif %} required>{{ label }}</label>
+        {% endfor %}
+      </fieldset>
+      <div class="amend-field">
+        <label for="profile-amendment">Amended profile, in your words</label>
+        <textarea id="profile-amendment" name="amendment" {% if form_values.get("outcome") == "amend" and error_target == "profile" %}aria-required="true"{% endif %}>{{ form_values.get("amendment", "") }}</textarea>
+      </div>
+      <label for="profile-reason">Your reason</label>
+      <textarea id="profile-reason" name="reason" required>{{ form_values.get("reason", "") }}</textarea>
+      <button class="button" type="submit" title="Record your decision about the firm profile">Record my decision about the profile</button>
+    </form>
+    {% else %}
+    <p><a href="{{ sign_in }}" title="Sign in with your name and role to decide">Sign in</a> to decide on the firm profile.</p>
+    {% endif %}
+  </section>
+  {% if panel %}
+  <aside class="pane source" aria-label="Source row" data-hook="source">
+    {{ source.text(panel) }}
+    {{ source.record(panel.fact) }}
+  </aside>
+  {% endif %}
+</div>

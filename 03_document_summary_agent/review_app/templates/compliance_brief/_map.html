@@ -1,0 +1,31 @@
+{% macro icon(kind) %}
+{% if kind == "failed" %}<svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="m5.6 5.6 4.8 4.8m0-4.8-4.8 4.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+{% elif kind == "question" %}<svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M8 1.5 15 14H1z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8 6v4M8 11.6v.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+{% elif kind == "obligation" %}<svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><rect x="3" y="3" width="10" height="10" fill="currentColor"/></svg>
+{% elif kind == "other" %}<svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M8 2.5 13.5 8 8 13.5 2.5 8z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+{% else %}<svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M3 8h10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+{% endif %}
+{% endmacro %}
+
+{% macro draw(doc_map) %}
+<section class="map" aria-label="The document's paragraphs and what was found in each" data-hook="map">
+  <p class="map-count" data-hook="map-count">{{ doc_map.count }}</p>
+  {% for section in doc_map.sections %}
+  <div class="map-section">
+    <h3 class="map-title">{{ section.number }}{% if section.title %}. {{ section.title }}{% endif %}</h3>
+    <ul class="map-cells">
+      {% for cell in section.cells %}
+      <li><a class="map-cell map-{{ cell.finding.kind }}" href="{{ cell.href }}" data-para="{{ cell.number }}" title="Paragraph {{ cell.number }}: {{ cell.finding.detail }}" {% if cell.current %}aria-current="true"{% endif %}>
+        <span class="map-number">{{ cell.number }}</span>
+        <span class="map-mark">{{ icon(cell.finding.kind) }}{{ cell.finding.word }}</span>
+      </a></li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endfor %}
+</section>
+{% endmacro %}
+
+{% macro paragraph_note(panel) %}
+<p class="note" data-hook="no-fact">{{ panel.reason }}</p>
+{% endmacro %}

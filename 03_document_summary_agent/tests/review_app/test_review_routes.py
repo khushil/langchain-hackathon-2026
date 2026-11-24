@@ -9,6 +9,7 @@ from pathlib import Path
 import pytest
 from review_fixtures import make_client
 from review_helpers import BASE, RUN, runs_for_every_page
+from review_table_fakes import tables_review
 
 from fsi_common.examples.data import build_examples
 from review_app.plugin import build_plugin  # noqa: F401  (the plug-in is part of the application)
@@ -43,6 +44,20 @@ def _sections(**extra):
 
 def _digest(c, runs):
     return runs._runs["run-1"].review.request.brief_digest
+
+
+def _post_profile(c, runs):
+    """Post a decision on the firm profile of a run that cites firm and provider facts."""
+    review = tables_review()
+    runs.add("run-5", "awaiting_review", review=review)
+    return c.post(
+        f"{BASE}/runs/run-5/profile",
+        data={
+            "brief_digest": review.request.brief_digest,
+            "outcome": "accept",
+            "reason": "The tables say this.",
+        },
+    )
 
 
 def table():
@@ -128,6 +143,14 @@ def table():
             lambda c, r: c.get(f"{RUN}/review"),
             frozenset({200}),
             (HERE / PAGES, "test_the_review_page_answers_in_one_sentence_built_with_its_tiles"),
+        ),
+        f"POST {BASE}/runs/{{thread}}/profile": Reach(
+            _post_profile,
+            frozenset({303}),
+            (
+                HERE / "test_walk_profile.py",
+                "test_one_confirmation_records_one_decision_for_each_fact_with_one_reason",
+            ),
         ),
         f"POST {BASE}/runs/{{thread}}/decide": Reach(
             lambda c, r: c.post(

@@ -1,6 +1,6 @@
 {
  "meta": {
-  "duration_s": 5.957,
+  "duration_s": 7.002,
   "init": {
    "agents": [],
    "apiKeySource": "none",
@@ -14,14 +14,14 @@
     "StructuredOutput"
    ]
   },
-  "recorded_at": "2026-11-24T20:52:30.914523+00:00"
+  "recorded_at": "2026-11-24T22:23:38.160263+00:00"
  },
  "request": {
   "effort": "medium",
   "format": 2,
   "messages": [
    {
-    "content": "Summarise ONE section of regulatory document PS26-4 (Policy Statement PS26/4: Operational resilience and third-party technology risk) and extract its obligations. Only analyse; do not create files. Return a SectionSummary.\n\nSection number: 2\nSection title: Scope and application\nFull text:\n2.1 This policy statement applies to all banks, building societies, payment institutions and electronic money institutions authorised by the FSOA.\n\n2.2 It applies to the firm's activities in all jurisdictions where the failure of an activity could cause harm to consumers in our jurisdiction or to the stability of our financial system.\n\n2.3 Some requirements are applied proportionately. For the purposes of this policy statement, a small firm is a firm that has fewer than 250,000 customers and total assets of less than £5 billion on 31 December 2026. A firm that exceeds either threshold is not a small firm.\n\n2.4 A firm that becomes a small firm, or stops being a small firm, after 31 December 2026 must notify the FSOA within 30 days of the change. Its status for the purposes of the transitional arrangements in section 9 is fixed on 31 December 2026 and does not change.\n\n2.5 Groups may meet these requirements at group level, provided that each authorised firm in the group can show how the group arrangements apply to its own important business services.",
+    "content": "Summarise ONE section of a regulatory document and extract its obligations. Analysis only: do not create or edit files. Return a SectionSummary with the section number, title, a short summary, and every obligation in the section (who must do what, by when, and any thresholds or conditions). Treat 'must' as a binding obligation and 'should'/'we expect' as guidance, and label each one.\n\nDocument: Policy Statement PS26/4: Operational resilience and third-party technology risk\nSection number: 7\nSection title: Incident reporting\nFull text:\n7.1 Firms must submit an initial notification to the FSOA within 4 hours of classifying an incident as a major incident, and in any case no later than 24 hours after the incident is first detected.\n\n7.2 Firms must submit an intermediate report within 72 hours of the initial notification, setting out the cause of the incident as far as it is known, the services and customers affected, and the actions taken so far.\n\n7.3 Firms must submit a final report within 30 business days of the incident being resolved. The final report must include a root-cause analysis and the lessons learned.\n\n7.4 Where a major incident is caused by a third-party provider, the firm remains responsible for reporting it. Firms should not delay a notification while they wait for information from the provider.\n\n7.5 We will publish an incident reporting template before the rules take effect. Until then, firms may use their existing incident reporting formats.",
     "role": "user"
    }
   ],
@@ -397,39 +397,63 @@
   },
   "system": "# Section summariser agent\nYou are given one section: its number, title and text. Return a `SectionSummary` as a single JSON object, with no text before or after it:\n\n- `number`: the section number, for example `\"4\"`.\n- `title`: the section title.\n- `summary`: one to three sentences on what the section says.\n- `obligations`: every obligation in the section. Use an empty list if there are none.\n\nEach `Obligation` has four fields:\n\n- `requirement`: what the firm must do, in plain English.\n- `paragraph`: the paragraph number it comes from, for example `\"4.2\"`.\n- `deadline`: the deadline exactly as written in the document, or `null` if there is none.\n- `evidence`: a quote copied word for word from that paragraph, at most 30 words.\n\nFor example:\n\n```json\n{\n  \"number\": \"7\",\n  \"title\": \"Incident reporting\",\n  \"summary\": \"Firms must report major incidents to the regulator quickly.\",\n  \"obligations\": [\n    {\n      \"requirement\": \"Report major incidents to the regulator\",\n      \"paragraph\": \"7.1\",\n      \"deadline\": \"within 4 hours\",\n      \"evidence\": \"Firms must notify the FSOA of a major incident within 4 hours\"\n    }\n  ]\n}\n```\n\n### What counts as an obligation\n\nAn obligation is something a firm must do. Look for \"must\", \"shall\", \"is required to\" and \"will need to\".\n\n- Do not list recommendations or guidance (\"should\", \"may\", \"we expect\") as obligations.\n- Do not list things only the regulator does.\n- If one paragraph sets several separate requirements, list each one separately.\n- If the section changes a requirement or deadline from an earlier section, say so in the summary.\n\n### Rules for accuracy\n\n- Copy `evidence` word for word. Never paraphrase, correct or shorten the wording inside a quote.\n- Copy `deadline` exactly as written. Do not convert dates or durations, for example \"within 4 hours\" stays as it is.\n- Use only the section you were given. Do not use outside knowledge of the regulation.\n- Do not guess. If a paragraph is ambiguous, say so in the summary rather than inventing a requirement.\n\nThese fields are checked automatically against the source text afterwards. A quote that isn't word for word, or a\ndeadline that isn't in the section, will be flagged.\n"
  },
- "request_sha256": "45c8d798e3573695b0fa0061514e06d45633b763361318534441ead157a8982d",
+ "request_sha256": "93bb86db0a82862e8e36b460e8ccfbf8cdc19162cd5cebdfd3cd338c347a27f7",
  "response": {
-  "content": "{\"number\":\"2\",\"title\":\"Scope and application\",\"summary\":\"The policy statement applies to FSOA-authorised banks, building societies, payment institutions and e-money institutions, including their activities in any jurisdiction where failure could harm consumers or financial stability in the FSOA's jurisdiction. Small firm status (fewer than 250,000 customers and under £5 billion total assets at 31 December 2026) allows proportionate application. Groups may comply at group level if each authorised firm can show how this applies to its own important business services.\",\"obligations\":[{\"requirement\":\"Notify the FSOA when the firm becomes, or stops being, a small firm after 31 December 2026\",\"paragraph\":\"2.4\",\"deadline\":\"within 30 days of the change\",\"evidence\":\"A firm that becomes a small firm, or stops being a small firm, after 31 December 2026 must notify the FSOA within 30 days of the change.\"},{\"requirement\":\"Where a group meets the requirements at group level, each authorised firm must be able to show how the group arrangements apply to its own important business services\",\"paragraph\":\"2.5\",\"deadline\":null,\"evidence\":\"provided that each authorised firm in the group can show how the group arrangements apply to its own important business services\"}]}",
+  "content": "{\"number\":\"7\",\"title\":\"Incident reporting\",\"summary\":\"Firms must report major incidents to the FSOA in three stages: an initial notification, an intermediate report and a final report. Firms stay responsible for reporting incidents caused by third-party providers. The FSOA will publish a reporting template, and firms may use their existing formats until then. Binding obligations use 'must'. Paragraph 7.4 also contains guidance ('should not delay'), and 7.5 'may' is permissive.\",\"obligations\":[]}",
   "model_reported": "claude-sonnet-5-5",
   "tool_calls": [
    {
     "args": {
-     "number": "2",
+     "number": "7",
      "obligations": [
       {
-       "deadline": "within 30 days of the change",
-       "evidence": "A firm that becomes a small firm, or stops being a small firm, after 31 December 2026 must notify the FSOA within 30 days of the change.",
-       "paragraph": "2.4",
-       "requirement": "Notify the FSOA when the firm becomes, or stops being, a small firm after 31 December 2026"
+       "deadline": "within 4 hours of classifying an incident as a major incident, and in any case no later than 24 hours after the incident is first detected",
+       "evidence": "Firms must submit an initial notification to the FSOA within 4 hours of classifying an incident as a major incident",
+       "paragraph": "7.1",
+       "requirement": "BINDING: Submit an initial notification to the FSOA within 4 hours of classifying an incident as a major incident, and in any case no later than 24 hours after the incident is first detected."
+      },
+      {
+       "deadline": "within 72 hours of the initial notification",
+       "evidence": "Firms must submit an intermediate report within 72 hours of the initial notification",
+       "paragraph": "7.2",
+       "requirement": "BINDING: Submit an intermediate report within 72 hours of the initial notification."
+      },
+      {
+       "deadline": "within 72 hours of the initial notification",
+       "evidence": "setting out the cause of the incident as far as it is known, the services and customers affected, and the actions taken so far",
+       "paragraph": "7.2",
+       "requirement": "BINDING: The intermediate report must set out the cause of the incident as far as known, the services and customers affected, and the actions taken so far."
+      },
+      {
+       "deadline": "within 30 business days of the incident being resolved",
+       "evidence": "Firms must submit a final report within 30 business days of the incident being resolved.",
+       "paragraph": "7.3",
+       "requirement": "BINDING: Submit a final report within 30 business days of the incident being resolved."
+      },
+      {
+       "deadline": "within 30 business days of the incident being resolved",
+       "evidence": "The final report must include a root-cause analysis and the lessons learned.",
+       "paragraph": "7.3",
+       "requirement": "BINDING: The final report must include a root-cause analysis and the lessons learned."
       },
       {
        "deadline": null,
-       "evidence": "provided that each authorised firm in the group can show how the group arrangements apply to its own important business services",
-       "paragraph": "2.5",
-       "requirement": "Where a group meets the requirements at group level, each authorised firm must be able to show how the group arrangements apply to its own important business services"
+       "evidence": "the firm remains responsible for reporting it",
+       "paragraph": "7.4",
+       "requirement": "BINDING: Where a major incident is caused by a third-party provider, the firm remains responsible for reporting it."
       }
      ],
-     "summary": "The policy statement applies to FSOA-authorised banks, building societies, payment institutions and e-money institutions, including their activities in any jurisdiction where failure could harm consumers or financial stability in the FSOA's jurisdiction. Small firm status (fewer than 250,000 customers and under £5 billion total assets at 31 December 2026) allows proportionate application. Groups may comply at group level if each authorised firm can show how this applies to its own important business services.",
-     "title": "Scope and application"
+     "summary": "Firms must report major incidents to the FSOA in three stages: an initial notification, an intermediate report and a final report. Firms remain responsible for reporting incidents caused by third-party providers. The FSOA will publish a reporting template before the rules take effect, and until then firms may use their existing formats (permissive). Paragraph 7.4 includes guidance (firms 'should not' delay notification while waiting for provider information), which is not listed as an obligation. Binding obligations are labelled 'binding' below.",
+     "title": "Incident reporting"
     },
     "name": "SectionSummary"
    }
   ],
   "usage": {
-   "cache_creation_input_tokens": 999,
+   "cache_creation_input_tokens": 1015,
    "cache_read_input_tokens": 6399,
    "input_tokens": 2,
-   "output_tokens": 883
+   "output_tokens": 1093
   }
  }
 }

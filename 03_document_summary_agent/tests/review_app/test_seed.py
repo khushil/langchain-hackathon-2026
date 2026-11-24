@@ -18,10 +18,12 @@ from review_app.context import Services
 from review_app.plugin import PLUGIN, build_plugin
 from review_app.seed import (
     DECISIONS,
+    PROFILE,
     REVIEWER,
     SEED_DATE,
     SeedDecision,
     SeedError,
+    SeedProfile,
     seed_compliance_brief,
 )
 from workflow.runs import BriefRuns
@@ -99,20 +101,30 @@ def test_the_signed_brief_carries_the_named_reviewers_decisions_each_in_their_wo
     assert sign_off["reviewer"] == {"name": "Dana Whitfield", "role": "Head of Compliance"}
     assert REVIEWER == Person(name="Dana Whitfield", role="Head of Compliance")
     decisions = list(state["decisions"].values())
-    wanted = {d.fact_id: d for d in DECISIONS}
-    assert len(decisions) == len(wanted) == 16
+    wanted = {d.fact_id: (d.outcome, d.reason) for d in DECISIONS}
+    wanted |= {fid: (PROFILE.outcome, PROFILE.reason) for fid in PROFILE.fact_ids}
+    assert len(decisions) == len(wanted) == 18
+    assert len(PROFILE.fact_ids) == 12 and len(DECISIONS) == 6
     for decision in decisions:
         assert decision["reviewer"] == sign_off["reviewer"]
         assert decision["date"] == SEED_DATE
         assert decision["subject_id"] in wanted
-        assert decision["outcome"] == wanted[decision["subject_id"]].outcome
-        assert decision["reason"] == wanted[decision["subject_id"]].reason
+        assert (decision["outcome"], decision["reason"]) == wanted[decision["subject_id"]]
+
+
+def test_the_firm_profile_was_decided_once_with_one_reason_and_each_fact_one_by_one(seeded):
+    state = seeded.state(waiting_and_signed(seeded)[1])
+    by_subject = {d["subject_id"]: d for d in state["decisions"].values()}
+    profile = {fid: by_subject[fid] for fid in PROFILE.fact_ids}
+    assert len({(d["outcome"], d["reason"], d["date"]) for d in profile.values()}) == 1
+    reasons = {by_subject[d.fact_id]["reason"] for d in DECISIONS}
+    assert len(reasons) == len(DECISIONS) and PROFILE.reason not in reasons
 
 
 def test_every_fact_the_brief_cites_has_a_decision_in_the_fixture(seeded):
     waiting = waiting_and_signed(seeded)[0]
     cited = {c.fact.id for s in seeded.runs.review_request(waiting).statements for c in s.facts}
-    assert cited == {d.fact_id for d in DECISIONS}
+    assert cited == set(PROFILE.fact_ids) | {d.fact_id for d in DECISIONS}
 
 
 def test_the_waiting_brief_has_nothing_decided_on_it_and_carries_nothing_from_the_signed_one(
@@ -135,7 +147,7 @@ def test_the_waiting_brief_asks_the_reviewer_for_every_fact_and_the_signed_decis
     client = TestClient(app)
     waiting = waiting_and_signed(seeded)[0]
     review = page_text(client.get(f"/compliance-brief/runs/{waiting}/review").text)
-    assert "16 facts still need your decision before it can be signed." in review
+    assert "18 facts still need your decision before it can be signed." in review
     assert "Carried:" not in review
 
 
@@ -185,22 +197,56 @@ def test_a_missing_recording_stops_the_seed_with_the_replay_miss_named(monkeypat
     assert runs.list_runs() != [] and {runs.status(t) for t in runs.list_runs()} == {"failed"}
 
 
-def test_a_fixture_that_leaves_a_cited_fact_undecided_stops_the_seed_naming_it(monkeypatch):
+def seeding_raises(monkeypatch, **changes) -> SeedError:
+    """Seed on the recordings with part of the fixture changed, and return the error."""
+    for name, value in changes.items():
+        monkeypatch.setattr(seed_module, name, value)
+    with replay_only():
+        runs = BriefRuns()
+    with pytest.raises(SeedError) as caught:
+        seed_compliance_brief(Services(runs=lambda: runs))
+    return caught.value
+
+
+def test_a_fixture_that_leaves_a_document_fact_undecided_names_its_paragraph_and_words(
+    monkeypatch,
+):
     left = DECISIONS[0]
-    monkeypatch.setattr(seed_module, "DECISIONS", DECISIONS[1:])
-    with replay_only():
-        runs = BriefRuns()
-    with pytest.raises(SeedError, match=re.escape(left.fact_id)):
-        seed_compliance_brief(Services(runs=lambda: runs))
+    error = seeding_raises(monkeypatch, DECISIONS=DECISIONS[1:])
+    assert re.search(
+        re.escape(left.fact_id) + r" \(para:7.1, \"Firms must submit an initial", str(error)
+    )
+    assert "document facts on the brief with no decision in the seed" in str(error)
 
 
-def test_a_fixture_decision_on_a_fact_not_on_the_brief_stops_the_seed_naming_it(monkeypatch):
-    stray = SeedDecision("fact:0000000000000000", "accept", "Nothing to read.")
-    monkeypatch.setattr(seed_module, "DECISIONS", (*DECISIONS, stray))
-    with replay_only():
-        runs = BriefRuns()
-    with pytest.raises(SeedError, match="fact:0000000000000000"):
-        seed_compliance_brief(Services(runs=lambda: runs))
+def test_a_fixture_that_leaves_a_profile_fact_out_names_it_as_a_profile_fact(monkeypatch):
+    left = PROFILE.fact_ids[4]
+    shorter = SeedProfile(
+        tuple(f for f in PROFILE.fact_ids if f != left), PROFILE.outcome, PROFILE.reason
+    )
+    error = seeding_raises(monkeypatch, PROFILE=shorter)
+    assert f"firm profile facts on the brief with no decision in the seed: {left}" in str(error)
+    assert "operational_resilience_senior_manager" in str(error)
+
+
+def test_a_fixture_decision_on_a_fact_not_on_the_brief_is_named_as_gone(monkeypatch):
+    stray = SeedDecision(
+        "fact:0000000000000000", "para:7.9", "Nothing", "accept", "Nothing to read."
+    )
+    error = seeding_raises(monkeypatch, DECISIONS=(*DECISIONS, stray))
+    assert "document facts in the seed that are not on the brief: fact:0000000000000000" in str(
+        error
+    )
+
+
+def test_a_profile_fact_in_the_fixture_that_is_not_on_the_brief_is_named_as_gone(monkeypatch):
+    longer = SeedProfile(
+        (*PROFILE.fact_ids, "fact:1111111111111111"), PROFILE.outcome, PROFILE.reason
+    )
+    error = seeding_raises(monkeypatch, PROFILE=longer)
+    assert "firm profile facts in the seed that are not on the brief: fact:1111111111111111" in str(
+        error
+    )
 
 
 def test_the_plug_in_makes_the_seed_when_the_application_is_started_with_the_setting():
@@ -209,21 +255,27 @@ def test_the_plug_in_makes_the_seed_when_the_application_is_started_with_the_set
 
 
 def test_the_seeds_wording_is_the_reviewers_and_never_a_machines():
-    assert len({d.fact_id for d in DECISIONS}) == len(DECISIONS) == 16
-    for decision in DECISIONS:
+    assert len({d.fact_id for d in DECISIONS}) == len(DECISIONS) == 6
+    for decision in (*DECISIONS, PROFILE):
         assert decision.outcome in {"accept", "amend", "reject"}
         assert decision.reason.strip() and decision.reason.strip()[-1] == "."
         assert not re.search(r"\b(model|AI|assistant|Claude)\b", decision.reason, re.I)
 
 
-def test_a_decision_the_review_route_refuses_stops_the_seed_with_the_routes_own_words(
+def test_a_document_decision_the_review_route_refuses_stops_the_seed_with_the_routes_own_words(
     monkeypatch,
 ):
-    empty = SeedDecision(DECISIONS[0].fact_id, "accept", "   ")
-    monkeypatch.setattr(seed_module, "DECISIONS", (empty, *DECISIONS[1:]))
-    with replay_only():
-        runs = BriefRuns()
-    with pytest.raises(
-        SeedError, match=r"refused the decision on fact:3ea55dfec196c112 with 422: .*own words"
-    ):
-        seed_compliance_brief(Services(runs=lambda: runs))
+    first = DECISIONS[0]
+    empty = SeedDecision(first.fact_id, first.paragraph, first.quote, "accept", "   ")
+    error = seeding_raises(monkeypatch, DECISIONS=(empty, *DECISIONS[1:]))
+    assert re.search(
+        r"refused the decision on fact:be1caf14c1da80d4 with 422: .*own words", str(error)
+    )
+
+
+def test_a_profile_decision_the_review_route_refuses_stops_the_seed_with_the_routes_own_words(
+    monkeypatch,
+):
+    empty = SeedProfile(PROFILE.fact_ids, "accept", "   ")
+    error = seeding_raises(monkeypatch, PROFILE=empty)
+    assert re.search(r"refused the decision on the firm profile with 422: .*own words", str(error))

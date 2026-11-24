@@ -1,4 +1,4 @@
-"""Checks a real browser page must pass: fit, type floor, contrast, clickable elements.
+"""Checks a real browser page must pass: fit, phone width, type floor, contrast, clickables.
 
 Each function takes a Playwright ``Page`` and returns the problems it found, as sentences, so a
 test asserts the list is empty and a planted fault shows up in words. Nothing here imports
@@ -122,6 +122,30 @@ _CLIPPED = """
   return cut && e.scrollWidth > e.clientWidth + 1 && !e.getAttribute('title');
 }).map(e => `<${e.tagName.toLowerCase()}> '${(e.innerText || '').trim().slice(0, 40)}'`)
 """
+
+_NARROW = """
+() => {
+  const width = window.innerWidth;
+  const root = document.documentElement;
+  const label = e => `<${e.tagName.toLowerCase()}> '${(e.innerText || e.getAttribute('title') || '').trim().slice(0, 30)}'`;
+  const framed = e => { for (let p = e.parentElement; p; p = p.parentElement) {
+    const x = getComputedStyle(p).overflowX; if (x === 'auto' || x === 'scroll' || x === 'hidden') return true; }
+    return false; };
+  const visible = e => { const s = getComputedStyle(e); const b = e.getBoundingClientRect();
+    return s.display !== 'none' && s.visibility !== 'hidden' && b.width > 0 && b.height > 0; };
+  const beyond = [...document.querySelectorAll('body *')]
+    .filter(e => visible(e) && e.getBoundingClientRect().right > width + 1 && !framed(e)).map(label);
+  const spill = [];
+  document.querySelectorAll('[data-hook="tile"]').forEach(tile => {
+    const box = tile.getBoundingClientRect();
+    tile.querySelectorAll('*').forEach(e => {
+      if (visible(e) && (e.getBoundingClientRect().right > box.right + 1 || e.scrollWidth > e.clientWidth + 1))
+        spill.push(label(e));
+    });
+  });
+  return { sideways: root.scrollWidth - width, width, beyond, spill };
+}
+"""  # noqa: E501
 
 POINTER_TAGS = {"a", "button", "select", "summary", "label"}
 POINTER_INPUT_TYPES = {"radio", "checkbox", "submit", "button"}
@@ -262,3 +286,25 @@ def clipped_problems(page: Any) -> list[str]:
         f"{item} is cut off and has no title with the full text."
         for item in page.evaluate(_CLIPPED)
     ]
+
+
+def narrow_problems(page: Any) -> list[str]:
+    """Check a page at a phone width: no sideways scroll, nothing off screen, tile text in its box.
+
+    A table that scrolls inside its own frame does not count, because the page itself holds still.
+
+    Args:
+        page: The Playwright page, loaded at the width to check.
+
+    Returns:
+        What is wrong, in words; empty when the page fits its width.
+    """
+    found: dict[str, Any] = page.evaluate(_NARROW)
+    problems = []
+    if found["sideways"] > 1:
+        problems.append(
+            f"The page is {found['sideways']} pixels wider than the {found['width']} pixel window."
+        )
+    problems += [f"{item} lies beyond the right edge of the window." for item in found["beyond"]]
+    problems += [f"{item} spills out of its tile." for item in found["spill"]]
+    return problems

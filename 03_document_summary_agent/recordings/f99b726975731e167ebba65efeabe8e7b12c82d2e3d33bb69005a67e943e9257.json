@@ -1,6 +1,6 @@
 {
  "meta": {
-  "duration_s": 5.497,
+  "duration_s": 5.419,
   "init": {
    "agents": [],
    "apiKeySource": "none",
@@ -14,7 +14,7 @@
     "StructuredOutput"
    ]
   },
-  "recorded_at": "2026-11-24T20:51:49.105079+00:00"
+  "recorded_at": "2026-11-24T22:22:41.231456+00:00"
  },
  "request": {
   "effort": "medium",
@@ -438,16 +438,22 @@
      "number": "7",
      "obligations": [
       {
-       "deadline": "within 4 hours of classifying an incident as a major incident, and in any case no later than 24 hours after the incident is first detected",
+       "deadline": "within 4 hours of classifying an incident as a major incident",
        "evidence": "Firms must submit an initial notification to the FSOA within 4 hours of classifying an incident as a major incident",
        "paragraph": "7.1",
-       "requirement": "Submit an initial notification to the FSOA within 4 hours of classifying an incident as major, and in any case no later than 24 hours after first detection"
+       "requirement": "Submit an initial notification to the FSOA after classifying an incident as major"
+      },
+      {
+       "deadline": "no later than 24 hours after the incident is first detected",
+       "evidence": "and in any case no later than 24 hours after the incident is first detected",
+       "paragraph": "7.1",
+       "requirement": "Submit the initial notification no later than 24 hours after the incident is first detected, regardless of when it was classified"
       },
       {
        "deadline": "within 72 hours of the initial notification",
        "evidence": "Firms must submit an intermediate report within 72 hours of the initial notification",
        "paragraph": "7.2",
-       "requirement": "Submit an intermediate report setting out the cause (as far as known), the services and customers affected, and actions taken so far"
+       "requirement": "Submit an intermediate report setting out the cause as far as known, the services and customers affected, and actions taken so far"
       },
       {
        "deadline": "within 30 business days of the incident being resolved",
@@ -468,17 +474,17 @@
        "requirement": "Remain responsible for reporting a major incident caused by a third-party provider"
       }
      ],
-     "summary": "Firms must notify the FSOA of major incidents in three stages: an initial notification, an intermediate report and a final report. Responsibility for reporting stays with the firm when a third-party provider causes the incident. The FSOA will publish a template, and firms may use their existing formats until then.",
+     "summary": "Firms must notify the FSOA of major incidents in three stages: an initial notification, an intermediate report and a final report. Responsibility for reporting stays with the firm when a third-party provider causes the incident. The FSOA will publish a template, and firms may use existing formats until then. Para 7.4 says firms 'should not' delay notification, which is guidance and not listed as an obligation.",
      "title": "Incident reporting"
     },
     "name": "SectionSummary"
    }
   ],
   "usage": {
-   "cache_creation_input_tokens": 314,
-   "cache_read_input_tokens": 7977,
+   "cache_creation_input_tokens": 8291,
+   "cache_read_input_tokens": 0,
    "input_tokens": 2,
-   "output_tokens": 686
+   "output_tokens": 776
   }
  }
 }

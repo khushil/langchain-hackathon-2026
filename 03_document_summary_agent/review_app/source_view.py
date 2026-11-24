@@ -18,6 +18,9 @@ ATTRIBUTE_LABELS = {
     "field": "Field",
     "value": "Value",
     "small_firm": "Small firm",
+    "provider_id": "Provider",
+    "contract_end": "Contract ends",
+    "material": "Material",
 }
 KIND_LABELS = {
     "obligation": "Obligation",
@@ -42,6 +45,8 @@ OUTCOME_WORDS = {
     "answer": "Answered",
 }
 NONE_STATED = "None stated in the paragraph"
+NONE_NAMED = "none named"
+"""What a missing value of a firm or provider table reads."""
 DOES_NOT_APPLY = "Does not apply"
 """What the Requirement and Deadline columns read for a fact about a table row, not a paragraph."""
 
@@ -129,21 +134,24 @@ def kind_label(kind: str) -> str:
     return KIND_LABELS.get(kind, kind.replace("_", " ").capitalize())
 
 
-def attribute_value(value: object) -> str:
+def attribute_value(value: object, *, missing: str = NONE_STATED) -> str:
     """Write an attribute's value as a person reads it.
 
     Args:
         value: A normalised attribute value.
+        missing: What a missing value reads; a paragraph's by default, a table row's by choice.
 
     Returns:
         The words; a missing value is said to be missing.
     """
     if value is None:
-        return NONE_STATED
+        return missing
     if isinstance(value, bool):
         return "Yes" if value else "No"
+    if isinstance(value, int):
+        return f"{value:,}"
     if isinstance(value, list):
-        return ", ".join(str(v) for v in value) if value else NONE_STATED
+        return ", ".join(str(v) for v in value) if value else missing
     return str(value)
 
 

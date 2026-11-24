@@ -11,6 +11,7 @@ from datetime import date
 
 from fsi_common.records import Assumption, Decision, Person, SignOff
 from review_app.drafts import Draft
+from review_app.profile import is_profile
 from review_app.review_model import ReviewModel
 from utils.state import ReviewRequest, ReviewResponse
 
@@ -77,6 +78,50 @@ def decide_fact(
         reviewer=person,
         date=on,
     )
+
+
+def decide_profile(
+    request: ReviewRequest,
+    *,
+    outcome: str,
+    reason: str | None,
+    amendment: str | None,
+    person: Person,
+    on: str,
+) -> list[Decision]:
+    """Build a person's one decision on the firm profile as a decision on each fact it covers.
+
+    Every decision carries the same outcome, reason, wording, reviewer and date, so that the
+    pages can show them as one decision on the profile.
+
+    Args:
+        request: The request the reviewer was shown.
+        outcome: ``accept``, ``amend`` or ``reject``.
+        reason: Why, in the person's words.
+        amendment: For amend, the wording the person gives for the profile.
+        person: The signed-in person.
+        on: The date of the decision.
+
+    Returns:
+        One decision for each firm or provider fact the brief cites, in the brief's order.
+
+    Raises:
+        ReviewInputError: If the brief cites no firm or provider fact, the outcome is not one of
+            the three, or a required wording is missing.
+    """
+    covered = {c.fact.id: c.fact for s in request.statements for c in s.facts if is_profile(c.fact)}
+    if not covered:
+        raise ReviewInputError(
+            "The brief cites no firm or provider facts, so there is no profile to decide."
+        )
+    if outcome not in FACT_OUTCOMES:
+        raise ReviewInputError("Choose accept, amend or reject.")
+    why = _own_words(reason, "your reason")
+    changed = _own_words(amendment, "the amended wording") if outcome == "amend" else None
+    return [
+        Decision.on(fact, outcome=outcome, reason=why, amendment=changed, reviewer=person, date=on)
+        for fact in covered.values()
+    ]
 
 
 def answer_question(

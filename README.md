@@ -86,7 +86,7 @@ With `MODEL_BACKEND` at its default of `replay`, the application can only start 
 
 The application is called Review desk. Its pages are the home page, About, sign-in, and for the compliance brief topic the list of briefs with the form that starts one, the review page, the facts table and the page of a signed or returned brief. About says what the data is. Runs and decisions are held in memory, so a restart of the application forgets them. `docs/user-guide.md` follows every step from signing in to a second run that carries earlier decisions.
 
-`APP_SECRET` signs the sign-in cookie (a random one is made for each process when it is absent), `APP_COOKIE` names that cookie, and `APP_TOPICS` lists the topic folders to serve; by default every topic folder with a `review_app/plugin.py` is served.
+`APP_SECRET` signs the sign-in cookie (a random one is made for each process when it is absent), `APP_COOKIE` names that cookie, and `APP_TOPICS` lists the topic folders to serve; by default every topic folder with a `review_app/plugin.py` is served. `APP_SEED=compliance-brief` starts the application with a brief waiting for a reviewer and a brief signed by a fictional reviewer, both made from the saved calls; without it the application starts empty.
 
 ## Checks
 
@@ -96,13 +96,13 @@ make gate
 
 takes about a minute on the machine this was written on and ends with exit code 0. It runs, in order:
 
-1. `ruff check` and `ruff format --check` over 165 files.
-2. The tests of `fsi_common` (319 passed, 1 skipped, a live model call that needs `FSI_LIVE_MODEL_TESTS=1`) and of topic 03 (611 passed, 3 skipped, the notebook runs that `make notebook` does).
+1. `ruff check` and `ruff format --check` over 198 files.
+2. The tests of `fsi_common` (384 passed, 1 skipped, a live model call that needs `FSI_LIVE_MODEL_TESTS=1`) and of topic 03 (755 passed, 3 skipped, the notebook runs that `make notebook` does).
 3. That the 9 JSON Schemas and the 62 example files are what the code makes, byte for byte.
 4. The validator's self-test: 52 valid example records pass, and 45 of 45 planted invalid examples are caught by the check each declares and by no other; 38 of 38 checks have a planted case.
 5. The evaluation's planted faults: 6 of 6 caught, each lowering only the measures declared for it.
 6. The dataset check: 10 of 10 sections and 48 of 48 paragraphs covered by the labels.
-7. The notebook run: 10 tests passed.
+7. The notebook run: 17 tests passed, which include the check that this README's measure table matches the figures the notebook printed.
 
 If `make gate` fails, the first failing target names the check. Run that target alone, for example `make test` or `make selftest`, to see its full output.
 
@@ -112,15 +112,15 @@ The measures score the list of obligations a section's sub-agent returns for a s
 
 | Measure | Starter's agent, all 10 sections | Starter's agent, section 7 | This engine, section 7 |
 | --- | --- | --- | --- |
-| Obligations found, of the labelled obligations in scope | 37 of 39 | 4 of 4 | 4 of 4 |
-| Invented obligations, of all predicted (lower is better) | 6 of 45 | 0 of 4 | 0 of 4 |
-| Quotes word for word, of those citing a paragraph in scope | 45 of 45 | 4 of 4 | 4 of 4 |
-| Deadlines as written, of predicted obligations with a deadline | 26 of 26 | 3 of 3 | 3 of 3 |
-| Deadlines matched, of matched obligations with a labelled deadline | 16 of 16 | 3 of 3 | 3 of 3 |
+| Obligations found, of the labelled obligations in scope | 35 of 39 | 4 of 4 | 4 of 4 |
+| Invented obligations, of all predicted (lower is better) | 7 of 45 | 1 of 6 | 1 of 6 |
+| Quotes word for word, of those citing a paragraph in scope | 45 of 45 | 6 of 6 | 6 of 6 |
+| Deadlines as written, of predicted obligations with a deadline | 28 of 28 | 5 of 5 | 4 of 4 |
+| Deadlines matched, of matched obligations with a labelled deadline | 15 of 15 | 3 of 3 | 3 of 3 |
 | Paragraph recall, of paragraphs holding a labelled obligation | 23 of 23 | 3 of 3 | 3 of 3 |
-| Paragraph precision, of paragraphs holding a predicted obligation | 23 of 28 | 3 of 3 | 3 of 3 |
+| Paragraph precision, of paragraphs holding a predicted obligation | 23 of 29 | 3 of 4 | 3 of 4 |
 
-Both agents ran on headless Claude Code through this repository's adapter, from saved calls, and not on the starter's default gateway model. Over the whole document the starter's agent missed 2 of 39 labelled obligations (one in section 6 and one in section 8), and 6 of the 45 obligations it returned match no label. This engine was run on section 7 only, because the saved run covers that one section, so it has no whole-document figures. On section 7 the two score alike on all seven measures. There is no measure on which this engine scores below the starter's agent, and none on which it scores above: its sub-agent returns the same shape and finds the same obligations. What the engine adds is outside these seven measures: every one of its 16 facts in the section 7 run passed its quote and deadline checks, every paragraph is accounted for, and a person decides before anything is signed. Those are tested by the planted faults and the self-test above, and not scored against the labels.
+Both agents ran on headless Claude Code through this repository's adapter, from saved calls, and not on the starter's default gateway model. Over the whole document the starter's agent missed 4 of 39 labelled obligations (one in section 5, one in section 6 and two in section 8), and 7 of the 45 obligations it returned match no label. This engine was run on section 7 only, because the saved run covers that one section, so it has no whole-document figures. On section 7 the two score alike on all seven measures; the one count that differs is deadlines as written, 5 of 5 for the starter's agent and 4 of 4 for this engine, each complete. There is no measure on which this engine scores below the starter's agent, and none on which it scores above: its sub-agent returns the same shape and finds the same obligations. What the engine adds is outside these seven measures: every one of its 18 facts in the section 7 run passed its quote and deadline checks, every paragraph is accounted for, and a person decides before anything is signed. Those are tested by the planted faults and the self-test above, and not scored against the labels.
 
 `evals/upload.py` puts the two datasets in LangSmith. This repository reports no LangSmith experiment results.
 
