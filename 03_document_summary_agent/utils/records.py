@@ -39,8 +39,8 @@ item, and the two kinds of fact read from the firm and provider tables."""
 COPIED_ATTRIBUTES = ("deadline",)
 """The attributes this topic copies word for word from the document: the deadline as written.
 
-With the kind, the paragraph and the quote they make a fact's id. The requirement is the model's
-plain wording of the paragraph, so it stays out of the id: a rerun that words it differently is
+With the kind, the paragraph and the quote they make a fact's id. The requirements are the model's
+plain wording of the paragraph, so they stay out of the id: a rerun that words one differently is
 the same fact, and a changed quote or deadline is another."""
 
 FACT_CONTEXT = fact_topic_context(kinds=DOCUMENT_FACT_KINDS, copied_attributes=COPIED_ATTRIBUTES)
@@ -57,8 +57,10 @@ class StarterShapeError(Exception):
 class SectionResult(Part):
     """What one section's sub-agent returned, beside the facts it produced.
 
-    ``fact_ids`` keeps the order of the obligations, and an obligation given twice appears twice,
-    so the starter's ``SectionSummary`` comes back unchanged.
+    ``fact_ids`` lists a fact once for each obligation that became it, in the order the
+    obligations were returned. Obligations of one read that share a quote and a deadline on one
+    paragraph are one fact whose requirements are listed in that same order, so the starter's
+    ``SectionSummary`` comes back unchanged.
     """
 
     number: NonBlank = Field(description="The section number, for example '7'")
@@ -97,6 +99,7 @@ def obligation_to_fact(
     model: str | None,
     prompt_version: str | None,
     checks: Sequence[CheckResult],
+    requirements: Sequence[str] | None = None,
 ) -> Fact:
     """Turn one starter ``Obligation`` into a cited fact.
 
@@ -107,9 +110,13 @@ def obligation_to_fact(
         model: The model that produced it, or None for code.
         prompt_version: The prompt's version, or None for code.
         checks: The plain-code checks already run on it, one or more.
+        requirements: Every requirement given for obligations that share this one's paragraph,
+            quote and deadline, in the order returned; the obligation's own requirement alone
+            when omitted.
 
     Returns:
-        A fact of kind ``obligation`` about the obligation's paragraph, quoting its evidence.
+        A fact of kind ``obligation`` about the obligation's paragraph, quoting its evidence,
+        whose ``requirement`` attribute is a list of one or more requirements.
 
     Raises:
         StarterShapeError: If the obligation cannot be a valid fact (no quote, a paragraph that is
@@ -122,7 +129,10 @@ def obligation_to_fact(
             kind="obligation",
             subject={"source_id": source.id, "anchor": anchor},
             quote=obligation.evidence,
-            attributes={"requirement": obligation.requirement, "deadline": obligation.deadline},
+            attributes={
+                "requirement": list(requirements or [obligation.requirement]),
+                "deadline": obligation.deadline,
+            },
             status={"status": "documented"},
             provenance={
                 "source_id": source.id,
@@ -140,32 +150,41 @@ def obligation_to_fact(
         ) from exc
 
 
-def fact_to_obligation(fact: Fact) -> Obligation:
-    """Turn an obligation fact back into the starter's ``Obligation``.
+def fact_to_obligations(fact: Fact) -> list[Obligation]:
+    """Turn an obligation fact back into the starter's ``Obligation`` items, one per requirement.
 
     Args:
         fact: A fact of kind ``obligation`` anchored on a paragraph.
 
     Returns:
-        The obligation, with the fact's requirement, paragraph, deadline and quote.
+        One obligation for each requirement the fact holds, in order, each with the fact's
+        paragraph, deadline and quote.
 
     Raises:
-        StarterShapeError: If the fact is not an obligation on a paragraph or lacks a requirement.
+        StarterShapeError: If the fact is not an obligation on a paragraph, or its requirement is
+            not a list of one or more texts.
     """
     from sub_agent import Obligation
 
     scheme, _, paragraph = fact.subject.anchor.partition(":")
-    requirement = fact.attributes.get("requirement")
+    requirements = fact.attributes.get("requirement")
     deadline = fact.attributes.get("deadline")
-    if fact.kind != "obligation" or scheme != PARAGRAPH_SCHEME or not isinstance(requirement, str):
+    if fact.kind != "obligation" or scheme != PARAGRAPH_SCHEME:
+        raise StarterShapeError(f"Fact {fact.id} is not an obligation on a paragraph.")
+    if (
+        not isinstance(requirements, list)
+        or not requirements
+        or not all(isinstance(r, str) for r in requirements)
+    ):
         raise StarterShapeError(
-            f"Fact {fact.id} is not an obligation on a paragraph with a requirement."
+            f"Fact {fact.id} has a requirement that is not a list of one or more texts."
         )
     if deadline is not None and not isinstance(deadline, str):
         raise StarterShapeError(f"Fact {fact.id} has a deadline that is not text.")
-    return Obligation(
-        requirement=requirement, paragraph=paragraph, deadline=deadline, evidence=fact.quote
-    )
+    return [
+        Obligation(requirement=r, paragraph=paragraph, deadline=deadline, evidence=fact.quote)
+        for r in requirements
+    ]
 
 
 def section_summary_to_records(
@@ -188,29 +207,38 @@ def section_summary_to_records(
         checks_for: Runs the plain-code checks on one obligation and returns their results.
 
     Returns:
-        The section result and its facts by id.
+        The section result and its facts by id. Obligations that share a fact id (the same
+        paragraph, quote and deadline) become one fact holding every requirement given, in the
+        order returned, and the result lists that id once for each of them.
 
     Raises:
         StarterShapeError: If any obligation cannot be a valid fact; the message names it.
     """
-    facts = [
-        obligation_to_fact(
-            obligation,
-            source=source,
-            extractor=extractor,
-            model=model,
-            prompt_version=prompt_version,
-            checks=checks_for(obligation),
+    kwargs = {
+        "source": source,
+        "extractor": extractor,
+        "model": model,
+        "prompt_version": prompt_version,
+    }
+    firsts: dict[str, tuple[Obligation, Sequence[CheckResult]]] = {}
+    requirements: dict[str, list[str]] = {}
+    order: list[str] = []
+    for obligation in summary.obligations:
+        checks = checks_for(obligation)
+        fact = obligation_to_fact(obligation, checks=checks, **kwargs)
+        order.append(fact.id)
+        firsts.setdefault(fact.id, (obligation, checks))
+        requirements.setdefault(fact.id, []).append(obligation.requirement)
+    facts = {
+        fact_id: obligation_to_fact(
+            obligation, checks=checks, requirements=requirements[fact_id], **kwargs
         )
-        for obligation in summary.obligations
-    ]
+        for fact_id, (obligation, checks) in firsts.items()
+    }
     result = SectionResult(
-        number=summary.number,
-        title=summary.title,
-        summary=summary.summary,
-        fact_ids=[fact.id for fact in facts],
+        number=summary.number, title=summary.title, summary=summary.summary, fact_ids=order
     )
-    return SectionRecords(result=result, facts={fact.id: fact for fact in facts})
+    return SectionRecords(result=result, facts=facts)
 
 
 def records_to_section_summary(result: SectionResult, facts: Mapping[str, Fact]) -> SectionSummary:
@@ -221,10 +249,12 @@ def records_to_section_summary(result: SectionResult, facts: Mapping[str, Fact])
         facts: Facts by id, holding at least every id the result lists.
 
     Returns:
-        The section summary, with the obligations in their original order.
+        The section summary, with the obligations in their original order: each time a fact id
+        is listed, the next requirement that fact holds.
 
     Raises:
-        StarterShapeError: If a listed fact is missing; nothing is skipped.
+        StarterShapeError: If a listed fact is missing, or is listed more often than it holds
+            requirements; nothing is skipped.
     """
     from sub_agent import SectionSummary
 
@@ -233,9 +263,21 @@ def records_to_section_summary(result: SectionResult, facts: Mapping[str, Fact])
         raise StarterShapeError(
             f"Section {result.number} lists facts that are not held: {', '.join(missing)}"
         )
+    held = {fact_id: fact_to_obligations(facts[fact_id]) for fact_id in set(result.fact_ids)}
+    used: dict[str, int] = {}
+    obligations = []
+    for fact_id in result.fact_ids:
+        index = used.get(fact_id, 0)
+        if index >= len(held[fact_id]):
+            raise StarterShapeError(
+                f"Section {result.number} lists fact {fact_id} {result.fact_ids.count(fact_id)} "
+                f"times, and it holds {len(held[fact_id])} requirement(s)."
+            )
+        obligations.append(held[fact_id][index])
+        used[fact_id] = index + 1
     return SectionSummary(
         number=result.number,
         title=result.title,
         summary=result.summary,
-        obligations=[fact_to_obligation(facts[fact_id]) for fact_id in result.fact_ids],
+        obligations=obligations,
     )

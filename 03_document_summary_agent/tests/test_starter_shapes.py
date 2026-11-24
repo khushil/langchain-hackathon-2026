@@ -17,7 +17,7 @@ from utils.records import (
     FACT_CONTEXT,
     SectionResult,
     StarterShapeError,
-    fact_to_obligation,
+    fact_to_obligations,
     obligation_to_fact,
     records_to_section_summary,
     section_summary_to_records,
@@ -80,7 +80,7 @@ def test_every_obligation_becomes_a_cited_fact(example, source):
         assert fact.subject.anchor == f"para:{obligation['paragraph']}"
         assert fact.quote == obligation["evidence"]
         assert fact.attributes == {
-            "requirement": obligation["requirement"],
+            "requirement": [obligation["requirement"]],
             "deadline": obligation["deadline"],
         }
         assert Fact.model_validate(fact.to_json(), context=FACT_CONTEXT) == fact
@@ -187,7 +187,7 @@ def test_a_fact_of_another_kind_cannot_become_an_obligation(source):
         context=FACT_CONTEXT, **{k: v for k, v in data.items() if k not in {"id", "schema"}}
     )
     with pytest.raises(StarterShapeError, match="is not an obligation"):
-        fact_to_obligation(other)
+        fact_to_obligations(other)
 
 
 def test_the_topic_declaration_is_the_one_the_shared_examples_use():
@@ -217,6 +217,84 @@ def test_a_rerun_that_rewords_the_requirement_gives_the_same_fact_id(source):
     rerun = _fact_of(source, requirement="Tell the FSOA within 4 hours of a major incident")
     assert rerun.id == first.id
     assert rerun.attributes["requirement"] != first.attributes["requirement"]
+
+
+def _twins(*requirements):
+    base = {
+        "paragraph": "7.1",
+        "deadline": "within 4 hours of classifying an incident as a major incident",
+        "evidence": "Firms must submit an initial notification to the FSOA within 4 hours",
+    }
+    return [Obligation(requirement=r, **base) for r in requirements]
+
+
+def _summary_of(*obligations):
+    return SectionSummary(
+        number="7", title="Incident reporting", summary="s", obligations=list(obligations)
+    )
+
+
+def test_a_fact_of_kind_obligation_always_holds_a_list_of_requirements(source):
+    fact = _fact_of(source)
+    assert fact.attributes["requirement"] == ["Notify the regulator of a major incident"]
+
+
+def test_two_duties_with_one_quote_are_one_fact_holding_both_requirements_in_order(source):
+    first, second = _twins("Notify the FSOA of a major incident", "Keep a log of each incident")
+    summary = _summary_of(first, second)
+    records = _to_records(summary, source)
+    (fact_id,) = records.facts
+    assert records.facts[fact_id].attributes["requirement"] == [
+        "Notify the FSOA of a major incident",
+        "Keep a log of each incident",
+    ]
+    assert records.result.fact_ids == [fact_id, fact_id]
+    assert records_to_section_summary(records.result, records.facts) == summary
+
+
+def test_the_order_returned_is_kept_across_other_obligations_and_repeats(source):
+    a, b = _twins("First duty", "Second duty")
+    other = Obligation(
+        requirement="Intermediate report",
+        paragraph="7.2",
+        deadline=None,
+        evidence="Firms must submit an intermediate report",
+    )
+    summary = _summary_of(a, other, b, a)
+    records = _to_records(summary, source)
+    assert len(records.facts) == 2
+    assert len(records.result.fact_ids) == 4
+    assert records_to_section_summary(records.result, records.facts) == summary
+
+
+def test_the_requirements_of_a_shared_fact_do_not_change_its_id(source):
+    (single,) = _to_records(_summary_of(*_twins("Notify")), source).facts
+    (double,) = _to_records(_summary_of(*_twins("Notify", "Log")), source).facts
+    assert single == double  # the ids; the requirements are not part of an id
+
+
+def test_a_fact_whose_requirement_is_not_a_list_cannot_become_an_obligation(source):
+    fact = _fact_of(source)
+    data = fact.to_json() | {"attributes": {"requirement": "plain text", "deadline": None}}
+    other = Fact.build(
+        context=FACT_CONTEXT, **{k: v for k, v in data.items() if k not in {"id", "schema"}}
+    )
+    with pytest.raises(StarterShapeError, match="requirement"):
+        fact_to_obligations(other)
+    empty = data | {"attributes": {"requirement": [], "deadline": None}}
+    other = Fact.build(
+        context=FACT_CONTEXT, **{k: v for k, v in empty.items() if k not in {"id", "schema"}}
+    )
+    with pytest.raises(StarterShapeError, match="requirement"):
+        fact_to_obligations(other)
+
+
+def test_a_fact_listed_more_often_than_it_has_requirements_fails_and_names_it(source):
+    records = _to_records(_summary_of(*_twins("Only one")), source)
+    (fact_id,) = records.facts
+    result = records.result.model_copy(update={"fact_ids": [fact_id, fact_id]})
+    with pytest.raises(StarterShapeError, match=fact_id):
+        records_to_section_summary(result, records.facts)
 
 
 @pytest.mark.parametrize(
