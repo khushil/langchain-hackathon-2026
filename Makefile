@@ -5,7 +5,7 @@
 PYTHON ?= .venv/bin/python
 PYTEST_WORKERS ?= 3
 
-.PHONY: lint test schemas-check examples-check selftest gate
+.PHONY: lint test schemas-check examples-check selftest planted-faults dataset-check gate
 
 lint:
 	$(PYTHON) -m ruff check .
@@ -29,4 +29,12 @@ examples-check:
 selftest:
 	PYTHONPATH=fsi_common $(PYTHON) -m fsi_common.validate --selftest
 
-gate: lint test schemas-check examples-check selftest
+# The evaluators must catch every planted fault, each lowering only the measures declared for it.
+planted-faults:
+	cd 03_document_summary_agent && PYTHONPATH=../fsi_common $(abspath $(PYTHON)) -m evals.planted_faults
+
+# The evaluation dataset must be what the reference labels and the document build, byte for byte.
+dataset-check:
+	cd 03_document_summary_agent && PYTHONPATH=../fsi_common $(abspath $(PYTHON)) -m evals.build_dataset --check
+
+gate: lint test schemas-check examples-check selftest planted-faults dataset-check

@@ -29,6 +29,10 @@ cp .env.example .env
 calls go; the default, `replay`, answers only from saved recordings, so nothing calls a model until you change
 it. The comments in `.env.example` describe each setting.
 
+With `MODEL_BACKEND=claude-code`, each model call runs headless Claude Code on your signed-in account with no tools
+and no access to your connectors, files or settings, and the adapter reads every call's start event and refuses its
+answer if anything else was loaded.
+
 With tracing on (`LANGSMITH_TRACING="true"`, as `.env.example` has it) and no LangSmith key in your shell,
 `import agent` stops with `TracingKeyMissingError`; either export `LANGSMITH_KEY` in your shell, or set
 `LANGSMITH_TRACING=false` in `.env` to run without tracing.
