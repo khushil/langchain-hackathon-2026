@@ -29,6 +29,7 @@ class AppConfig:
     secret: bytes = field(default_factory=lambda: secrets.token_bytes(32), repr=False)
     topic_folders: tuple[Path, ...] = ()
     cookie: str = ""
+    seed: str = ""
 
     @property
     def cookie_name(self) -> str:
@@ -47,7 +48,8 @@ class AppConfig:
         one is made for each process when it is absent), ``APP_COOKIE`` names the sign-in cookie
         (``reviewer-`` and the port when it is absent), and ``APP_TOPICS`` lists topic folders
         separated as a path is. Without it every topic folder of the repository that holds a
-        ``review_app/plugin.py`` is served.
+        ``review_app/plugin.py`` is served. ``APP_SEED`` names a topic whose starting work is made
+        when the application starts; without it the application starts empty.
 
         Args:
             environ: The environment to read; the process's own when absent.
@@ -86,6 +88,7 @@ class AppConfig:
             secret=secret.encode("utf-8") if secret else secrets.token_bytes(32),
             topic_folders=folders,
             cookie=cookie,
+            seed=env.get("APP_SEED", "").strip(),
         )
 
 

@@ -165,6 +165,20 @@ def test_a_planted_bare_clickable_fails_the_clickable_sweep(planted):
     assert any("neither a link nor a button" in p for p in clickable_problems(planted))
 
 
+def test_a_planted_pointer_cursor_on_a_bare_div_fails_the_clickable_sweep(planted):
+    plant(planted, "div", "Go", style="cursor:pointer")
+    assert any("neither a link nor a button" in p for p in clickable_problems(planted))
+
+
+def test_a_pointer_inherited_by_the_text_inside_a_link_passes_the_clickable_sweep(planted):
+    assert clickable_problems(planted) == []
+    planted.evaluate(
+        "() => { const a = document.createElement('a'); a.href = '/about'; a.title = 'Open about';"
+        " a.innerHTML = '<span>Inside the link</span>'; document.querySelector('main').append(a); }"
+    )
+    assert clickable_problems(planted) == []
+
+
 def test_a_planted_listener_on_a_span_fails_the_clickable_sweep(planted):
     plant(planted, "span", "Open", id="listener")
     planted.evaluate(

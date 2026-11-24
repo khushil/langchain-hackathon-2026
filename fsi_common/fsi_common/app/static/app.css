@@ -71,6 +71,10 @@ main:focus { outline: none; }
 .tile-needs_person { border-color: var(--amber-line); background: var(--amber-bg); }
 .tile-failed { border-color: var(--coral-line); background: var(--coral-bg); }
 .tile-needs_person .tile-label, .tile-failed .tile-label { color: var(--ink); }
+a.tile { color: var(--ink); text-decoration: none; }
+a.tile:hover .tile-label { text-decoration: underline; text-underline-offset: 2px; }
+a.tile-needs_person:hover { background: var(--amber-bg); }
+a.tile-failed:hover { background: var(--coral-bg); }
 
 .exhibit { background: var(--surface); border: 1px solid var(--line); border-radius: 4px; padding: 14px 16px; }
 .exhibit > :first-child { margin-top: 0; }

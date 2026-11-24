@@ -40,7 +40,7 @@ def test_home_lists_the_topic_and_the_layout_carries_one_demo_tag(client):
     assert 'href="/toy/"' in page.text
     assert page.text.count('data-hook="demo-tag"') == 1
     assert 'href="/about"' in page.text
-    assert "1 topic is built: Toy topic." in page.text
+    assert "No item is waiting for a reviewer." in page.text
 
 
 def test_every_page_has_an_answer_sentence_at_most_three_tiles_and_one_exhibit(client):

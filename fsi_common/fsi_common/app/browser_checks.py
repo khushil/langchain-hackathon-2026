@@ -80,7 +80,10 @@ _CLICKABLES = """
   document.querySelectorAll('a[href], button, input:not([type=hidden]), select, textarea, summary, label[for]').forEach(e => add(e, 'control'));
   document.querySelectorAll('[onclick], [role=button], [role=link], [tabindex]:not([tabindex="-1"])').forEach(e => add(e, 'handler'));
   (window.__clickTargets || []).forEach(e => add(e, 'listener'));
-  document.querySelectorAll('body *').forEach(e => { if (getComputedStyle(e).cursor === 'pointer') add(e, 'cursor'); });
+  const NATIVE = 'a[href], button, summary, label[for]';
+  document.querySelectorAll('body *').forEach(e => {
+    if (getComputedStyle(e).cursor === 'pointer' && !(e.parentElement && e.parentElement.closest(NATIVE))) add(e, 'cursor');
+  });
   return list.filter(([e]) => {
     const s = getComputedStyle(e);
     const b = e.getBoundingClientRect();

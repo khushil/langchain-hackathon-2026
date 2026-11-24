@@ -13,7 +13,8 @@ from starlette.routing import Mount, Route
 from starlette.staticfiles import StaticFiles
 
 from fsi_common.app.config import AppConfig
-from fsi_common.app.pages import Answer, Tile
+from fsi_common.app.home import summarise_home
+from fsi_common.app.pages import Answer
 from fsi_common.app.rendering import TEMPLATES_DIR, make_environment, render
 from fsi_common.app.session import (
     SessionCodec,
@@ -22,22 +23,15 @@ from fsi_common.app.session import (
     make_person,
     safe_next,
 )
-from fsi_common.app.topics import TopicPlugin, check_distinct, load_topics
+from fsi_common.app.topics import SeedError, TopicPlugin, check_distinct, load_topics
 
 STATIC_DIR = TEMPLATES_DIR.parent / "static"
 
 
 async def home(request: Request) -> Response:
-    """Show the topics the application serves."""
-    topics = request.app.state.topics
-    names = ", ".join(t.title for t in topics)
-    noun = "topic is" if len(topics) == 1 else "topics are"
-    count = len(topics)
-    answer = Answer(
-        sentence=f"{count} {noun} built: {names}.",
-        tiles=(Tile(label="Topics built", value=str(count)),),
-    )
-    return render(request, "home.html", {"answer": answer, "page_title": "Home"})
+    """Say what waits for a reviewer across the workflows, and let each be opened."""
+    summary = summarise_home(request.app.state.topics)
+    return render(request, "home.html", {"answer": summary.answer(), "page_title": "Home"})
 
 
 async def about(request: Request) -> Response:
@@ -155,7 +149,33 @@ def create_app(
     app.state.sessions = SessionCodec(config.secret)
     app.state.cookie_name = config.cookie_name
     app.state.templates = make_environment(plugins)
+    if config.seed:
+        make_starting_work(plugins, config.seed)
     return app
 
 
-__all__ = ["create_app", "current_person", "sign_in_address"]
+def make_starting_work(plugins: Sequence[TopicPlugin], name: str) -> None:
+    """Make the starting work of the topic ``APP_SEED`` names.
+
+    Args:
+        plugins: The topics served.
+        name: The topic's name.
+
+    Raises:
+        SeedError: If no served topic has that name, the topic has no starting work, or the
+            topic cannot make it.
+    """
+    chosen = next((p for p in plugins if p.name == name), None)
+    if chosen is None:
+        served = ", ".join(p.name for p in plugins)
+        raise SeedError(
+            f"APP_SEED is '{name}', which is not a topic served here; topics served: {served}."
+        )
+    if chosen.seed is None:
+        raise SeedError(
+            f"The topic '{name}' has no starting work to make, so APP_SEED cannot name it."
+        )
+    chosen.seed()
+
+
+__all__ = ["create_app", "current_person", "make_starting_work", "sign_in_address"]

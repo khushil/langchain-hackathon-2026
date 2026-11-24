@@ -17,8 +17,17 @@ class NoTopicsError(RuntimeError):
     """The application was asked to start with no topic to serve."""
 
 
+class SeedError(RuntimeError):
+    """The starting work asked for by ``APP_SEED`` cannot be made; the message says why."""
+
+
 class TopicLoadError(RuntimeError):
     """A topic's plug-in could not be loaded; the message names the folder and the cause."""
+
+
+def nothing_waiting() -> int:
+    """Say that nothing waits for a reviewer: what a topic with no review step reports."""
+    return 0
 
 
 @dataclass(frozen=True)
@@ -27,6 +36,12 @@ class TopicPlugin:
 
     ``about`` holds the paragraphs About shows for the topic: what its data is and how its output
     is made. The shell itself names no document.
+
+    ``waiting`` says how many of the topic's items wait for a reviewer, or None when the topic
+    cannot say; ``waiting_noun`` names one such item ("brief"), and the home page adds an "s" for
+    several. The topic's list page is at ``list_href``. ``seed`` makes the topic's starting work,
+    a brief waiting and a brief signed for the compliance brief, when ``APP_SEED`` names the
+    topic; it raises ``SeedError`` when it cannot.
 
     Templates sit in a folder named for the topic inside ``templates_dir``, so topics' file names
     never meet. A topic's pages extend ``base.html`` and are rendered with ``render``.
@@ -42,6 +57,14 @@ class TopicPlugin:
     about: Sequence[str] = ()
     template_globals: Mapping[str, Callable] = field(default_factory=dict)
     template_filters: Mapping[str, Callable] = field(default_factory=dict)
+    waiting: Callable[[], int | None] = nothing_waiting
+    waiting_noun: str = "item"
+    seed: Callable[[], None] | None = None
+
+    @property
+    def list_href(self) -> str:
+        """The address of the topic's list page."""
+        return f"{self.prefix}/"
 
     def __post_init__(self) -> None:
         if not self.prefix.startswith("/") or self.prefix.endswith("/") or len(self.prefix) < 2:

@@ -5,7 +5,7 @@ from fsi_common.app.config import AppConfig, ConfigError
 from fsi_common.app.pages import Answer, Cell, Column, Tile
 from fsi_common.app.rendering import render
 from fsi_common.app.session import current_person
-from fsi_common.app.topics import NoTopicsError, TopicLoadError, TopicPlugin
+from fsi_common.app.topics import NoTopicsError, SeedError, TopicLoadError, TopicPlugin
 
 __all__ = [
     "Answer",
@@ -14,6 +14,7 @@ __all__ = [
     "Column",
     "ConfigError",
     "NoTopicsError",
+    "SeedError",
     "Tile",
     "TopicLoadError",
     "TopicPlugin",

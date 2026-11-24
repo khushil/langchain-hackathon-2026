@@ -17,12 +17,13 @@ _FORMULA_START = ("=", "+", "-", "@", "\t", "\r")
 
 @dataclass(frozen=True)
 class Tile:
-    """One headline figure of a page."""
+    """One headline figure of a page; with an address, the tile is a link to what it counts."""
 
     label: str
     value: str
     status: Status = "normal"
     title: str = ""
+    href: str | None = None
 
 
 @dataclass(frozen=True)

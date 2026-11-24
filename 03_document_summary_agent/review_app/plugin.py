@@ -9,6 +9,8 @@ from starlette.routing import Mount, Route
 from fsi_common.app import TopicPlugin
 from review_app import routes_facts, routes_review, routes_start
 from review_app.context import PREFIX, Services
+from review_app.seed import seed_compliance_brief
+from review_app.service import EngineMissingError
 from review_app.source_view import (
     anchor_label,
     attribute_rows,
@@ -30,6 +32,23 @@ ABOUT = (
     "person reads the brief, opens each statement's source paragraph, accepts, amends or rejects "
     "each fact in their own words, and signs the brief or returns it. Nothing is decided for them.",
 )
+
+
+def count_waiting(services: Services) -> int | None:
+    """Count the briefs that wait for a reviewer, as the topic's own page counts them.
+
+    Args:
+        services: The run service, library, held decisions and clock.
+
+    Returns:
+        The number of runs stopped at the review, or None when the engine is not part of this
+        build and so cannot say.
+    """
+    try:
+        runs = services.runs()
+    except EngineMissingError:
+        return None
+    return sum(runs.status(thread) == "awaiting_review" for thread in runs.list_runs())
 
 
 def build_plugin(services: Services | None = None) -> TopicPlugin:
@@ -69,6 +88,9 @@ def build_plugin(services: Services | None = None) -> TopicPlugin:
             "anchor_label_of": anchor_label,
         },
         template_filters={"difference_label": difference_label},
+        waiting=lambda: count_waiting(services),
+        waiting_noun="brief",
+        seed=lambda: seed_compliance_brief(services),
     )
 
 
