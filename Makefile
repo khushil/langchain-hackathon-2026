@@ -14,7 +14,7 @@ export REQUIRE_BROWSER = 1
 # The regulation tests fail, rather than skip, when SS1/23 has not been fetched.
 export REQUIRE_REGULATIONS = 1
 
-.PHONY: serve offline lint test schemas-check examples-check selftest planted-faults dataset-check regulations-check notebook gate
+.PHONY: serve offline lint test schemas-check examples-check selftest planted-faults dataset-check policy-measures regulations-check notebook gate
 
 lint:
 	$(PYTHON) -m ruff check .
@@ -51,6 +51,13 @@ dataset-check:
 	cd 01_kyc_agent && PYTHONPATH=../fsi_common $(abspath $(PYTHON)) -m evals.build_dataset --check
 	cd 03_document_summary_agent && PYTHONPATH=../fsi_common $(abspath $(PYTHON)) -m evals.build_dataset --check
 	cd 02_transaction_monitoring_agent && PYTHONPATH=../fsi_common $(abspath $(PYTHON)) -m evals.build_dataset --check
+
+# The policy measures: the planted faults must each lower their measure, then the figures print for the
+# seed matches of the run the measures read. A bundle folder is measured with
+# `python -m evals.policy_measures <folder>`.
+policy-measures:
+	cd 03_document_summary_agent && PYTHONPATH=../fsi_common $(abspath $(PYTHON)) -m evals.policy_measures --selftest
+	cd 03_document_summary_agent && PYTHONPATH=../fsi_common $(abspath $(PYTHON)) -m evals.policy_measures --seed-matches evals/data/policy_seed_matches.jsonl
 
 # The notebook must run top to bottom on the recorded model calls, with no key and no live call.
 notebook:
