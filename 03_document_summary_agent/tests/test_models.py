@@ -20,12 +20,13 @@ from utils.models import (
 ADAPTER_BACKENDS = {"claude-code": "live", "record": "record", "replay": "replay"}
 
 
-def test_the_roles_are_the_four_the_workflow_uses():
-    assert set(ROLE_MODELS) == {"orchestrator", "section", "reconcile", "brief"}
+def test_the_roles_are_the_five_the_workflows_use():
+    assert set(ROLE_MODELS) == {"orchestrator", "section", "reconcile", "brief", "assess"}
 
 
 def test_sections_run_on_sonnet_and_judgement_on_opus():
-    assert "sonnet" in ROLE_MODELS["section"].model
+    for role in ("section", "assess"):
+        assert "sonnet" in ROLE_MODELS[role].model
     for role in ("reconcile", "brief", "orchestrator"):
         assert "opus" in ROLE_MODELS[role].model
 

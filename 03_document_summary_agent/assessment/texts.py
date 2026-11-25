@@ -8,10 +8,12 @@ after the contract is committed and may add accounting; it keeps these numbers a
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass, field
+from collections.abc import Iterable
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 
 from context.corpus import CorpusRead, read_corpus
+from context.regulations.errors import RegulationError
 from context.regulations.fetch import Opener, urllib_opener
 from context.regulations.manifest import load_manifest
 from context.regulations.model import RegulationRead
@@ -66,6 +68,32 @@ class TextIndex:
     _control: dict[tuple[str, str], str] = field(default_factory=dict, repr=False)
     _by_source: dict[str, tuple[str, str]] = field(default_factory=dict, repr=False)
 
+    def only(self, regulations: Iterable[str]) -> TextIndex:
+        """Return this index with only the named regulations, the corpus unchanged.
+
+        Args:
+            regulations: The keys to keep; each must be one this index holds.
+
+        Returns:
+            An index in which every other regulation has no place and no source.
+
+        Raises:
+            RegulationError: If a key is not one this index holds.
+        """
+        keep = list(dict.fromkeys(regulations))
+        missing = [k for k in keep if k not in self.regulations]
+        if missing:
+            raise RegulationError(
+                f"This index holds no regulation {', '.join(missing)}; it holds "
+                f"{', '.join(self.regulations)}."
+            )
+        dropped = {self.regulations[k].source.id for k in self.regulations if k not in keep}
+        return replace(
+            self,
+            regulations={k: self.regulations[k] for k in keep},
+            _by_source={s: p for s, p in self._by_source.items() if s not in dropped},
+        )
+
     def text_at(self, source_id: str, anchor: str) -> str | None:
         """Return the text at a place, whichever source it is in.
 
@@ -104,6 +132,30 @@ class TextIndex:
             True when the place exists and holds the quote.
         """
         return contains_word_for_word(quote, self.text_at(source_id, anchor))
+
+    def locate(self, source_id: str) -> tuple[str, str] | None:
+        """Say what a source record is: a regulation or a corpus document, and which.
+
+        Args:
+            source_id: The source record's id.
+
+        Returns:
+            ``("regulation", key)`` or ``("document", document id)``; None when unknown.
+        """
+        return self._by_source.get(source_id)
+
+    def control(self, document: str, field_name: str) -> str | None:
+        """Return a line of a document's control block, as the document writes it.
+
+        Args:
+            document: The document's id.
+            field_name: The line's label in lower case with underscores, for example
+                ``supersedes`` or ``approved_by``.
+
+        Returns:
+            The whole line, for example ``Status: In force``; None when there is none.
+        """
+        return self._control.get((document, field_name))
 
     def regulation_source(self, regulation: str) -> Source:
         """Return the source record of a regulation.
@@ -225,12 +277,18 @@ class TextIndex:
 
 
 def load_texts(
-    corpus: str, *, cache_dir: Path | None = None, opener: Opener = urllib_opener
+    corpus: str,
+    *,
+    regulations: Iterable[str] | None = None,
+    cache_dir: Path | None = None,
+    opener: Opener = urllib_opener,
 ) -> TextIndex:
-    """Read every regulation of the manifest and every document of a corpus.
+    """Read the regulations of the manifest and every document of a corpus.
 
     Args:
         corpus: The corpus's name.
+        regulations: The keys to read, in this order; every regulation of the manifest when
+            None. A regulation not named is not read, so its text is neither fetched nor needed.
         cache_dir: Where closed texts are cached; ``REGULATIONS_CACHE_DIR`` by default.
         opener: What fetches a closed text that is not cached; tests give one that refuses.
 
@@ -238,18 +296,24 @@ def load_texts(
         The index.
 
     Raises:
-        context.errors.ContextError: Any error of the regulation or corpus readers, unchanged.
+        context.errors.ContextError: Any error of the regulation or corpus readers, unchanged;
+            ``RegulationError`` when a key named is not in the manifest.
     """
-    regulations = {
-        entry.key: read_regulation(entry.key, cache_dir=cache_dir, opener=opener)
-        for entry in load_manifest().regulations
-    }
+    held = [entry.key for entry in load_manifest().regulations]
+    keys = held if regulations is None else list(dict.fromkeys(regulations))
+    unknown = [k for k in keys if k not in held]
+    if unknown or not keys:
+        raise RegulationError(
+            f"There is no regulation {', '.join(unknown) or '(none named)'} in the manifest; it "
+            f"holds {', '.join(held)}."
+        )
+    loaded = {key: read_regulation(key, cache_dir=cache_dir, opener=opener) for key in keys}
     read = read_corpus(corpus)
     clauses: dict[str, list[Clause]] = {}
     status: dict[str, str] = {}
     texts: dict[tuple[str, str], str] = {}
     control: dict[tuple[str, str], str] = {}
-    by_source = {r.source.id: ("regulation", k) for k, r in regulations.items()}
+    by_source = {r.source.id: ("regulation", k) for k, r in loaded.items()}
     for document in read.documents:
         by_source[document.source.id] = ("document", document.entry.id)
         for line in (document.text or "").split("\n## 1.")[0].splitlines():
@@ -265,7 +329,7 @@ def load_texts(
             texts[(document.entry.id, clause.number)] = clause.text
     return TextIndex(
         corpus=read,
-        regulations=regulations,
+        regulations=loaded,
         clauses=clauses,
         status=status,
         _clause_text=texts,

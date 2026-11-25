@@ -31,3 +31,17 @@ def test_split_clauses_reads_numbered_lines_under_their_heading():
 
 def test_split_clauses_of_a_text_without_clauses_is_empty():
     assert split_clauses("# Only a title\n") == []
+
+
+def test_locate_names_the_kind_and_key_of_a_source(texts):
+    document = texts.source("HMB-POL-ICT-001-v3.0")
+    assert texts.locate(document.id) == ("document", "HMB-POL-ICT-001-v3.0")
+    dora = texts.regulation_source("DORA")
+    assert texts.locate(dora.id) == ("regulation", "DORA")
+    assert texts.locate("source:0000000000000000") is None
+
+
+def test_control_returns_a_document_control_line_or_none(texts):
+    assert texts.control("HMB-POL-ICT-001-v3.0", "status") == "Status: In force"
+    assert texts.control("HMB-POL-ICT-001-v3.0", "no_such_field") is None
+    assert texts.control("NO-SUCH-DOCUMENT", "status") is None

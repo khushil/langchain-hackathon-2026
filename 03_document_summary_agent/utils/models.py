@@ -74,6 +74,12 @@ ROLE_MODELS: dict[str, RoleModel] = {
         "high",
         "Writes the statements a named person signs, each citing the facts it rests on.",
     ),
+    "assess": RoleModel(
+        "claude-sonnet-5-5",
+        "medium",
+        "Reads the clauses code found for one provision and states what they say against it, one "
+        "call per applicable obligation; plain code checks every quote word for word afterwards.",
+    ),
 }
 """Every role's model: the section sub-agents on Sonnet, reconciliation and the brief on Opus."""
 
@@ -239,7 +245,7 @@ def get_model(role: str) -> BaseChatModel:
     """Return the chat model for one role, on the backend ``MODEL_BACKEND`` names.
 
     Args:
-        role: ``orchestrator``, ``section``, ``reconcile`` or ``brief``.
+        role: ``orchestrator``, ``section``, ``reconcile``, ``brief`` or ``assess``.
 
     Returns:
         A chat model: deferred for ``claude-code``, ``record`` and ``replay``; the starter's
