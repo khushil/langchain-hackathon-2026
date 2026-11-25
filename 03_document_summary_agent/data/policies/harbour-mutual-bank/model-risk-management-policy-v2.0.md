@@ -31,9 +31,9 @@ Supersedes: HMB-POL-MRM-004 version 1.3 of 3 May 2024
 
 ## 3. Definitions
 
-3.1 A model is a quantitative method, system, or approach that applies statistical, economic, financial, or mathematical theories, techniques, and assumptions to process input data into output. The definition of a model includes input data that are quantitative and / or qualitative in nature or expert judgement-based, and output that are quantitative or qualitative.
+3.1 "A model is a quantitative method, system, or approach that applies statistical, economic, financial, or mathematical theories, techniques, and assumptions to process input data into output. The definition of a model includes input data that are quantitative and / or qualitative in nature or expert judgement-based, and output that are quantitative or qualitative." (SS1/23, 1.1(a))
 
-3.2 Model use means using a model's output as a basis for informing business decisions.
+3.2 Model use means "using a model’s output as a basis for informing business decisions" (SS1/23, 2.1, footnote 4).
 
 3.3 Where a deterministic quantitative method that is not classified as a model has a material bearing on business decisions and is complex in nature, the Head of Model Risk decides whether the relevant parts of this policy apply to it. Every other deterministic quantitative method is subject to documented management controls set by its owner.
 
@@ -75,7 +75,7 @@ Supersedes: HMB-POL-MRM-004 version 1.3 of 3 May 2024
 
 7.1 Every model has a statement of its purpose and design objectives. Its design, the choice of variables and parameters and its assumptions are suitable for its intended use and conceptually sound.
 
-7.2 The model developer shows that the data used to develop the model are suitable for its intended use, are consistent with the chosen theory and methodology, are representative of the portfolios, products or customers the model is used for and contain no inappropriate bias. Data adjustments and proxies are documented and validated.
+7.2 The model developer shows that the data used to develop the model are suitable for its intended use, are consistent with the theory and methodology chosen, are representative of the portfolios, products or customers the model is used for and contain no inappropriate bias. Data adjustments and proxies are documented and validated.
 
 7.3 Development testing shows that the model works as intended, using backward-looking tests on actual observations, forward-looking tests on plausible scenarios with sensitivity analysis, and, where practicable, comparison with challenger models. The developer provides the outline of the monitoring pack that will be used to monitor the model in use.
 

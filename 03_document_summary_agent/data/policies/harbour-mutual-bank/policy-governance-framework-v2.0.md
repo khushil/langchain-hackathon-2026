@@ -71,7 +71,7 @@ Supersedes: HMB-FRM-GOV-000 version 1.4 of 6 June 2023
 
 4.9 "Major ICT-related Incident" means an ICT-related Incident that has a high adverse impact on the network and information systems that support Critical or Important Functions, as classified under the ICT Incident Management Procedure (HMB-PRO-ICT-021).
 
-4.10 "Model" means a quantitative method, system or approach that applies statistical, economic, financial or mathematical theories, techniques and assumptions to process input data into output, as the Model Risk Management Policy (HMB-POL-MRM-004) sets out in full.
+4.10 "Model" means "a quantitative method, system, or approach that applies statistical, economic, financial, or mathematical theories, techniques, and assumptions to process input data into output" (SS1/23, 1.1(a)), as the Model Risk Management Policy (HMB-POL-MRM-004) sets out in full.
 
 4.11 "AI System" means a machine-based system that is designed to operate with varying levels of autonomy, that may exhibit adaptiveness after deployment, and that infers from the input it receives how to generate outputs such as predictions, content, recommendations or decisions.
 
