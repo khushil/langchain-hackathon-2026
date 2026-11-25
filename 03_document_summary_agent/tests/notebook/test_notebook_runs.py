@@ -30,8 +30,8 @@ needs_run = pytest.mark.skipif(
 )
 
 # Tokens a markdown cell of ours may hold that contain a digit: the document and the firm by
-# their keys, the section the recorded run covers, and the starter's step numbers.
-ALLOWED_DIGIT_TOKENS = re.compile(r"PS26-4|FIRM-001|[Ss]ection 7|[Ss]tep \d")
+# their keys, and the starter's step numbers.
+ALLOWED_DIGIT_TOKENS = re.compile(r"PS26-4|FIRM-001|[Ss]tep \d")
 LIST_MARKER = re.compile(r"(?m)^\s*\d+\. ")
 
 
@@ -193,7 +193,7 @@ def test_new_markdown_types_no_number_that_a_run_could_change():
 def test_new_cells_print_counts_from_the_run_not_from_a_literal():
     notebook = _load()
     new_code = "\n".join(c.source for c in notebook.cells[STARTER_CELLS:] if c.cell_type == "code")
-    for name in ("BriefRuns", "score_summary", "raw_summaries", "review_request"):
+    for name in ("BriefRuns", "evaluate_pair", "raw_summaries", "review_request"):
         assert name in new_code
 
 

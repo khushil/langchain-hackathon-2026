@@ -1,6 +1,6 @@
 {
  "meta": {
-  "duration_s": 10.078,
+  "duration_s": 2.758,
   "init": {
    "agents": [],
    "apiKeySource": "none",
@@ -14,14 +14,14 @@
     "StructuredOutput"
    ]
   },
-  "recorded_at": "2026-11-24T22:23:34.394415+00:00"
+  "recorded_at": "2026-11-25T01:06:32.843283+00:00"
  },
  "request": {
   "effort": "medium",
   "format": 2,
   "messages": [
    {
-    "content": "Summarise ONE section of a regulatory document and extract its obligations. Analysis only: do not create or edit files. Return a SectionSummary with the section number, title, a short summary, and every obligation in the section (who must do what, by when, and any thresholds or conditions). Treat 'must' as a binding obligation and 'should'/'we expect' as guidance, and label each one.\n\nDocument: Policy Statement PS26/4: Operational resilience and third-party technology risk\nSection number: 4\nSection title: Important business services and impact tolerances\nFull text:\n4.1 Firms must identify their important business services by 31 March 2027. In doing so, firms should consider the number and type of customers using each service, the availability of alternatives, and the time sensitivity of payments or other transactions.\n\n4.2 Firms must set an impact tolerance for each important business service by 31 March 2027. Impact tolerances must be set at the point at which harm becomes intolerable, not at the point at which the firm expects to be able to recover.\n\n4.3 The board must approve the list of important business services and their impact tolerances, and must review both at least once every 12 months, or sooner if there is a material change to the firm's business.\n\n4.4 We expect most retail banks to identify between 6 and 15 important business services. Firms that identify fewer than 4 should be prepared to explain why.\n\n4.5 Firms must keep a record of how they identified each important business service and set each impact tolerance, and must provide it to the FSOA on request within 10 business days.",
+    "content": "Analyse only; do not create or edit files. Summarise this ONE section of the regulatory document \"Policy Statement PS26/4: Operational resilience and third-party technology risk\" (document ID PS26-4) and extract every obligation it contains. For each obligation include: the paragraph reference, who it applies to, what must be done, any deadline or time limit, and whether it is mandatory ('must') or guidance ('should'/expectation). Return a SectionSummary.\n\nSection number: 10\nSection title: Next steps and contacts\nSection text:\n10.1 We will host a series of webinars for firms in the first quarter of 2027 and will publish frequently asked questions on our website.\n\n10.2 Firms with questions about this policy statement should contact their usual supervisory contact. General questions can be sent to our operational resilience team.\n\n10.3 We will consult separately in 2027 on whether to extend these requirements to insurers and investment firms.",
     "role": "user"
    }
   ],
@@ -397,69 +397,26 @@
   },
   "system": "# Section summariser agent\nYou are given one section: its number, title and text. Return a `SectionSummary` as a single JSON object, with no text before or after it:\n\n- `number`: the section number, for example `\"4\"`.\n- `title`: the section title.\n- `summary`: one to three sentences on what the section says.\n- `obligations`: every obligation in the section. Use an empty list if there are none.\n\nEach `Obligation` has four fields:\n\n- `requirement`: what the firm must do, in plain English.\n- `paragraph`: the paragraph number it comes from, for example `\"4.2\"`.\n- `deadline`: the deadline exactly as written in the document, or `null` if there is none.\n- `evidence`: a quote copied word for word from that paragraph, at most 30 words.\n\nFor example:\n\n```json\n{\n  \"number\": \"7\",\n  \"title\": \"Incident reporting\",\n  \"summary\": \"Firms must report major incidents to the regulator quickly.\",\n  \"obligations\": [\n    {\n      \"requirement\": \"Report major incidents to the regulator\",\n      \"paragraph\": \"7.1\",\n      \"deadline\": \"within 4 hours\",\n      \"evidence\": \"Firms must notify the FSOA of a major incident within 4 hours\"\n    }\n  ]\n}\n```\n\n### What counts as an obligation\n\nAn obligation is something a firm must do. Look for \"must\", \"shall\", \"is required to\" and \"will need to\".\n\n- Do not list recommendations or guidance (\"should\", \"may\", \"we expect\") as obligations.\n- Do not list things only the regulator does.\n- If one paragraph sets several separate requirements, list each one separately.\n- If the section changes a requirement or deadline from an earlier section, say so in the summary.\n\n### Rules for accuracy\n\n- Copy `evidence` word for word. Never paraphrase, correct or shorten the wording inside a quote.\n- Copy `deadline` exactly as written. Do not convert dates or durations, for example \"within 4 hours\" stays as it is.\n- Use only the section you were given. Do not use outside knowledge of the regulation.\n- Do not guess. If a paragraph is ambiguous, say so in the summary rather than inventing a requirement.\n\nThese fields are checked automatically against the source text afterwards. A quote that isn't word for word, or a\ndeadline that isn't in the section, will be flagged.\n"
  },
- "request_sha256": "b24fa85b05118d2b66020b565ae87b5ed780687f266b0bf4b3c67be8892fda7b",
+ "request_sha256": "f4683de511485ecb2496655669e5b8261079649ceb5d8276d6926e004ec2f02d",
  "response": {
-  "content": "{\"number\":\"4\",\"title\":\"Important business services and impact tolerances\",\"summary\":\"Firms must identify their important business services and set an impact tolerance for each by 31 March 2027, with board approval and at least 12-monthly review. Firms must keep records of how they did this and give them to the FSOA on request. Paragraph 4.4 is guidance only: most retail banks are expected to identify 6 to 15 services, and firms identifying fewer than 4 should be prepared to explain why. Binding obligations are labelled [BINDING] and guidance [GUIDANCE] below. Guidance in 4.1 is that firms should consider customer numbers and types, alternatives and time sensitivity. Guidance in 4.4 is as above.\",\"obligations\":[{\"requirement\":\"[BINDING] Identify important business services\",\"paragraph\":\"4.1\",\"deadline\":\"by 31 March 2027\",\"evidence\":\"Firms must identify their important business services by 31 March 2027.\"},{\"requirement\":\"[BINDING] Set an impact tolerance for each important business service\",\"paragraph\":\"4.2\",\"deadline\":\"by 31 March 2027\",\"evidence\":\"Firms must set an impact tolerance for each important business service by 31 March 2027.\"},{\"requirement\":\"[BINDING] Set impact tolerances at the point at which harm becomes intolerable, not the expected recovery point\",\"paragraph\":\"4.2\",\"deadline\":null,\"evidence\":\"Impact tolerances must be set at the point at which harm becomes intolerable, not at the point at which the firm expects to be able to recover.\"},{\"requirement\":\"[BINDING] Board must approve the list of important business services and their impact tolerances\",\"paragraph\":\"4.3\",\"deadline\":null,\"evidence\":\"The board must approve the list of important business services and their impact tolerances\"},{\"requirement\":\"[BINDING] Board must review the list and impact tolerances at least every 12 months, or sooner if there is a material change to the business\",\"paragraph\":\"4.3\",\"deadline\":\"at least once every 12 months, or sooner if there is a material change to the firm's business\",\"evidence\":\"must review both at least once every 12 months, or sooner if there is a material change to the firm's business.\"},{\"requirement\":\"[BINDING] Keep a record of how each important business service was identified and each impact tolerance set\",\"paragraph\":\"4.5\",\"deadline\":null,\"evidence\":\"Firms must keep a record of how they identified each important business service and set each impact tolerance\"},{\"requirement\":\"[BINDING] Provide that record to the FSOA on request\",\"paragraph\":\"4.5\",\"deadline\":\"within 10 business days\",\"evidence\":\"must provide it to the FSOA on request within 10 business days.\"}]}",
+  "content": "",
   "model_reported": "claude-sonnet-5-5",
   "tool_calls": [
    {
     "args": {
-     "number": "4",
-     "obligations": [
-      {
-       "deadline": "by 31 March 2027",
-       "evidence": "Firms must identify their important business services by 31 March 2027.",
-       "paragraph": "4.1",
-       "requirement": "[BINDING] Identify important business services"
-      },
-      {
-       "deadline": "by 31 March 2027",
-       "evidence": "Firms must set an impact tolerance for each important business service by 31 March 2027.",
-       "paragraph": "4.2",
-       "requirement": "[BINDING] Set an impact tolerance for each important business service"
-      },
-      {
-       "deadline": null,
-       "evidence": "Impact tolerances must be set at the point at which harm becomes intolerable, not at the point at which the firm expects to be able to recover.",
-       "paragraph": "4.2",
-       "requirement": "[BINDING] Set impact tolerances at the point at which harm becomes intolerable, not the expected recovery point"
-      },
-      {
-       "deadline": null,
-       "evidence": "The board must approve the list of important business services and their impact tolerances",
-       "paragraph": "4.3",
-       "requirement": "[BINDING] Board must approve the list of important business services and their impact tolerances"
-      },
-      {
-       "deadline": "at least once every 12 months, or sooner if there is a material change to the firm's business",
-       "evidence": "must review both at least once every 12 months, or sooner if there is a material change to the firm's business.",
-       "paragraph": "4.3",
-       "requirement": "[BINDING] Board must review the list and impact tolerances at least every 12 months, or sooner if there is a material change to the business"
-      },
-      {
-       "deadline": null,
-       "evidence": "Firms must keep a record of how they identified each important business service and set each impact tolerance",
-       "paragraph": "4.5",
-       "requirement": "[BINDING] Keep a record of how each important business service was identified and each impact tolerance set"
-      },
-      {
-       "deadline": "within 10 business days",
-       "evidence": "must provide it to the FSOA on request within 10 business days.",
-       "paragraph": "4.5",
-       "requirement": "[BINDING] Provide that record to the FSOA on request"
-      }
-     ],
-     "summary": "Firms must identify their important business services and set an impact tolerance for each by 31 March 2027, with board approval and at least 12-monthly review. Firms must keep records of how they did this and give them to the FSOA on request. Guidance only (not binding): in 4.1 firms should consider customer numbers and types, alternatives and time sensitivity of transactions; in 4.4 most retail banks are expected to identify 6 to 15 services, and firms identifying fewer than 4 should be prepared to explain why.",
-     "title": "Important business services and impact tolerances"
+     "number": "10",
+     "obligations": [],
+     "summary": "The regulator will host webinars in Q1 2027, publish FAQs, and consult separately in 2027 on extending the requirements to insurers and investment firms. Firms with questions should contact their usual supervisory contact or the operational resilience team. The section places no obligations on firms.",
+     "title": "Next steps and contacts"
     },
     "name": "SectionSummary"
    }
   ],
   "usage": {
-   "cache_creation_input_tokens": 1047,
+   "cache_creation_input_tokens": 863,
    "cache_read_input_tokens": 6399,
    "input_tokens": 2,
-   "output_tokens": 1782
+   "output_tokens": 211
   }
  }
 }

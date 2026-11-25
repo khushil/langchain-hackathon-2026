@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterable, Sequence
+from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
 
 from context.errors import AccountingError
@@ -13,6 +13,21 @@ NO_FACT_REASON = "The section reader found no obligation in this paragraph."
 
 TABLE_NO_FACT_REASON = "The row held no field this run reads."
 """The reason recorded for a table row that produced no fact."""
+
+
+def marked_no_fact_reason(marker: str) -> str:
+    """Return the reason a paragraph gives when it holds an obligation marker and no fact.
+
+    Args:
+        marker: The marker the paragraph holds, for example ``must``.
+
+    Returns:
+        The reason, which names the marker and says the paragraph is an open question.
+    """
+    return (
+        f'The paragraph contains "{marker}", which marks an obligation, and none was read from it, '
+        "even on a second read of the paragraph alone; it is an open question for the reviewer."
+    )
 
 
 def no_fact_reason(source: Source) -> str:
@@ -43,13 +58,15 @@ def account_for_units(
     facts: Iterable[Fact],
     *,
     reason: str = NO_FACT_REASON,
+    reasons: Mapping[str, str] | None = None,
 ) -> AccountingResult:
     """Account for every unit a source was read into, or fail naming the units that are missing.
 
     The units expected are those a fresh read of the source gives; the units held are those the
     run's state holds. Every expected unit must be held, and each ends with facts or with
-    ``reason``. Facts that cite an anchor that is not an expected unit (a model's invented
-    paragraph) are not counted as units; their anchors are returned so the run can name them.
+    ``reason``, or with the reason ``reasons`` gives for its anchor. Facts that cite an anchor that
+    is not an expected unit (a model's invented paragraph) are not counted as units; their anchors
+    are returned so the run can name them.
 
     Args:
         source: The source accounted for.
@@ -57,6 +74,8 @@ def account_for_units(
         held: The units the state holds for this source.
         facts: Every fact of the run; those of other sources are ignored.
         reason: Why a unit with no fact has none, in plain words.
+        reasons: A reason for particular anchors, which replaces ``reason`` for a unit with no fact
+            at one of them; an anchor that has facts, or is not read, is ignored.
 
     Returns:
         The accounting record, the line that states its counts, and the phantom anchors.
@@ -87,7 +106,10 @@ def account_for_units(
         )
     cited = {f.subject.anchor for f in facts if f.subject.source_id == source.id}
     with_facts = [a for a in expected_anchors if a in cited]
-    without = [{"anchor": a, "reason": reason} for a in expected_anchors if a not in cited]
+    own = reasons or {}
+    without = [
+        {"anchor": a, "reason": own.get(a, reason)} for a in expected_anchors if a not in cited
+    ]
     accounting = UnitAccounting.build(
         source_id=source.id,
         units_in=len(expected_anchors),

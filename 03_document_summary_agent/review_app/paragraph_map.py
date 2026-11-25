@@ -82,6 +82,8 @@ def _scope(sections: Sequence[str] | None) -> str:
 
 
 def _finding(facts: Sequence[Fact], questions: Sequence[Mapping], reason: str | None) -> Finding:
+    if not facts and questions:
+        return Finding(QUESTION, "Open question", reason or "A question rests on this paragraph.")
     if not facts:
         return Finding(NOTHING, "No fact", reason or "No fact was read from this paragraph.")
     found = []

@@ -1,6 +1,6 @@
 {
  "meta": {
-  "duration_s": 4.861,
+  "duration_s": 18.022,
   "init": {
    "agents": [],
    "apiKeySource": "none",
@@ -14,14 +14,14 @@
     "StructuredOutput"
    ]
   },
-  "recorded_at": "2026-11-24T22:23:29.595080+00:00"
+  "recorded_at": "2026-11-25T01:06:40.785799+00:00"
  },
  "request": {
   "effort": "medium",
   "format": 2,
   "messages": [
    {
-    "content": "Summarise ONE section of a regulatory document and extract its obligations. Analysis only: do not create or edit files. Return a SectionSummary with the section number, title, a short summary, and every obligation in the section (who must do what, by when, and any thresholds or conditions). Treat 'must' as a binding obligation and 'should'/'we expect' as guidance, and label each one. If the section only defines terms, say so and list the key definitions and thresholds.\n\nDocument: Policy Statement PS26/4: Operational resilience and third-party technology risk\nSection number: 3\nSection title: Definitions\nFull text:\n3.1 An important business service is a service that a firm provides to an external end user, where disruption to the service could cause intolerable harm to consumers or risk to market integrity. Internal services, such as human resources or internal reporting, are not important business services on their own.\n\n3.2 An impact tolerance is the maximum tolerable level of disruption to an important business service, expressed as a maximum length of time and, where relevant, a maximum number of affected customers or transactions.\n\n3.3 A material third-party provider is a provider of technology services whose failure would cause the firm to breach an impact tolerance for one or more important business services.\n\n3.4 A major incident is an operational incident that has caused, or is likely to cause, a breach of an impact tolerance, or that affects more than 10% of the firm's customers.\n\n3.5 Business days are days other than weekends and public holidays in our jurisdiction.",
+    "content": "Analyse only; do not create or edit files. Summarise this ONE section of the regulatory document \"Policy Statement PS26/4: Operational resilience and third-party technology risk\" (document ID PS26-4) and extract every obligation it contains. For each obligation include: the paragraph reference, who it applies to, what must be done, any deadline or time limit, and whether it is mandatory ('must') or guidance ('should'/expectation). Return a SectionSummary.\n\nSection number: 8\nSection title: Governance and accountability\nSection text:\n8.1 Firms must name a senior manager who is responsible for operational resilience by 31 January 2027, and must notify the FSOA of that person's name within 14 days of appointing them.\n\n8.2 Firms must complete an annual self-assessment of their operational resilience, which must be approved by the board. The first self-assessment must be completed and approved by 31 March 2028.\n\n8.3 The self-assessment must cover the firm's important business services, impact tolerances, mapping, scenario testing results, vulnerabilities and remediation actions, and its management of material third-party providers.\n\n8.4 Boards should receive regular management information on operational resilience, at least quarterly, and should challenge it.\n\n8.5 Firms must keep each self-assessment for at least 5 years and provide it to the FSOA on request.",
     "role": "user"
    }
   ],
@@ -397,26 +397,75 @@
   },
   "system": "# Section summariser agent\nYou are given one section: its number, title and text. Return a `SectionSummary` as a single JSON object, with no text before or after it:\n\n- `number`: the section number, for example `\"4\"`.\n- `title`: the section title.\n- `summary`: one to three sentences on what the section says.\n- `obligations`: every obligation in the section. Use an empty list if there are none.\n\nEach `Obligation` has four fields:\n\n- `requirement`: what the firm must do, in plain English.\n- `paragraph`: the paragraph number it comes from, for example `\"4.2\"`.\n- `deadline`: the deadline exactly as written in the document, or `null` if there is none.\n- `evidence`: a quote copied word for word from that paragraph, at most 30 words.\n\nFor example:\n\n```json\n{\n  \"number\": \"7\",\n  \"title\": \"Incident reporting\",\n  \"summary\": \"Firms must report major incidents to the regulator quickly.\",\n  \"obligations\": [\n    {\n      \"requirement\": \"Report major incidents to the regulator\",\n      \"paragraph\": \"7.1\",\n      \"deadline\": \"within 4 hours\",\n      \"evidence\": \"Firms must notify the FSOA of a major incident within 4 hours\"\n    }\n  ]\n}\n```\n\n### What counts as an obligation\n\nAn obligation is something a firm must do. Look for \"must\", \"shall\", \"is required to\" and \"will need to\".\n\n- Do not list recommendations or guidance (\"should\", \"may\", \"we expect\") as obligations.\n- Do not list things only the regulator does.\n- If one paragraph sets several separate requirements, list each one separately.\n- If the section changes a requirement or deadline from an earlier section, say so in the summary.\n\n### Rules for accuracy\n\n- Copy `evidence` word for word. Never paraphrase, correct or shorten the wording inside a quote.\n- Copy `deadline` exactly as written. Do not convert dates or durations, for example \"within 4 hours\" stays as it is.\n- Use only the section you were given. Do not use outside knowledge of the regulation.\n- Do not guess. If a paragraph is ambiguous, say so in the summary rather than inventing a requirement.\n\nThese fields are checked automatically against the source text afterwards. A quote that isn't word for word, or a\ndeadline that isn't in the section, will be flagged.\n"
  },
- "request_sha256": "346103f5328997410c43f0261011f1b91bb0aefcfc6d6a8eba57da29381e3901",
+ "request_sha256": "93e535c77be310168fb117412a38a0a2a9bdf8d4fef78d4b93abd2b584018fcf",
  "response": {
-  "content": "{\"number\":\"3\",\"title\":\"Definitions\",\"summary\":\"This section only defines terms: important business service (3.1), impact tolerance (3.2), material third-party provider (3.3), major incident (3.4, including a threshold of more than 10% of the firm's customers) and business days (3.5). It contains no binding obligations (no 'must'/'shall') and no guidance ('should'/'we expect'), so none are listed.\",\"obligations\":[]}",
+  "content": "",
   "model_reported": "claude-sonnet-5-5",
   "tool_calls": [
    {
     "args": {
-     "number": "3",
-     "obligations": [],
-     "summary": "This section only defines terms and sets no firm obligations. Key definitions: an important business service is a service provided to an external end user whose disruption could cause intolerable harm to consumers or risk to market integrity, and internal services are not important business services on their own (3.1). An impact tolerance is the maximum tolerable disruption to an important business service, expressed as a maximum length of time and, where relevant, a maximum number of affected customers or transactions (3.2). A material third-party provider is a technology provider whose failure would cause the firm to breach an impact tolerance for one or more important business services (3.3). A major incident is an operational incident that has caused, or is likely to cause, a breach of an impact tolerance, or that affects more than 10% of the firm's customers (3.4). Business days exclude weekends and public holidays in our jurisdiction (3.5). The section contains no binding 'must' obligations and no 'should'/'we expect' guidance.",
-     "title": "Definitions"
+     "number": "8",
+     "obligations": [
+      {
+       "deadline": "by 31 January 2027",
+       "evidence": "Firms must name a senior manager who is responsible for operational resilience by 31 January 2027",
+       "paragraph": "8.1",
+       "requirement": "Name a senior manager responsible for operational resilience (applies to firms; mandatory 'must')"
+      },
+      {
+       "deadline": "within 14 days of appointing them",
+       "evidence": "must notify the FSOA of that person's name within 14 days of appointing them",
+       "paragraph": "8.1",
+       "requirement": "Notify the FSOA of the senior manager's name after appointing them (applies to firms; mandatory 'must')"
+      },
+      {
+       "deadline": null,
+       "evidence": "Firms must complete an annual self-assessment of their operational resilience",
+       "paragraph": "8.2",
+       "requirement": "Complete an annual self-assessment of operational resilience (applies to firms; mandatory 'must')"
+      },
+      {
+       "deadline": null,
+       "evidence": "which must be approved by the board",
+       "paragraph": "8.2",
+       "requirement": "Have the board approve each self-assessment (applies to firms; mandatory 'must')"
+      },
+      {
+       "deadline": "by 31 March 2028",
+       "evidence": "The first self-assessment must be completed and approved by 31 March 2028.",
+       "paragraph": "8.2",
+       "requirement": "Complete and obtain board approval of the first self-assessment (applies to firms; mandatory 'must')"
+      },
+      {
+       "deadline": null,
+       "evidence": "The self-assessment must cover the firm's important business services, impact tolerances, mapping, scenario testing results, vulnerabilities and remediation actions",
+       "paragraph": "8.3",
+       "requirement": "Make the self-assessment cover important business services, impact tolerances, mapping, scenario testing results, vulnerabilities and remediation actions, and management of material third-party providers (applies to firms; mandatory 'must')"
+      },
+      {
+       "deadline": "at least 5 years",
+       "evidence": "Firms must keep each self-assessment for at least 5 years",
+       "paragraph": "8.5",
+       "requirement": "Keep each self-assessment for at least 5 years (applies to firms; mandatory 'must')"
+      },
+      {
+       "deadline": "on request",
+       "evidence": "provide it to the FSOA on request",
+       "paragraph": "8.5",
+       "requirement": "Provide each self-assessment to the FSOA on request (applies to firms; mandatory 'must')"
+      }
+     ],
+     "summary": "Firms must name a senior manager responsible for operational resilience and notify the FSOA of their name. They must complete a board-approved annual self-assessment covering specified topics, keep each one for at least 5 years and give it to the FSOA on request. Para 8.4 (regular, at least quarterly, management information to boards, which should challenge it) is guidance ('should'), so it is not listed as an obligation.",
+     "title": "Governance and accountability"
     },
     "name": "SectionSummary"
    }
   ],
   "usage": {
-   "cache_creation_input_tokens": 7438,
-   "cache_read_input_tokens": 0,
-   "input_tokens": 2,
-   "output_tokens": 561
+   "cache_creation_input_tokens": 3291,
+   "cache_read_input_tokens": 22186,
+   "input_tokens": 6,
+   "output_tokens": 3220
   }
  }
 }

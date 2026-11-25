@@ -12,11 +12,11 @@ from fsi_common.app import AppConfig, create_app
 from fsi_common.app.offline import OfflineExportError, OfflineTopic, replay_only
 from review_app.context import PREFIX, Services
 from review_app.plugin import build_plugin
+from review_app.seed import SECTIONS
 from workflow.runs import BriefRuns
 
 DOCUMENT_ID = "PS26-4"
 FIRM_ID = "FIRM-001"
-SECTIONS = ("7",)
 WAIT_SECONDS = 120.0
 POLL_SECONDS = 0.1
 SECRET = b"offline-export"
@@ -48,7 +48,7 @@ def build_app() -> Starlette:
 
 
 def seed(client: TestClient) -> str:
-    """Start a brief on section 7 of PS26-4 for FIRM-001 and wait for its review step.
+    """Start a brief on every section of PS26-4 for FIRM-001 and wait for its review step.
 
     The brief is started through the application's own start route, as the signed-in person the
     client carries, and the pages are read once the run waits for a reviewer.

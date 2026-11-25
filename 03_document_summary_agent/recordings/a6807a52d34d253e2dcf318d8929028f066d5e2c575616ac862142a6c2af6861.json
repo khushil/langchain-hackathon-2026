@@ -1,0 +1,194 @@
+{
+ "meta": {
+  "duration_s": 6.239,
+  "init": {
+   "agents": [],
+   "apiKeySource": "none",
+   "claude_code_version": "2.1.302",
+   "mcp_servers": [],
+   "model": "claude-sonnet-5-5",
+   "plugins": [],
+   "skills": [],
+   "slash_commands": [],
+   "tools": [
+    "StructuredOutput"
+   ]
+  },
+  "recorded_at": "2026-11-25T01:07:37.851414+00:00"
+ },
+ "request": {
+  "effort": "medium",
+  "format": 2,
+  "messages": [
+   {
+    "content": "Number: 4\nTitle: Important business services and impact tolerances\n\nText:\n4.1 Firms must identify their important business services by 31 March 2027. In doing so, firms should consider the number and type of customers using each service, the availability of alternatives, and the time sensitivity of payments or other transactions.\n\n4.2 Firms must set an impact tolerance for each important business service by 31 March 2027. Impact tolerances must be set at the point at which harm becomes intolerable, not at the point at which the firm expects to be able to recover.\n\n4.3 The board must approve the list of important business services and their impact tolerances, and must review both at least once every 12 months, or sooner if there is a material change to the firm's business.\n\n4.4 We expect most retail banks to identify between 6 and 15 important business services. Firms that identify fewer than 4 should be prepared to explain why.\n\n4.5 Firms must keep a record of how they identified each important business service and set each impact tolerance, and must provide it to the FSOA on request within 10 business days.",
+    "role": "user"
+   }
+  ],
+  "model": "claude-sonnet-5-5",
+  "schema": {
+   "additionalProperties": false,
+   "properties": {
+    "content": {
+     "description": "Text of the reply; may be empty.",
+     "type": "string"
+    },
+    "tool_calls": {
+     "items": {
+      "anyOf": [
+       {
+        "additionalProperties": false,
+        "description": "A summary of one section of the document.",
+        "properties": {
+         "args": {
+          "properties": {
+           "number": {
+            "description": "The section number, for example '4'",
+            "type": "string"
+           },
+           "obligations": {
+            "description": "Every obligation in the section; empty if there are none",
+            "items": {
+             "description": "Something a firm must do under the document.",
+             "properties": {
+              "deadline": {
+               "anyOf": [
+                {
+                 "type": "string"
+                },
+                {
+                 "type": "null"
+                }
+               ],
+               "description": "The deadline exactly as written in the document, or null if none"
+              },
+              "evidence": {
+               "description": "A quote copied word for word from that paragraph, at most 30 words",
+               "type": "string"
+              },
+              "paragraph": {
+               "description": "The paragraph number it comes from, for example '4.2'",
+               "type": "string"
+              },
+              "requirement": {
+               "description": "What the firm must do, in plain English",
+               "type": "string"
+              }
+             },
+             "required": [
+              "requirement",
+              "paragraph",
+              "deadline",
+              "evidence"
+             ],
+             "type": "object"
+            },
+            "type": "array"
+           },
+           "summary": {
+            "description": "One to three sentences on what the section says",
+            "type": "string"
+           },
+           "title": {
+            "description": "The section title",
+            "type": "string"
+           }
+          },
+          "required": [
+           "number",
+           "title",
+           "summary",
+           "obligations"
+          ],
+          "type": "object"
+         },
+         "name": {
+          "const": "SectionSummary"
+         }
+        },
+        "required": [
+         "name",
+         "args"
+        ],
+        "type": "object"
+       }
+      ]
+     },
+     "minItems": 1,
+     "type": "array"
+    }
+   },
+   "required": [
+    "content",
+    "tool_calls"
+   ],
+   "type": "object"
+  },
+  "system": "# Section summariser agent\nYou are given one section: its number, title and text. Return a `SectionSummary` as a single JSON object, with no text before or after it:\n\n- `number`: the section number, for example `\"4\"`.\n- `title`: the section title.\n- `summary`: one to three sentences on what the section says.\n- `obligations`: every obligation in the section. Use an empty list if there are none.\n\nEach `Obligation` has four fields:\n\n- `requirement`: what the firm must do, in plain English.\n- `paragraph`: the paragraph number it comes from, for example `\"4.2\"`.\n- `deadline`: the deadline exactly as written in the document, or `null` if there is none.\n- `evidence`: a quote copied word for word from that paragraph, at most 30 words.\n\nFor example:\n\n```json\n{\n  \"number\": \"7\",\n  \"title\": \"Incident reporting\",\n  \"summary\": \"Firms must report major incidents to the regulator quickly.\",\n  \"obligations\": [\n    {\n      \"requirement\": \"Report major incidents to the regulator\",\n      \"paragraph\": \"7.1\",\n      \"deadline\": \"within 4 hours\",\n      \"evidence\": \"Firms must notify the FSOA of a major incident within 4 hours\"\n    }\n  ]\n}\n```\n\n### What counts as an obligation\n\nAn obligation is something a firm must do. Look for \"must\", \"shall\", \"is required to\" and \"will need to\".\n\n- Do not list recommendations or guidance (\"should\", \"may\", \"we expect\") as obligations.\n- Do not list things only the regulator does.\n- If one paragraph sets several separate requirements, list each one separately.\n- If the section changes a requirement or deadline from an earlier section, say so in the summary.\n\n### Rules for accuracy\n\n- Copy `evidence` word for word. Never paraphrase, correct or shorten the wording inside a quote.\n- Copy `deadline` exactly as written. Do not convert dates or durations, for example \"within 4 hours\" stays as it is.\n- Use only the section you were given. Do not use outside knowledge of the regulation.\n- Do not guess. If a paragraph is ambiguous, say so in the summary rather than inventing a requirement.\n\nThese fields are checked automatically against the source text afterwards. A quote that isn't word for word, or a\ndeadline that isn't in the section, will be flagged.\n"
+ },
+ "request_sha256": "a6807a52d34d253e2dcf318d8929028f066d5e2c575616ac862142a6c2af6861",
+ "response": {
+  "content": "",
+  "model_reported": "claude-sonnet-5-5",
+  "tool_calls": [
+   {
+    "args": {
+     "number": "4",
+     "obligations": [
+      {
+       "deadline": "by 31 March 2027",
+       "evidence": "Firms must identify their important business services by 31 March 2027.",
+       "paragraph": "4.1",
+       "requirement": "Identify the firm's important business services"
+      },
+      {
+       "deadline": "by 31 March 2027",
+       "evidence": "Firms must set an impact tolerance for each important business service by 31 March 2027.",
+       "paragraph": "4.2",
+       "requirement": "Set an impact tolerance for each important business service, at the point at which harm becomes intolerable rather than expected recovery"
+      },
+      {
+       "deadline": null,
+       "evidence": "Impact tolerances must be set at the point at which harm becomes intolerable, not at the point at which the firm expects to be able to recover.",
+       "paragraph": "4.2",
+       "requirement": "Set impact tolerances at the point at which harm becomes intolerable, not the point at which the firm expects to recover"
+      },
+      {
+       "deadline": null,
+       "evidence": "The board must approve the list of important business services and their impact tolerances",
+       "paragraph": "4.3",
+       "requirement": "Have the board approve the list of important business services and their impact tolerances"
+      },
+      {
+       "deadline": "at least once every 12 months, or sooner if there is a material change to the firm's business",
+       "evidence": "must review both at least once every 12 months, or sooner if there is a material change to the firm's business",
+       "paragraph": "4.3",
+       "requirement": "Have the board review the list of important business services and impact tolerances at least every 12 months, or sooner if there is a material change to the business"
+      },
+      {
+       "deadline": null,
+       "evidence": "Firms must keep a record of how they identified each important business service and set each impact tolerance",
+       "paragraph": "4.5",
+       "requirement": "Keep a record of how each important business service was identified and each impact tolerance set"
+      },
+      {
+       "deadline": "within 10 business days",
+       "evidence": "must provide it to the FSOA on request within 10 business days",
+       "paragraph": "4.5",
+       "requirement": "Provide the record to the FSOA on request"
+      }
+     ],
+     "summary": "Firms must identify important business services and set impact tolerances for each by 31 March 2027, with board approval and at least annual review. Firms must keep records of their approach and provide them to the FSOA on request. Paragraph 4.4 gives expectations on the number of services for retail banks, which is guidance rather than a requirement.",
+     "title": "Important business services and impact tolerances"
+    },
+    "name": "SectionSummary"
+   }
+  ],
+  "usage": {
+   "cache_creation_input_tokens": 2790,
+   "cache_read_input_tokens": 0,
+   "input_tokens": 2,
+   "output_tokens": 848
+  }
+ }
+}

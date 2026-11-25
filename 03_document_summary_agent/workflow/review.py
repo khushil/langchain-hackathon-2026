@@ -104,17 +104,26 @@ def build_review_request(state: EngineState, earlier: Mapping[str, Record]) -> R
     )
 
 
-def _shown(request: ReviewRequest, state: EngineState) -> dict[str, tuple[str, str]]:
-    """Each subject the reviewer was shown, with its judged digest and its seen digest."""
-    shown: dict[str, tuple[str, str]] = {}
+def _shown(request: ReviewRequest, state: EngineState) -> dict[str, tuple[str, set[str]]]:
+    """Each subject the reviewer was shown, with its judged digest and the seen digests allowed.
+
+    A question another run has answered since this one was put to the reviewer reads as answered
+    when the request is built again on resume, though the reviewer was shown it open; both
+    versions of it are the question as shown.
+    """
+    shown: dict[str, tuple[str, set[str]]] = {}
     brief = RECORD_TYPES[BRIEF_SCHEMA].model_validate(state["draft_brief"])
     for statement in brief.statements:
-        shown[statement.id] = (judged_digest(statement), record_digest(statement))
+        shown[statement.id] = (judged_digest(statement), {record_digest(statement)})
     for statement in request.statements:
         for cited in statement.facts:
-            shown[cited.fact.id] = (judged_digest(cited.fact), cited.seen_digest)
+            shown[cited.fact.id] = (judged_digest(cited.fact), {cited.seen_digest})
+    held = state.get("open_questions", {})
     for question in request.open_questions:
-        shown[question.id] = (judged_digest(question), record_digest(question))
+        seen = {record_digest(question)}
+        if question.id in held:
+            seen.add(record_digest(OpenQuestion.model_validate(held[question.id])))
+        shown[question.id] = (judged_digest(question), seen)
     return shown
 
 
@@ -171,7 +180,7 @@ def validate_response(response: ReviewResponse, request: ReviewRequest, state: E
                 "shown."
             )
         judged, seen = shown[decision.subject_id]
-        if (decision.judged_digest, decision.seen_digest) != (judged, seen):
+        if decision.judged_digest != judged or decision.seen_digest not in seen:
             raise ReviewMismatchError(
                 f"Decision {decision.id} is on {decision.subject_id} as it was before it "
                 "changed, not as the reviewer was shown it."

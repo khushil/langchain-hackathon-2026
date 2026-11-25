@@ -1,6 +1,6 @@
 {
  "meta": {
-  "duration_s": 10.495,
+  "duration_s": 7.522,
   "init": {
    "agents": [],
    "apiKeySource": "none",
@@ -14,14 +14,14 @@
     "StructuredOutput"
    ]
   },
-  "recorded_at": "2026-11-24T22:23:34.458639+00:00"
+  "recorded_at": "2026-11-25T01:06:40.114412+00:00"
  },
  "request": {
   "effort": "medium",
   "format": 2,
   "messages": [
    {
-    "content": "Summarise ONE section of a regulatory document and extract its obligations. Analysis only: do not create or edit files. Return a SectionSummary with the section number, title, a short summary, and every obligation in the section (who must do what, by when, and any thresholds or conditions). Treat 'must' as a binding obligation and 'should'/'we expect' as guidance, and label each one.\n\nDocument: Policy Statement PS26/4: Operational resilience and third-party technology risk\nSection number: 5\nSection title: Mapping and scenario testing\nFull text:\n5.1 Firms must map the people, processes, technology, facilities and information that support each important business service, including those provided by third parties, by 31 March 2027.\n\n5.2 Mapping must be detailed enough to identify single points of failure and concentrations of risk, including where several important business services depend on the same third-party provider.\n\n5.3 Firms must test their ability to remain within impact tolerance under severe but plausible scenarios. The first round of scenario testing must be completed by 30 September 2027, and testing must be repeated at least once a year after that.\n\n5.4 Scenarios must include, at a minimum, the failure of a material third-party provider, a cyber attack that makes key systems unavailable, and the loss of a key site.\n\n5.5 Where testing shows that a firm cannot remain within an impact tolerance, the firm must record the vulnerability, set out the actions it will take to address it, and report the vulnerability to the board at its next meeting.",
+    "content": "Analyse only; do not create or edit files. Summarise this ONE section of the regulatory document \"Policy Statement PS26/4: Operational resilience and third-party technology risk\" (document ID PS26-4) and extract every obligation it contains. For each obligation include: the paragraph reference, who it applies to, what must be done, any deadline or time limit, and whether it is mandatory ('must') or guidance ('should'/expectation). Return a SectionSummary.\n\nSection number: 6\nSection title: Third-party technology providers\nSection text:\n6.1 Firms must maintain a register of all material third-party providers by 31 March 2027. The register must record, for each provider, the services it supports, the data it holds, its location, and the date the contract expires.\n\n6.2 Firms must notify the FSOA at least 60 days before entering into a new arrangement with a material third-party provider, or materially changing an existing one.\n\n6.3 Contracts with material third-party providers must give the firm and the FSOA rights of access and audit, require the provider to report incidents to the firm without undue delay, and set out how the service will be transferred or wound down if the arrangement ends.\n\n6.4 Firms must have a documented exit plan for each material third-party provider and must test each exit plan at least once every two years.\n\n6.5 Where a firm uses the same material third-party provider for more than one important business service, it must assess the concentration risk and explain to the board how it would manage the failure of that provider.\n\n6.6 Firms remain fully responsible for meeting their regulatory obligations when they outsource. Outsourcing a service does not transfer the firm's responsibility for it.",
     "role": "user"
    }
   ],
@@ -397,75 +397,93 @@
   },
   "system": "# Section summariser agent\nYou are given one section: its number, title and text. Return a `SectionSummary` as a single JSON object, with no text before or after it:\n\n- `number`: the section number, for example `\"4\"`.\n- `title`: the section title.\n- `summary`: one to three sentences on what the section says.\n- `obligations`: every obligation in the section. Use an empty list if there are none.\n\nEach `Obligation` has four fields:\n\n- `requirement`: what the firm must do, in plain English.\n- `paragraph`: the paragraph number it comes from, for example `\"4.2\"`.\n- `deadline`: the deadline exactly as written in the document, or `null` if there is none.\n- `evidence`: a quote copied word for word from that paragraph, at most 30 words.\n\nFor example:\n\n```json\n{\n  \"number\": \"7\",\n  \"title\": \"Incident reporting\",\n  \"summary\": \"Firms must report major incidents to the regulator quickly.\",\n  \"obligations\": [\n    {\n      \"requirement\": \"Report major incidents to the regulator\",\n      \"paragraph\": \"7.1\",\n      \"deadline\": \"within 4 hours\",\n      \"evidence\": \"Firms must notify the FSOA of a major incident within 4 hours\"\n    }\n  ]\n}\n```\n\n### What counts as an obligation\n\nAn obligation is something a firm must do. Look for \"must\", \"shall\", \"is required to\" and \"will need to\".\n\n- Do not list recommendations or guidance (\"should\", \"may\", \"we expect\") as obligations.\n- Do not list things only the regulator does.\n- If one paragraph sets several separate requirements, list each one separately.\n- If the section changes a requirement or deadline from an earlier section, say so in the summary.\n\n### Rules for accuracy\n\n- Copy `evidence` word for word. Never paraphrase, correct or shorten the wording inside a quote.\n- Copy `deadline` exactly as written. Do not convert dates or durations, for example \"within 4 hours\" stays as it is.\n- Use only the section you were given. Do not use outside knowledge of the regulation.\n- Do not guess. If a paragraph is ambiguous, say so in the summary rather than inventing a requirement.\n\nThese fields are checked automatically against the source text afterwards. A quote that isn't word for word, or a\ndeadline that isn't in the section, will be flagged.\n"
  },
- "request_sha256": "6e8bc11994597165c8ee68192acc5378dabc70c0387256a11be8d2370a546f0f",
+ "request_sha256": "9dc543ee8db6c0c8a29db2f8b521c78d2a1c2f7bca8ea8bb20db38ce85190cc1",
  "response": {
-  "content": "{\"number\":\"5\",\"title\":\"Mapping and scenario testing\",\"summary\":\"Firms must map the resources supporting each important business service (including third-party dependencies) in enough detail to expose single points of failure and concentrations of risk. They must also run severe but plausible scenario tests, including specified minimum scenarios, and escalate and remediate any failure to stay within impact tolerance. All items below are binding ('must'); the section contains no 'should'/'we expect' guidance.\",\"obligations\":[{\"requirement\":\"[Binding] Map the people, processes, technology, facilities and information that support each important business service, including those provided by third parties.\",\"paragraph\":\"5.1\",\"deadline\":\"by 31 March 2027\",\"evidence\":\"Firms must map the people, processes, technology, facilities and information that support each important business service, including those provided by third parties, by 31 March 2027.\"},{\"requirement\":\"[Binding] Make mapping detailed enough to identify single points of failure and concentrations of risk, including where several important business services depend on the same third-party provider.\",\"paragraph\":\"5.2\",\"deadline\":null,\"evidence\":\"Mapping must be detailed enough to identify single points of failure and concentrations of risk\"},{\"requirement\":\"[Binding] Test ability to remain within impact tolerance under severe but plausible scenarios; complete the first round of scenario testing.\",\"paragraph\":\"5.3\",\"deadline\":\"by 30 September 2027\",\"evidence\":\"The first round of scenario testing must be completed by 30 September 2027\"},{\"requirement\":\"[Binding] Repeat scenario testing at least once a year after the first round.\",\"paragraph\":\"5.3\",\"deadline\":\"at least once a year after that\",\"evidence\":\"testing must be repeated at least once a year after that.\"},{\"requirement\":\"[Binding] Include in scenarios, as a minimum, failure of a material third-party provider, a cyber attack making key systems unavailable, and loss of a key site.\",\"paragraph\":\"5.4\",\"deadline\":null,\"evidence\":\"Scenarios must include, at a minimum, the failure of a material third-party provider, a cyber attack that makes key systems unavailable, and the loss of a key site.\"},{\"requirement\":\"[Binding] Where testing shows the firm cannot remain within impact tolerance, record the vulnerability.\",\"paragraph\":\"5.5\",\"deadline\":null,\"evidence\":\"the firm must record the vulnerability\"},{\"requirement\":\"[Binding] Set out the actions the firm will take to address the vulnerability.\",\"paragraph\":\"5.5\",\"deadline\":null,\"evidence\":\"set out the actions it will take to address it\"},{\"requirement\":\"[Binding] Report the vulnerability to the board.\",\"paragraph\":\"5.5\",\"deadline\":\"at its next meeting\",\"evidence\":\"report the vulnerability to the board at its next meeting\"}]}",
+  "content": "",
   "model_reported": "claude-sonnet-5-5",
   "tool_calls": [
    {
     "args": {
-     "number": "5",
+     "number": "6",
      "obligations": [
       {
        "deadline": "by 31 March 2027",
-       "evidence": "Firms must map the people, processes, technology, facilities and information that support each important business service, including those provided by third parties, by 31 March 2027.",
-       "paragraph": "5.1",
-       "requirement": "[Binding] Map the people, processes, technology, facilities and information that support each important business service, including those provided by third parties."
+       "evidence": "Firms must maintain a register of all material third-party providers by 31 March 2027.",
+       "paragraph": "6.1",
+       "requirement": "Maintain a register of all material third-party providers"
       },
       {
        "deadline": null,
-       "evidence": "Mapping must be detailed enough to identify single points of failure and concentrations of risk",
-       "paragraph": "5.2",
-       "requirement": "[Binding] Make mapping detailed enough to identify single points of failure and concentrations of risk, including where several important business services depend on the same third-party provider."
+       "evidence": "The register must record, for each provider, the services it supports, the data it holds, its location, and the date the contract expires.",
+       "paragraph": "6.1",
+       "requirement": "Record in the register, for each provider, the services it supports, the data it holds, its location, and the contract expiry date"
       },
       {
-       "deadline": "by 30 September 2027",
-       "evidence": "The first round of scenario testing must be completed by 30 September 2027",
-       "paragraph": "5.3",
-       "requirement": "[Binding] Test ability to remain within impact tolerance under severe but plausible scenarios; complete the first round of scenario testing."
-      },
-      {
-       "deadline": "at least once a year after that",
-       "evidence": "testing must be repeated at least once a year after that.",
-       "paragraph": "5.3",
-       "requirement": "[Binding] Repeat scenario testing at least once a year after the first round."
+       "deadline": "at least 60 days before",
+       "evidence": "Firms must notify the FSOA at least 60 days before entering into a new arrangement with a material third-party provider",
+       "paragraph": "6.2",
+       "requirement": "Notify the FSOA before entering into a new arrangement with a material third-party provider, or materially changing an existing one"
       },
       {
        "deadline": null,
-       "evidence": "Scenarios must include, at a minimum, the failure of a material third-party provider, a cyber attack that makes key systems unavailable, and the loss of a key site.",
-       "paragraph": "5.4",
-       "requirement": "[Binding] Include in scenarios, as a minimum, failure of a material third-party provider, a cyber attack making key systems unavailable, and loss of a key site."
+       "evidence": "Contracts with material third-party providers must give the firm and the FSOA rights of access and audit",
+       "paragraph": "6.3",
+       "requirement": "Ensure contracts with material third-party providers give the firm and the FSOA rights of access and audit"
+      },
+      {
+       "deadline": "without undue delay",
+       "evidence": "require the provider to report incidents to the firm without undue delay",
+       "paragraph": "6.3",
+       "requirement": "Ensure contracts require the provider to report incidents to the firm without undue delay"
       },
       {
        "deadline": null,
-       "evidence": "the firm must record the vulnerability",
-       "paragraph": "5.5",
-       "requirement": "[Binding] Where testing shows the firm cannot remain within impact tolerance, record the vulnerability."
+       "evidence": "set out how the service will be transferred or wound down if the arrangement ends",
+       "paragraph": "6.3",
+       "requirement": "Ensure contracts set out how the service will be transferred or wound down if the arrangement ends"
       },
       {
        "deadline": null,
-       "evidence": "set out the actions it will take to address it",
-       "paragraph": "5.5",
-       "requirement": "[Binding] Set out the actions the firm will take to address the vulnerability."
+       "evidence": "Firms must have a documented exit plan for each material third-party provider",
+       "paragraph": "6.4",
+       "requirement": "Have a documented exit plan for each material third-party provider"
       },
       {
-       "deadline": "at its next meeting",
-       "evidence": "report the vulnerability to the board at its next meeting",
-       "paragraph": "5.5",
-       "requirement": "[Binding] Report the vulnerability to the board."
+       "deadline": "at least once every two years",
+       "evidence": "must test each exit plan at least once every two years",
+       "paragraph": "6.4",
+       "requirement": "Test each exit plan at least once every two years"
+      },
+      {
+       "deadline": null,
+       "evidence": "it must assess the concentration risk",
+       "paragraph": "6.5",
+       "requirement": "Where the same material provider serves more than one important business service, assess the concentration risk"
+      },
+      {
+       "deadline": null,
+       "evidence": "explain to the board how it would manage the failure of that provider",
+       "paragraph": "6.5",
+       "requirement": "Explain to the board how the firm would manage the failure of that provider"
+      },
+      {
+       "deadline": null,
+       "evidence": "Firms remain fully responsible for meeting their regulatory obligations when they outsource.",
+       "paragraph": "6.6",
+       "requirement": "Remain fully responsible for meeting regulatory obligations when outsourcing"
       }
      ],
-     "summary": "Firms must map the resources supporting each important business service (including third-party dependencies) in enough detail to expose single points of failure and concentrations of risk. They must also run severe but plausible scenario tests, including specified minimum scenarios, and escalate and remediate any failure to stay within impact tolerance. All items are binding ('must'); the section contains no 'should'/'we expect' guidance.",
-     "title": "Mapping and scenario testing"
+     "summary": "Firms must keep a register of material third-party providers, notify the FSOA before new or materially changed arrangements, include specified terms in contracts, and have tested exit plans. Firms using one provider for several important business services must assess concentration risk and brief the board. Outsourcing does not transfer responsibility. Paragraph 6.6 is a statement of principle; the 'remain fully responsible' wording is mandatory in tone but sets no separate action. All obligations apply to firms and use 'must' (mandatory); none is guidance only.",
+     "title": "Third-party technology providers"
     },
     "name": "SectionSummary"
    }
   ],
   "usage": {
-   "cache_creation_input_tokens": 1043,
+   "cache_creation_input_tokens": 1086,
    "cache_read_input_tokens": 6399,
    "input_tokens": 2,
-   "output_tokens": 1924
+   "output_tokens": 1184
   }
  }
 }

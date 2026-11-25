@@ -1,6 +1,6 @@
 {
  "meta": {
-  "duration_s": 3.956,
+  "duration_s": 4.299,
   "init": {
    "agents": [],
    "apiKeySource": "none",
@@ -14,14 +14,14 @@
     "StructuredOutput"
    ]
   },
-  "recorded_at": "2026-11-24T22:23:44.954268+00:00"
+  "recorded_at": "2026-11-25T01:06:28.544217+00:00"
  },
  "request": {
   "effort": "medium",
   "format": 2,
   "messages": [
    {
-    "content": "Summarise ONE section of a regulatory document and extract its obligations. Analysis only: do not create or edit files. Return a SectionSummary with the section number, title, a short summary, and every obligation in the section (who must do what, by when, and any thresholds or conditions). Treat 'must' as a binding obligation and 'should'/'we expect' as guidance, and label each one. If the section has no obligations for firms, return an empty obligations list.\n\nDocument: Policy Statement PS26/4: Operational resilience and third-party technology risk\nSection number: 10\nSection title: Next steps and contacts\nFull text:\n10.1 We will host a series of webinars for firms in the first quarter of 2027 and will publish frequently asked questions on our website.\n\n10.2 Firms with questions about this policy statement should contact their usual supervisory contact. General questions can be sent to our operational resilience team.\n\n10.3 We will consult separately in 2027 on whether to extend these requirements to insurers and investment firms.",
+    "content": "Analyse only; do not create or edit files. Summarise this ONE section of the regulatory document \"Policy Statement PS26/4: Operational resilience and third-party technology risk\" (document ID PS26-4) and extract every obligation it contains. For each obligation include: the paragraph reference, who it applies to, what must be done, any deadline or time limit, and whether it is mandatory ('must') or guidance ('should'/expectation). Return a SectionSummary.\n\nSection number: 1\nSection title: Introduction and purpose\nSection text:\n1.1 This policy statement sets out the final rules and guidance on operational resilience and the management of third-party technology risk for firms authorised by the Financial Services Oversight Authority. It follows Consultation Paper CP25/11, which closed in March 2026, and reflects the feedback we received from firms, trade bodies and consumer groups.\n\n1.2 Disruption to financial services can cause serious harm to consumers and to market integrity. Recent incidents have shown that firms increasingly depend on a small number of technology providers, and that an outage at one provider can affect many firms at the same time. Firms have also told us that they find it hard to assess the resilience of services they do not run themselves.\n\n1.3 Our objective is that firms can continue to deliver their most important services through severe but plausible disruption, and that when disruption does happen, it is contained, reported promptly and learned from. We expect firms to treat operational resilience as a matter for the board, not only for technology teams.\n\n1.4 This policy statement takes effect on 1 January 2027. The deadlines for individual requirements are set out in the relevant sections, and transitional arrangements for some firms are set out in section 9.\n\n1.5 We will review the effectiveness of these rules two years after they take effect, and we will publish our findings.",
     "role": "user"
    }
   ],
@@ -397,26 +397,26 @@
   },
   "system": "# Section summariser agent\nYou are given one section: its number, title and text. Return a `SectionSummary` as a single JSON object, with no text before or after it:\n\n- `number`: the section number, for example `\"4\"`.\n- `title`: the section title.\n- `summary`: one to three sentences on what the section says.\n- `obligations`: every obligation in the section. Use an empty list if there are none.\n\nEach `Obligation` has four fields:\n\n- `requirement`: what the firm must do, in plain English.\n- `paragraph`: the paragraph number it comes from, for example `\"4.2\"`.\n- `deadline`: the deadline exactly as written in the document, or `null` if there is none.\n- `evidence`: a quote copied word for word from that paragraph, at most 30 words.\n\nFor example:\n\n```json\n{\n  \"number\": \"7\",\n  \"title\": \"Incident reporting\",\n  \"summary\": \"Firms must report major incidents to the regulator quickly.\",\n  \"obligations\": [\n    {\n      \"requirement\": \"Report major incidents to the regulator\",\n      \"paragraph\": \"7.1\",\n      \"deadline\": \"within 4 hours\",\n      \"evidence\": \"Firms must notify the FSOA of a major incident within 4 hours\"\n    }\n  ]\n}\n```\n\n### What counts as an obligation\n\nAn obligation is something a firm must do. Look for \"must\", \"shall\", \"is required to\" and \"will need to\".\n\n- Do not list recommendations or guidance (\"should\", \"may\", \"we expect\") as obligations.\n- Do not list things only the regulator does.\n- If one paragraph sets several separate requirements, list each one separately.\n- If the section changes a requirement or deadline from an earlier section, say so in the summary.\n\n### Rules for accuracy\n\n- Copy `evidence` word for word. Never paraphrase, correct or shorten the wording inside a quote.\n- Copy `deadline` exactly as written. Do not convert dates or durations, for example \"within 4 hours\" stays as it is.\n- Use only the section you were given. Do not use outside knowledge of the regulation.\n- Do not guess. If a paragraph is ambiguous, say so in the summary rather than inventing a requirement.\n\nThese fields are checked automatically against the source text afterwards. A quote that isn't word for word, or a\ndeadline that isn't in the section, will be flagged.\n"
  },
- "request_sha256": "b0a43bbc44bd2416cc97212858342d5a8e6e92bb3c259e3d4e98aacc2be743b1",
+ "request_sha256": "29e13e9aa60eb3274ff916e0e1af8eba67258c8e7809422e342e17df7022ba55",
  "response": {
-  "content": "{\"number\":\"10\",\"title\":\"Next steps and contacts\",\"summary\":\"The regulator will host webinars in Q1 2027 and publish FAQs, and firms with questions should contact their supervisory contact or the operational resilience team. A separate consultation in 2027 will consider extending the requirements to insurers and investment firms. The section contains no binding obligations (no 'must') or guidance ('should') directed at firms; all commitments are the regulator's own.\",\"obligations\":[]}",
+  "content": "",
   "model_reported": "claude-sonnet-5-5",
   "tool_calls": [
    {
     "args": {
-     "number": "10",
+     "number": "1",
      "obligations": [],
-     "summary": "The regulator will host webinars in Q1 2027 and publish FAQs, and firms with questions should contact their supervisory contact or the operational resilience team. A separate consultation in 2027 will consider extending the requirements to insurers and investment firms. The section contains no binding obligations (no 'must') for firms; all commitments are the regulator's own, and para 10.2 is only an informal pointer on whom to contact.",
-     "title": "Next steps and contacts"
+     "summary": "This section introduces the final rules and guidance on operational resilience and third-party technology risk for firms authorised by the Financial Services Oversight Authority, following CP25/11. It explains the aim that firms can keep delivering their most important services through severe but plausible disruption. The policy statement takes effect on 1 January 2027, with transitional arrangements in section 9, and the regulator will review the rules two years after they take effect. The section contains no mandatory obligations. The only expectation on firms is guidance: paragraph 1.3 says the regulator expects firms to treat operational resilience as a board matter, and it does not use 'must'. The effective date and the review are not firm obligations, and the review is a regulator action.",
+     "title": "Introduction and purpose"
     },
     "name": "SectionSummary"
    }
   ],
   "usage": {
-   "cache_creation_input_tokens": 887,
-   "cache_read_input_tokens": 6399,
+   "cache_creation_input_tokens": 7545,
+   "cache_read_input_tokens": 0,
    "input_tokens": 2,
-   "output_tokens": 409
+   "output_tokens": 447
   }
  }
 }

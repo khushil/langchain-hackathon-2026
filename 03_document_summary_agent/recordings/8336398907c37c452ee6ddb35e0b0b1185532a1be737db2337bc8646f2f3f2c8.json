@@ -1,6 +1,6 @@
 {
  "meta": {
-  "duration_s": 9.251,
+  "duration_s": 6.052,
   "init": {
    "agents": [],
    "apiKeySource": "none",
@@ -14,14 +14,14 @@
     "StructuredOutput"
    ]
   },
-  "recorded_at": "2026-11-24T22:23:44.472686+00:00"
+  "recorded_at": "2026-11-25T01:06:28.547806+00:00"
  },
  "request": {
   "effort": "medium",
   "format": 2,
   "messages": [
    {
-    "content": "Summarise ONE section of a regulatory document and extract its obligations. Analysis only: do not create or edit files. Return a SectionSummary with the section number, title, a short summary, and every obligation in the section (who must do what, by when, and any thresholds or conditions). Treat 'must' as a binding obligation and 'should'/'we expect' as guidance, and label each one.\n\nDocument: Policy Statement PS26/4: Operational resilience and third-party technology risk\nSection number: 8\nSection title: Governance and accountability\nFull text:\n8.1 Firms must name a senior manager who is responsible for operational resilience by 31 January 2027, and must notify the FSOA of that person's name within 14 days of appointing them.\n\n8.2 Firms must complete an annual self-assessment of their operational resilience, which must be approved by the board. The first self-assessment must be completed and approved by 31 March 2028.\n\n8.3 The self-assessment must cover the firm's important business services, impact tolerances, mapping, scenario testing results, vulnerabilities and remediation actions, and its management of material third-party providers.\n\n8.4 Boards should receive regular management information on operational resilience, at least quarterly, and should challenge it.\n\n8.5 Firms must keep each self-assessment for at least 5 years and provide it to the FSOA on request.",
+    "content": "Analyse only; do not create or edit files. Summarise this ONE section of the regulatory document \"Policy Statement PS26/4: Operational resilience and third-party technology risk\" (document ID PS26-4) and extract every obligation it contains. For each obligation include: the paragraph reference, who it applies to, what must be done, any deadline or time limit, and whether it is mandatory ('must') or guidance ('should'/expectation). Return a SectionSummary.\n\nSection number: 2\nSection title: Scope and application\nSection text:\n2.1 This policy statement applies to all banks, building societies, payment institutions and electronic money institutions authorised by the FSOA.\n\n2.2 It applies to the firm's activities in all jurisdictions where the failure of an activity could cause harm to consumers in our jurisdiction or to the stability of our financial system.\n\n2.3 Some requirements are applied proportionately. For the purposes of this policy statement, a small firm is a firm that has fewer than 250,000 customers and total assets of less than £5 billion on 31 December 2026. A firm that exceeds either threshold is not a small firm.\n\n2.4 A firm that becomes a small firm, or stops being a small firm, after 31 December 2026 must notify the FSOA within 30 days of the change. Its status for the purposes of the transitional arrangements in section 9 is fixed on 31 December 2026 and does not change.\n\n2.5 Groups may meet these requirements at group level, provided that each authorised firm in the group can show how the group arrangements apply to its own important business services.",
     "role": "user"
    }
   ],
@@ -397,63 +397,33 @@
   },
   "system": "# Section summariser agent\nYou are given one section: its number, title and text. Return a `SectionSummary` as a single JSON object, with no text before or after it:\n\n- `number`: the section number, for example `\"4\"`.\n- `title`: the section title.\n- `summary`: one to three sentences on what the section says.\n- `obligations`: every obligation in the section. Use an empty list if there are none.\n\nEach `Obligation` has four fields:\n\n- `requirement`: what the firm must do, in plain English.\n- `paragraph`: the paragraph number it comes from, for example `\"4.2\"`.\n- `deadline`: the deadline exactly as written in the document, or `null` if there is none.\n- `evidence`: a quote copied word for word from that paragraph, at most 30 words.\n\nFor example:\n\n```json\n{\n  \"number\": \"7\",\n  \"title\": \"Incident reporting\",\n  \"summary\": \"Firms must report major incidents to the regulator quickly.\",\n  \"obligations\": [\n    {\n      \"requirement\": \"Report major incidents to the regulator\",\n      \"paragraph\": \"7.1\",\n      \"deadline\": \"within 4 hours\",\n      \"evidence\": \"Firms must notify the FSOA of a major incident within 4 hours\"\n    }\n  ]\n}\n```\n\n### What counts as an obligation\n\nAn obligation is something a firm must do. Look for \"must\", \"shall\", \"is required to\" and \"will need to\".\n\n- Do not list recommendations or guidance (\"should\", \"may\", \"we expect\") as obligations.\n- Do not list things only the regulator does.\n- If one paragraph sets several separate requirements, list each one separately.\n- If the section changes a requirement or deadline from an earlier section, say so in the summary.\n\n### Rules for accuracy\n\n- Copy `evidence` word for word. Never paraphrase, correct or shorten the wording inside a quote.\n- Copy `deadline` exactly as written. Do not convert dates or durations, for example \"within 4 hours\" stays as it is.\n- Use only the section you were given. Do not use outside knowledge of the regulation.\n- Do not guess. If a paragraph is ambiguous, say so in the summary rather than inventing a requirement.\n\nThese fields are checked automatically against the source text afterwards. A quote that isn't word for word, or a\ndeadline that isn't in the section, will be flagged.\n"
  },
- "request_sha256": "190c8971aa841fe9872d13164e635bf9fadf4803e48c984c92d71cc4a559be2f",
+ "request_sha256": "8336398907c37c452ee6ddb35e0b0b1185532a1be737db2337bc8646f2f3f2c8",
  "response": {
-  "content": "{\"number\":\"8\",\"title\":\"Governance and accountability\",\"summary\":\"Firms must name a senior manager responsible for operational resilience and notify the FSOA, and must complete a board-approved annual self-assessment covering specified topics, which they must keep for at least 5 years and provide to the FSOA on request. Boards are only guided (should, not must) to receive regular management information, at least quarterly, and to challenge it.\",\"obligations\":[{\"requirement\":\"[Binding] Name a senior manager responsible for operational resilience\",\"paragraph\":\"8.1\",\"deadline\":\"by 31 January 2027\",\"evidence\":\"Firms must name a senior manager who is responsible for operational resilience by 31 January 2027\"},{\"requirement\":\"[Binding] Notify the FSOA of the senior manager's name\",\"paragraph\":\"8.1\",\"deadline\":\"within 14 days of appointing them\",\"evidence\":\"must notify the FSOA of that person's name within 14 days of appointing them\"},{\"requirement\":\"[Binding] Complete an annual self-assessment of operational resilience, approved by the board\",\"paragraph\":\"8.2\",\"deadline\":\"The first self-assessment must be completed and approved by 31 March 2028\",\"evidence\":\"Firms must complete an annual self-assessment of their operational resilience, which must be approved by the board.\"},{\"requirement\":\"[Binding] Ensure the self-assessment covers important business services, impact tolerances, mapping, scenario testing results, vulnerabilities and remediation actions, and management of material third-party providers\",\"paragraph\":\"8.3\",\"deadline\":null,\"evidence\":\"The self-assessment must cover the firm's important business services, impact tolerances, mapping, scenario testing results, vulnerabilities and remediation actions\"},{\"requirement\":\"[Binding] Keep each self-assessment for at least 5 years\",\"paragraph\":\"8.5\",\"deadline\":\"at least 5 years\",\"evidence\":\"Firms must keep each self-assessment for at least 5 years\"},{\"requirement\":\"[Binding] Provide each self-assessment to the FSOA on request\",\"paragraph\":\"8.5\",\"deadline\":\"on request\",\"evidence\":\"provide it to the FSOA on request\"}]}",
+  "content": "",
   "model_reported": "claude-sonnet-5-5",
   "tool_calls": [
    {
     "args": {
-     "number": "8",
+     "number": "2",
      "obligations": [
       {
-       "deadline": "by 31 January 2027",
-       "evidence": "Firms must name a senior manager who is responsible for operational resilience by 31 January 2027",
-       "paragraph": "8.1",
-       "requirement": "[Binding] Name a senior manager responsible for operational resilience"
-      },
-      {
-       "deadline": "within 14 days of appointing them",
-       "evidence": "must notify the FSOA of that person's name within 14 days of appointing them",
-       "paragraph": "8.1",
-       "requirement": "[Binding] Notify the FSOA of the senior manager's name"
-      },
-      {
-       "deadline": "by 31 March 2028",
-       "evidence": "Firms must complete an annual self-assessment of their operational resilience, which must be approved by the board.",
-       "paragraph": "8.2",
-       "requirement": "[Binding] Complete an annual self-assessment of operational resilience, approved by the board; first one due by the stated date"
-      },
-      {
-       "deadline": null,
-       "evidence": "The self-assessment must cover the firm's important business services, impact tolerances, mapping, scenario testing results, vulnerabilities and remediation actions",
-       "paragraph": "8.3",
-       "requirement": "[Binding] Ensure the self-assessment covers important business services, impact tolerances, mapping, scenario testing results, vulnerabilities and remediation actions, and management of material third-party providers"
-      },
-      {
-       "deadline": "at least 5 years",
-       "evidence": "Firms must keep each self-assessment for at least 5 years",
-       "paragraph": "8.5",
-       "requirement": "[Binding] Keep each self-assessment for at least 5 years"
-      },
-      {
-       "deadline": "on request",
-       "evidence": "provide it to the FSOA on request",
-       "paragraph": "8.5",
-       "requirement": "[Binding] Provide each self-assessment to the FSOA on request"
+       "deadline": "within 30 days of the change",
+       "evidence": "A firm that becomes a small firm, or stops being a small firm, after 31 December 2026 must notify the FSOA within 30 days of the change.",
+       "paragraph": "2.4",
+       "requirement": "Mandatory (must). Applies to any firm that becomes, or stops being, a small firm after 31 December 2026: notify the FSOA of the change. Status for the section 9 transitional arrangements stays fixed at 31 December 2026."
       }
      ],
-     "summary": "Firms must name a senior manager responsible for operational resilience and notify the FSOA, and must complete a board-approved annual self-assessment covering specified topics, which they must keep for at least 5 years and provide to the FSOA on request. Para 8.4 is guidance only (boards 'should' receive at least quarterly management information and challenge it), so it is not listed as an obligation.",
-     "title": "Governance and accountability"
+     "summary": "The policy statement applies to all FSOA-authorised banks, building societies, payment institutions and e-money institutions, including activities in any jurisdiction where failure could harm consumers or financial stability in the FSOA's jurisdiction. It defines a small firm (fewer than 250,000 customers and under £5 billion total assets on 31 December 2026) for proportionate application, and requires notification of changes in small-firm status. Group-level compliance is permitted if each authorised firm can show how the group arrangements apply to its own important business services; this is phrased as a permission and condition, not a 'must', so it is not listed as an obligation.",
+     "title": "Scope and application"
     },
     "name": "SectionSummary"
    }
   ],
   "usage": {
-   "cache_creation_input_tokens": 997,
-   "cache_read_input_tokens": 6399,
+   "cache_creation_input_tokens": 7469,
+   "cache_read_input_tokens": 0,
    "input_tokens": 2,
-   "output_tokens": 1518
+   "output_tokens": 690
   }
  }
 }

@@ -1,0 +1,151 @@
+{
+ "meta": {
+  "duration_s": 3.412,
+  "init": {
+   "agents": [],
+   "apiKeySource": "none",
+   "claude_code_version": "2.1.302",
+   "mcp_servers": [],
+   "model": "claude-sonnet-5-5",
+   "plugins": [],
+   "skills": [],
+   "slash_commands": [],
+   "tools": [
+    "StructuredOutput"
+   ]
+  },
+  "recorded_at": "2026-11-25T01:07:37.849216+00:00"
+ },
+ "request": {
+  "effort": "medium",
+  "format": 2,
+  "messages": [
+   {
+    "content": "Number: 1\nTitle: Introduction and purpose\n\nText:\n1.1 This policy statement sets out the final rules and guidance on operational resilience and the management of third-party technology risk for firms authorised by the Financial Services Oversight Authority. It follows Consultation Paper CP25/11, which closed in March 2026, and reflects the feedback we received from firms, trade bodies and consumer groups.\n\n1.2 Disruption to financial services can cause serious harm to consumers and to market integrity. Recent incidents have shown that firms increasingly depend on a small number of technology providers, and that an outage at one provider can affect many firms at the same time. Firms have also told us that they find it hard to assess the resilience of services they do not run themselves.\n\n1.3 Our objective is that firms can continue to deliver their most important services through severe but plausible disruption, and that when disruption does happen, it is contained, reported promptly and learned from. We expect firms to treat operational resilience as a matter for the board, not only for technology teams.\n\n1.4 This policy statement takes effect on 1 January 2027. The deadlines for individual requirements are set out in the relevant sections, and transitional arrangements for some firms are set out in section 9.\n\n1.5 We will review the effectiveness of these rules two years after they take effect, and we will publish our findings.",
+    "role": "user"
+   }
+  ],
+  "model": "claude-sonnet-5-5",
+  "schema": {
+   "additionalProperties": false,
+   "properties": {
+    "content": {
+     "description": "Text of the reply; may be empty.",
+     "type": "string"
+    },
+    "tool_calls": {
+     "items": {
+      "anyOf": [
+       {
+        "additionalProperties": false,
+        "description": "A summary of one section of the document.",
+        "properties": {
+         "args": {
+          "properties": {
+           "number": {
+            "description": "The section number, for example '4'",
+            "type": "string"
+           },
+           "obligations": {
+            "description": "Every obligation in the section; empty if there are none",
+            "items": {
+             "description": "Something a firm must do under the document.",
+             "properties": {
+              "deadline": {
+               "anyOf": [
+                {
+                 "type": "string"
+                },
+                {
+                 "type": "null"
+                }
+               ],
+               "description": "The deadline exactly as written in the document, or null if none"
+              },
+              "evidence": {
+               "description": "A quote copied word for word from that paragraph, at most 30 words",
+               "type": "string"
+              },
+              "paragraph": {
+               "description": "The paragraph number it comes from, for example '4.2'",
+               "type": "string"
+              },
+              "requirement": {
+               "description": "What the firm must do, in plain English",
+               "type": "string"
+              }
+             },
+             "required": [
+              "requirement",
+              "paragraph",
+              "deadline",
+              "evidence"
+             ],
+             "type": "object"
+            },
+            "type": "array"
+           },
+           "summary": {
+            "description": "One to three sentences on what the section says",
+            "type": "string"
+           },
+           "title": {
+            "description": "The section title",
+            "type": "string"
+           }
+          },
+          "required": [
+           "number",
+           "title",
+           "summary",
+           "obligations"
+          ],
+          "type": "object"
+         },
+         "name": {
+          "const": "SectionSummary"
+         }
+        },
+        "required": [
+         "name",
+         "args"
+        ],
+        "type": "object"
+       }
+      ]
+     },
+     "minItems": 1,
+     "type": "array"
+    }
+   },
+   "required": [
+    "content",
+    "tool_calls"
+   ],
+   "type": "object"
+  },
+  "system": "# Section summariser agent\nYou are given one section: its number, title and text. Return a `SectionSummary` as a single JSON object, with no text before or after it:\n\n- `number`: the section number, for example `\"4\"`.\n- `title`: the section title.\n- `summary`: one to three sentences on what the section says.\n- `obligations`: every obligation in the section. Use an empty list if there are none.\n\nEach `Obligation` has four fields:\n\n- `requirement`: what the firm must do, in plain English.\n- `paragraph`: the paragraph number it comes from, for example `\"4.2\"`.\n- `deadline`: the deadline exactly as written in the document, or `null` if there is none.\n- `evidence`: a quote copied word for word from that paragraph, at most 30 words.\n\nFor example:\n\n```json\n{\n  \"number\": \"7\",\n  \"title\": \"Incident reporting\",\n  \"summary\": \"Firms must report major incidents to the regulator quickly.\",\n  \"obligations\": [\n    {\n      \"requirement\": \"Report major incidents to the regulator\",\n      \"paragraph\": \"7.1\",\n      \"deadline\": \"within 4 hours\",\n      \"evidence\": \"Firms must notify the FSOA of a major incident within 4 hours\"\n    }\n  ]\n}\n```\n\n### What counts as an obligation\n\nAn obligation is something a firm must do. Look for \"must\", \"shall\", \"is required to\" and \"will need to\".\n\n- Do not list recommendations or guidance (\"should\", \"may\", \"we expect\") as obligations.\n- Do not list things only the regulator does.\n- If one paragraph sets several separate requirements, list each one separately.\n- If the section changes a requirement or deadline from an earlier section, say so in the summary.\n\n### Rules for accuracy\n\n- Copy `evidence` word for word. Never paraphrase, correct or shorten the wording inside a quote.\n- Copy `deadline` exactly as written. Do not convert dates or durations, for example \"within 4 hours\" stays as it is.\n- Use only the section you were given. Do not use outside knowledge of the regulation.\n- Do not guess. If a paragraph is ambiguous, say so in the summary rather than inventing a requirement.\n\nThese fields are checked automatically against the source text afterwards. A quote that isn't word for word, or a\ndeadline that isn't in the section, will be flagged.\n"
+ },
+ "request_sha256": "62c0863f02c533ed158b900d1a59660f2d7a6f0b0dc19e98def245f2eed35fea",
+ "response": {
+  "content": "",
+  "model_reported": "claude-sonnet-5-5",
+  "tool_calls": [
+   {
+    "args": {
+     "number": "1",
+     "obligations": [],
+     "summary": "This section introduces the policy statement setting final rules and guidance on operational resilience and third-party technology risk for FSOA-authorised firms, following CP25/11. It explains the rationale, states the objective and says the rules take effect on 1 January 2027, with deadlines in later sections and transitional arrangements in section 9. It sets no direct obligations on firms; the expectation of board-level ownership is guidance, and the review is by the regulator.",
+     "title": "Introduction and purpose"
+    },
+    "name": "SectionSummary"
+   }
+  ],
+  "usage": {
+   "cache_creation_input_tokens": 2892,
+   "cache_read_input_tokens": 0,
+   "input_tokens": 2,
+   "output_tokens": 264
+  }
+ }
+}

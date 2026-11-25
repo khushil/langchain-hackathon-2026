@@ -36,7 +36,7 @@ class RealExport:
 
 
 def make_export(path: Path) -> RealExport:
-    """Start the application on replay, start a brief on section 7 and export its pages."""
+    """Start the application on replay, start a brief on the whole document and export its pages."""
     captured: dict[str, TestClient] = {}
 
     def prepare(client: TestClient) -> str:

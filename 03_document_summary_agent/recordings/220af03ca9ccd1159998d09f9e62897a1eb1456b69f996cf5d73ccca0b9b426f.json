@@ -1,6 +1,6 @@
 {
  "meta": {
-  "duration_s": 3.657,
+  "duration_s": 3.95,
   "init": {
    "agents": [],
    "apiKeySource": "none",
@@ -14,7 +14,7 @@
     "StructuredOutput"
    ]
   },
-  "recorded_at": "2026-11-24T22:22:46.744793+00:00"
+  "recorded_at": "2026-11-25T01:05:47.312953+00:00"
  },
  "request": {
   "effort": "medium",
@@ -420,7 +420,7 @@
    }
   ],
   "usage": {
-   "cache_creation_input_tokens": 7569,
+   "cache_creation_input_tokens": 7567,
    "cache_read_input_tokens": 0,
    "input_tokens": 2,
    "output_tokens": 134

@@ -1,6 +1,6 @@
 {
  "meta": {
-  "duration_s": 8.553,
+  "duration_s": 3.884,
   "init": {
    "agents": [],
    "apiKeySource": "none",
@@ -14,14 +14,14 @@
     "StructuredOutput"
    ]
   },
-  "recorded_at": "2026-11-24T22:23:29.607543+00:00"
+  "recorded_at": "2026-11-25T01:06:28.567009+00:00"
  },
  "request": {
   "effort": "medium",
   "format": 2,
   "messages": [
    {
-    "content": "Summarise ONE section of a regulatory document and extract its obligations. Analysis only: do not create or edit files. Return a SectionSummary with the section number, title, a short summary, and every obligation in the section (who must do what, by when, and any thresholds or conditions). Treat 'must' as a binding obligation and 'should'/'we expect' as guidance, and label each one.\n\nDocument: Policy Statement PS26/4: Operational resilience and third-party technology risk\nSection number: 6\nSection title: Third-party technology providers\nFull text:\n6.1 Firms must maintain a register of all material third-party providers by 31 March 2027. The register must record, for each provider, the services it supports, the data it holds, its location, and the date the contract expires.\n\n6.2 Firms must notify the FSOA at least 60 days before entering into a new arrangement with a material third-party provider, or materially changing an existing one.\n\n6.3 Contracts with material third-party providers must give the firm and the FSOA rights of access and audit, require the provider to report incidents to the firm without undue delay, and set out how the service will be transferred or wound down if the arrangement ends.\n\n6.4 Firms must have a documented exit plan for each material third-party provider and must test each exit plan at least once every two years.\n\n6.5 Where a firm uses the same material third-party provider for more than one important business service, it must assess the concentration risk and explain to the board how it would manage the failure of that provider.\n\n6.6 Firms remain fully responsible for meeting their regulatory obligations when they outsource. Outsourcing a service does not transfer the firm's responsibility for it.",
+    "content": "Analyse only; do not create or edit files. Summarise this ONE section of the regulatory document \"Policy Statement PS26/4: Operational resilience and third-party technology risk\" (document ID PS26-4) and extract every obligation it contains. For each obligation include: the paragraph reference, who it applies to, what must be done, any deadline or time limit, and whether it is mandatory ('must') or guidance ('should'/expectation). Return a SectionSummary.\n\nSection number: 3\nSection title: Definitions\nSection text:\n3.1 An important business service is a service that a firm provides to an external end user, where disruption to the service could cause intolerable harm to consumers or risk to market integrity. Internal services, such as human resources or internal reporting, are not important business services on their own.\n\n3.2 An impact tolerance is the maximum tolerable level of disruption to an important business service, expressed as a maximum length of time and, where relevant, a maximum number of affected customers or transactions.\n\n3.3 A material third-party provider is a provider of technology services whose failure would cause the firm to breach an impact tolerance for one or more important business services.\n\n3.4 A major incident is an operational incident that has caused, or is likely to cause, a breach of an impact tolerance, or that affects more than 10% of the firm's customers.\n\n3.5 Business days are days other than weekends and public holidays in our jurisdiction.",
     "role": "user"
    }
   ],
@@ -397,93 +397,26 @@
   },
   "system": "# Section summariser agent\nYou are given one section: its number, title and text. Return a `SectionSummary` as a single JSON object, with no text before or after it:\n\n- `number`: the section number, for example `\"4\"`.\n- `title`: the section title.\n- `summary`: one to three sentences on what the section says.\n- `obligations`: every obligation in the section. Use an empty list if there are none.\n\nEach `Obligation` has four fields:\n\n- `requirement`: what the firm must do, in plain English.\n- `paragraph`: the paragraph number it comes from, for example `\"4.2\"`.\n- `deadline`: the deadline exactly as written in the document, or `null` if there is none.\n- `evidence`: a quote copied word for word from that paragraph, at most 30 words.\n\nFor example:\n\n```json\n{\n  \"number\": \"7\",\n  \"title\": \"Incident reporting\",\n  \"summary\": \"Firms must report major incidents to the regulator quickly.\",\n  \"obligations\": [\n    {\n      \"requirement\": \"Report major incidents to the regulator\",\n      \"paragraph\": \"7.1\",\n      \"deadline\": \"within 4 hours\",\n      \"evidence\": \"Firms must notify the FSOA of a major incident within 4 hours\"\n    }\n  ]\n}\n```\n\n### What counts as an obligation\n\nAn obligation is something a firm must do. Look for \"must\", \"shall\", \"is required to\" and \"will need to\".\n\n- Do not list recommendations or guidance (\"should\", \"may\", \"we expect\") as obligations.\n- Do not list things only the regulator does.\n- If one paragraph sets several separate requirements, list each one separately.\n- If the section changes a requirement or deadline from an earlier section, say so in the summary.\n\n### Rules for accuracy\n\n- Copy `evidence` word for word. Never paraphrase, correct or shorten the wording inside a quote.\n- Copy `deadline` exactly as written. Do not convert dates or durations, for example \"within 4 hours\" stays as it is.\n- Use only the section you were given. Do not use outside knowledge of the regulation.\n- Do not guess. If a paragraph is ambiguous, say so in the summary rather than inventing a requirement.\n\nThese fields are checked automatically against the source text afterwards. A quote that isn't word for word, or a\ndeadline that isn't in the section, will be flagged.\n"
  },
- "request_sha256": "4e4663e82dccadb6c711f8a6e64c5131b7a2d55cbcad6c3b52f3615cca94bd3b",
+ "request_sha256": "f61fa42a877a5780d3dea88890f5391f5cb08251f8e6948608d0264bfe1e9f4a",
  "response": {
-  "content": "{\"number\":\"6\",\"title\":\"Third-party technology providers\",\"summary\":\"Section 6 requires firms to keep a register of material third-party providers, notify the FSOA before new or materially changed arrangements, include specified terms in contracts, and maintain and test exit plans. Firms must also assess concentration risk where one provider supports several important business services, and they stay fully responsible when they outsource. All items are binding ('must'); the section contains no 'should' or 'we expect' guidance.\",\"obligations\":[]}",
+  "content": "{\"number\":\"3\",\"title\":\"Definitions\",\"summary\":\"Section 3 defines key terms: important business service, impact tolerance, material third-party provider, major incident and business days. It is purely definitional and sets no firm obligations of its own; no 'must' or 'should' requirements appear.\",\"obligations\":[]}",
   "model_reported": "claude-sonnet-5-5",
   "tool_calls": [
    {
     "args": {
-     "number": "6",
-     "obligations": [
-      {
-       "deadline": "by 31 March 2027",
-       "evidence": "Firms must maintain a register of all material third-party providers by 31 March 2027.",
-       "paragraph": "6.1",
-       "requirement": "BINDING: Maintain a register of all material third-party providers"
-      },
-      {
-       "deadline": null,
-       "evidence": "The register must record, for each provider, the services it supports, the data it holds, its location, and the date the contract expires.",
-       "paragraph": "6.1",
-       "requirement": "BINDING: For each provider, the register must record the services it supports, the data it holds, its location, and the contract expiry date"
-      },
-      {
-       "deadline": "at least 60 days before",
-       "evidence": "Firms must notify the FSOA at least 60 days before entering into a new arrangement with a material third-party provider",
-       "paragraph": "6.2",
-       "requirement": "BINDING: Notify the FSOA before entering into a new arrangement with a material third-party provider, or materially changing an existing one"
-      },
-      {
-       "deadline": null,
-       "evidence": "Contracts with material third-party providers must give the firm and the FSOA rights of access and audit",
-       "paragraph": "6.3",
-       "requirement": "BINDING: Ensure contracts with material third-party providers give the firm and the FSOA rights of access and audit"
-      },
-      {
-       "deadline": "without undue delay",
-       "evidence": "require the provider to report incidents to the firm without undue delay",
-       "paragraph": "6.3",
-       "requirement": "BINDING: Ensure contracts require the provider to report incidents to the firm without undue delay"
-      },
-      {
-       "deadline": null,
-       "evidence": "set out how the service will be transferred or wound down if the arrangement ends",
-       "paragraph": "6.3",
-       "requirement": "BINDING: Ensure contracts set out how the service will be transferred or wound down if the arrangement ends"
-      },
-      {
-       "deadline": null,
-       "evidence": "Firms must have a documented exit plan for each material third-party provider",
-       "paragraph": "6.4",
-       "requirement": "BINDING: Have a documented exit plan for each material third-party provider"
-      },
-      {
-       "deadline": "at least once every two years",
-       "evidence": "must test each exit plan at least once every two years",
-       "paragraph": "6.4",
-       "requirement": "BINDING: Test each exit plan"
-      },
-      {
-       "deadline": null,
-       "evidence": "Where a firm uses the same material third-party provider for more than one important business service, it must assess the concentration risk",
-       "paragraph": "6.5",
-       "requirement": "BINDING: Where one material provider serves more than one important business service, assess the concentration risk"
-      },
-      {
-       "deadline": null,
-       "evidence": "explain to the board how it would manage the failure of that provider",
-       "paragraph": "6.5",
-       "requirement": "BINDING: In that case, explain to the board how the firm would manage the failure of that provider"
-      },
-      {
-       "deadline": null,
-       "evidence": "Firms remain fully responsible for meeting their regulatory obligations when they outsource.",
-       "paragraph": "6.6",
-       "requirement": "BINDING (stated as a continuing responsibility): Firms remain fully responsible for meeting their regulatory obligations when they outsource"
-      }
-     ],
-     "summary": "Section 6 requires firms to keep a register of material third-party providers, notify the FSOA before new or materially changed arrangements, include specified terms in contracts, and maintain and test exit plans. Firms must also assess concentration risk where one provider supports several important business services, and they stay fully responsible when they outsource. All items are binding ('must'); the section contains no 'should' or 'we expect' guidance.",
-     "title": "Third-party technology providers"
+     "number": "3",
+     "obligations": [],
+     "summary": "Section 3 defines key terms: important business service (externally provided service whose disruption could cause intolerable harm or market integrity risk; internal services excluded on their own), impact tolerance (maximum tolerable disruption, as time and where relevant customers or transactions), material third-party provider (technology provider whose failure would breach an impact tolerance), major incident (breach or likely breach of an impact tolerance, or affecting more than 10% of customers) and business days (excluding weekends and public holidays). It is purely definitional and sets no obligations of its own; no 'must', 'shall' or 'should' requirements appear.",
+     "title": "Definitions"
     },
     "name": "SectionSummary"
    }
   ],
   "usage": {
-   "cache_creation_input_tokens": 7488,
+   "cache_creation_input_tokens": 7411,
    "cache_read_input_tokens": 0,
    "input_tokens": 2,
-   "output_tokens": 1390
+   "output_tokens": 415
   }
  }
 }

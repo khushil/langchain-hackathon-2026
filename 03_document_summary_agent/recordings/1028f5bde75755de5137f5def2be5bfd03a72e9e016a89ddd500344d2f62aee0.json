@@ -1,0 +1,151 @@
+{
+ "meta": {
+  "duration_s": 2.617,
+  "init": {
+   "agents": [],
+   "apiKeySource": "none",
+   "claude_code_version": "2.1.302",
+   "mcp_servers": [],
+   "model": "claude-sonnet-5-5",
+   "plugins": [],
+   "skills": [],
+   "slash_commands": [],
+   "tools": [
+    "StructuredOutput"
+   ]
+  },
+  "recorded_at": "2026-11-25T01:07:37.843597+00:00"
+ },
+ "request": {
+  "effort": "medium",
+  "format": 2,
+  "messages": [
+   {
+    "content": "Number: 3\nTitle: Definitions\n\nText:\n3.1 An important business service is a service that a firm provides to an external end user, where disruption to the service could cause intolerable harm to consumers or risk to market integrity. Internal services, such as human resources or internal reporting, are not important business services on their own.\n\n3.2 An impact tolerance is the maximum tolerable level of disruption to an important business service, expressed as a maximum length of time and, where relevant, a maximum number of affected customers or transactions.\n\n3.3 A material third-party provider is a provider of technology services whose failure would cause the firm to breach an impact tolerance for one or more important business services.\n\n3.4 A major incident is an operational incident that has caused, or is likely to cause, a breach of an impact tolerance, or that affects more than 10% of the firm's customers.\n\n3.5 Business days are days other than weekends and public holidays in our jurisdiction.",
+    "role": "user"
+   }
+  ],
+  "model": "claude-sonnet-5-5",
+  "schema": {
+   "additionalProperties": false,
+   "properties": {
+    "content": {
+     "description": "Text of the reply; may be empty.",
+     "type": "string"
+    },
+    "tool_calls": {
+     "items": {
+      "anyOf": [
+       {
+        "additionalProperties": false,
+        "description": "A summary of one section of the document.",
+        "properties": {
+         "args": {
+          "properties": {
+           "number": {
+            "description": "The section number, for example '4'",
+            "type": "string"
+           },
+           "obligations": {
+            "description": "Every obligation in the section; empty if there are none",
+            "items": {
+             "description": "Something a firm must do under the document.",
+             "properties": {
+              "deadline": {
+               "anyOf": [
+                {
+                 "type": "string"
+                },
+                {
+                 "type": "null"
+                }
+               ],
+               "description": "The deadline exactly as written in the document, or null if none"
+              },
+              "evidence": {
+               "description": "A quote copied word for word from that paragraph, at most 30 words",
+               "type": "string"
+              },
+              "paragraph": {
+               "description": "The paragraph number it comes from, for example '4.2'",
+               "type": "string"
+              },
+              "requirement": {
+               "description": "What the firm must do, in plain English",
+               "type": "string"
+              }
+             },
+             "required": [
+              "requirement",
+              "paragraph",
+              "deadline",
+              "evidence"
+             ],
+             "type": "object"
+            },
+            "type": "array"
+           },
+           "summary": {
+            "description": "One to three sentences on what the section says",
+            "type": "string"
+           },
+           "title": {
+            "description": "The section title",
+            "type": "string"
+           }
+          },
+          "required": [
+           "number",
+           "title",
+           "summary",
+           "obligations"
+          ],
+          "type": "object"
+         },
+         "name": {
+          "const": "SectionSummary"
+         }
+        },
+        "required": [
+         "name",
+         "args"
+        ],
+        "type": "object"
+       }
+      ]
+     },
+     "minItems": 1,
+     "type": "array"
+    }
+   },
+   "required": [
+    "content",
+    "tool_calls"
+   ],
+   "type": "object"
+  },
+  "system": "# Section summariser agent\nYou are given one section: its number, title and text. Return a `SectionSummary` as a single JSON object, with no text before or after it:\n\n- `number`: the section number, for example `\"4\"`.\n- `title`: the section title.\n- `summary`: one to three sentences on what the section says.\n- `obligations`: every obligation in the section. Use an empty list if there are none.\n\nEach `Obligation` has four fields:\n\n- `requirement`: what the firm must do, in plain English.\n- `paragraph`: the paragraph number it comes from, for example `\"4.2\"`.\n- `deadline`: the deadline exactly as written in the document, or `null` if there is none.\n- `evidence`: a quote copied word for word from that paragraph, at most 30 words.\n\nFor example:\n\n```json\n{\n  \"number\": \"7\",\n  \"title\": \"Incident reporting\",\n  \"summary\": \"Firms must report major incidents to the regulator quickly.\",\n  \"obligations\": [\n    {\n      \"requirement\": \"Report major incidents to the regulator\",\n      \"paragraph\": \"7.1\",\n      \"deadline\": \"within 4 hours\",\n      \"evidence\": \"Firms must notify the FSOA of a major incident within 4 hours\"\n    }\n  ]\n}\n```\n\n### What counts as an obligation\n\nAn obligation is something a firm must do. Look for \"must\", \"shall\", \"is required to\" and \"will need to\".\n\n- Do not list recommendations or guidance (\"should\", \"may\", \"we expect\") as obligations.\n- Do not list things only the regulator does.\n- If one paragraph sets several separate requirements, list each one separately.\n- If the section changes a requirement or deadline from an earlier section, say so in the summary.\n\n### Rules for accuracy\n\n- Copy `evidence` word for word. Never paraphrase, correct or shorten the wording inside a quote.\n- Copy `deadline` exactly as written. Do not convert dates or durations, for example \"within 4 hours\" stays as it is.\n- Use only the section you were given. Do not use outside knowledge of the regulation.\n- Do not guess. If a paragraph is ambiguous, say so in the summary rather than inventing a requirement.\n\nThese fields are checked automatically against the source text afterwards. A quote that isn't word for word, or a\ndeadline that isn't in the section, will be flagged.\n"
+ },
+ "request_sha256": "1028f5bde75755de5137f5def2be5bfd03a72e9e016a89ddd500344d2f62aee0",
+ "response": {
+  "content": "",
+  "model_reported": "claude-sonnet-5-5",
+  "tool_calls": [
+   {
+    "args": {
+     "number": "3",
+     "obligations": [],
+     "summary": "This section defines key terms: important business service, impact tolerance, material third-party provider, major incident and business days. It is purely definitional and sets no direct requirements on firms.",
+     "title": "Definitions"
+    },
+    "name": "SectionSummary"
+   }
+  ],
+  "usage": {
+   "cache_creation_input_tokens": 2758,
+   "cache_read_input_tokens": 0,
+   "input_tokens": 2,
+   "output_tokens": 171
+  }
+ }
+}

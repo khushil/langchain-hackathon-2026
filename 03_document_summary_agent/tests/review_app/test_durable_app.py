@@ -18,7 +18,7 @@ from review_app import seed as seed_module
 from review_app.context import PREFIX, Services
 from review_app.drafts import DraftStore
 from review_app.plugin import build_plugin
-from review_app.seed import DECISIONS, MARKER_FILE, PROFILE, REVIEWER, SECRET
+from review_app.seed import DECISIONS, MARKER_FILE, PROFILE, QUESTIONS, REVIEWER, SECRET
 
 SEED_NAME = "compliance-brief"
 
@@ -61,6 +61,18 @@ def start(folder: Path, *, seed: bool = True) -> Served:
     return Served(services, client)
 
 
+def settle_questions(served: Served, thread: str, digest: str) -> None:
+    """Answer or accept each open question of the brief through the routes, as the seed does."""
+    ids = {q.about.anchor: q.id for q in served.runs.review_request(thread).open_questions}
+    for question in QUESTIONS:
+        body = {"brief_digest": digest, "question_id": ids[question.paragraph]}
+        if question.assumption:
+            route, body = "assume", {**body, "words": question.assumption}
+        else:
+            route, body = "answer", {**body, "answer": question.answer, "reason": question.reason}
+        assert served.client.post(f"{PREFIX}/runs/{thread}/{route}", data=body).status_code == 303
+
+
 def text_of(html: str) -> str:
     return " ".join(re.sub(r"<[^>]+>", " ", html).split())
 
@@ -93,7 +105,7 @@ def decide_first_fact(served: Served) -> str:
             "brief_digest": digest,
             "fact_id": first.fact_id,
             "outcome": "accept",
-            "reason": "I read paragraph 7.1 and the quoted words are in it.",
+            "reason": "I read the paragraph and the quoted words are in it.",
         },
     )
     assert reply.status_code == 303
@@ -159,7 +171,8 @@ def test_a_seeded_folder_holds_a_brief_waiting_and_a_brief_signed_newest_first(f
     assert [served.runs.status(t) for t in served.runs.list_runs()] == ["signed", "awaiting_review"]
     waiting, signed = served.waiting_and_signed()
     decided = served.runs.result(signed)["decisions"]
-    assert len(decided) == len(DECISIONS) + len(PROFILE.fact_ids)
+    answered = sum(1 for q in QUESTIONS if q.answer)
+    assert len(decided) == len(DECISIONS) + len(PROFILE.fact_ids) + answered
     served.stop()
 
 
@@ -190,6 +203,7 @@ def test_a_brief_signed_after_a_restart_is_still_signed_after_the_next_and_its_d
                 "reason": decision.reason,
             },
         )
+    settle_questions(second, waiting, request.brief_digest)
     signing = second.client.post(
         f"{PREFIX}/runs/{waiting}/sign",
         data={"brief_digest": request.brief_digest, "outcome": "signed"},

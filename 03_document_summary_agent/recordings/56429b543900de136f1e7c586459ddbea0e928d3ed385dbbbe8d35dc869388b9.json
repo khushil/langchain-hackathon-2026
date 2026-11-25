@@ -1,0 +1,218 @@
+{
+ "meta": {
+  "duration_s": 6.993,
+  "init": {
+   "agents": [],
+   "apiKeySource": "none",
+   "claude_code_version": "2.1.302",
+   "mcp_servers": [],
+   "model": "claude-sonnet-5-5",
+   "plugins": [],
+   "skills": [],
+   "slash_commands": [],
+   "tools": [
+    "StructuredOutput"
+   ]
+  },
+  "recorded_at": "2026-11-25T01:07:41.273180+00:00"
+ },
+ "request": {
+  "effort": "medium",
+  "format": 2,
+  "messages": [
+   {
+    "content": "Number: 6\nTitle: Third-party technology providers\n\nText:\n6.1 Firms must maintain a register of all material third-party providers by 31 March 2027. The register must record, for each provider, the services it supports, the data it holds, its location, and the date the contract expires.\n\n6.2 Firms must notify the FSOA at least 60 days before entering into a new arrangement with a material third-party provider, or materially changing an existing one.\n\n6.3 Contracts with material third-party providers must give the firm and the FSOA rights of access and audit, require the provider to report incidents to the firm without undue delay, and set out how the service will be transferred or wound down if the arrangement ends.\n\n6.4 Firms must have a documented exit plan for each material third-party provider and must test each exit plan at least once every two years.\n\n6.5 Where a firm uses the same material third-party provider for more than one important business service, it must assess the concentration risk and explain to the board how it would manage the failure of that provider.\n\n6.6 Firms remain fully responsible for meeting their regulatory obligations when they outsource. Outsourcing a service does not transfer the firm's responsibility for it.",
+    "role": "user"
+   }
+  ],
+  "model": "claude-sonnet-5-5",
+  "schema": {
+   "additionalProperties": false,
+   "properties": {
+    "content": {
+     "description": "Text of the reply; may be empty.",
+     "type": "string"
+    },
+    "tool_calls": {
+     "items": {
+      "anyOf": [
+       {
+        "additionalProperties": false,
+        "description": "A summary of one section of the document.",
+        "properties": {
+         "args": {
+          "properties": {
+           "number": {
+            "description": "The section number, for example '4'",
+            "type": "string"
+           },
+           "obligations": {
+            "description": "Every obligation in the section; empty if there are none",
+            "items": {
+             "description": "Something a firm must do under the document.",
+             "properties": {
+              "deadline": {
+               "anyOf": [
+                {
+                 "type": "string"
+                },
+                {
+                 "type": "null"
+                }
+               ],
+               "description": "The deadline exactly as written in the document, or null if none"
+              },
+              "evidence": {
+               "description": "A quote copied word for word from that paragraph, at most 30 words",
+               "type": "string"
+              },
+              "paragraph": {
+               "description": "The paragraph number it comes from, for example '4.2'",
+               "type": "string"
+              },
+              "requirement": {
+               "description": "What the firm must do, in plain English",
+               "type": "string"
+              }
+             },
+             "required": [
+              "requirement",
+              "paragraph",
+              "deadline",
+              "evidence"
+             ],
+             "type": "object"
+            },
+            "type": "array"
+           },
+           "summary": {
+            "description": "One to three sentences on what the section says",
+            "type": "string"
+           },
+           "title": {
+            "description": "The section title",
+            "type": "string"
+           }
+          },
+          "required": [
+           "number",
+           "title",
+           "summary",
+           "obligations"
+          ],
+          "type": "object"
+         },
+         "name": {
+          "const": "SectionSummary"
+         }
+        },
+        "required": [
+         "name",
+         "args"
+        ],
+        "type": "object"
+       }
+      ]
+     },
+     "minItems": 1,
+     "type": "array"
+    }
+   },
+   "required": [
+    "content",
+    "tool_calls"
+   ],
+   "type": "object"
+  },
+  "system": "# Section summariser agent\nYou are given one section: its number, title and text. Return a `SectionSummary` as a single JSON object, with no text before or after it:\n\n- `number`: the section number, for example `\"4\"`.\n- `title`: the section title.\n- `summary`: one to three sentences on what the section says.\n- `obligations`: every obligation in the section. Use an empty list if there are none.\n\nEach `Obligation` has four fields:\n\n- `requirement`: what the firm must do, in plain English.\n- `paragraph`: the paragraph number it comes from, for example `\"4.2\"`.\n- `deadline`: the deadline exactly as written in the document, or `null` if there is none.\n- `evidence`: a quote copied word for word from that paragraph, at most 30 words.\n\nFor example:\n\n```json\n{\n  \"number\": \"7\",\n  \"title\": \"Incident reporting\",\n  \"summary\": \"Firms must report major incidents to the regulator quickly.\",\n  \"obligations\": [\n    {\n      \"requirement\": \"Report major incidents to the regulator\",\n      \"paragraph\": \"7.1\",\n      \"deadline\": \"within 4 hours\",\n      \"evidence\": \"Firms must notify the FSOA of a major incident within 4 hours\"\n    }\n  ]\n}\n```\n\n### What counts as an obligation\n\nAn obligation is something a firm must do. Look for \"must\", \"shall\", \"is required to\" and \"will need to\".\n\n- Do not list recommendations or guidance (\"should\", \"may\", \"we expect\") as obligations.\n- Do not list things only the regulator does.\n- If one paragraph sets several separate requirements, list each one separately.\n- If the section changes a requirement or deadline from an earlier section, say so in the summary.\n\n### Rules for accuracy\n\n- Copy `evidence` word for word. Never paraphrase, correct or shorten the wording inside a quote.\n- Copy `deadline` exactly as written. Do not convert dates or durations, for example \"within 4 hours\" stays as it is.\n- Use only the section you were given. Do not use outside knowledge of the regulation.\n- Do not guess. If a paragraph is ambiguous, say so in the summary rather than inventing a requirement.\n\nThese fields are checked automatically against the source text afterwards. A quote that isn't word for word, or a\ndeadline that isn't in the section, will be flagged.\n"
+ },
+ "request_sha256": "56429b543900de136f1e7c586459ddbea0e928d3ed385dbbbe8d35dc869388b9",
+ "response": {
+  "content": "",
+  "model_reported": "claude-sonnet-5-5",
+  "tool_calls": [
+   {
+    "args": {
+     "number": "6",
+     "obligations": [
+      {
+       "deadline": "by 31 March 2027",
+       "evidence": "Firms must maintain a register of all material third-party providers by 31 March 2027.",
+       "paragraph": "6.1",
+       "requirement": "Maintain a register of all material third-party providers"
+      },
+      {
+       "deadline": null,
+       "evidence": "The register must record, for each provider, the services it supports, the data it holds, its location, and the date the contract expires.",
+       "paragraph": "6.1",
+       "requirement": "Record in the register, for each provider, the services it supports, the data it holds, its location, and the contract expiry date"
+      },
+      {
+       "deadline": "at least 60 days before",
+       "evidence": "Firms must notify the FSOA at least 60 days before entering into a new arrangement with a material third-party provider, or materially changing an existing one.",
+       "paragraph": "6.2",
+       "requirement": "Notify the FSOA before entering into a new arrangement with a material third-party provider, or materially changing an existing one"
+      },
+      {
+       "deadline": null,
+       "evidence": "Contracts with material third-party providers must give the firm and the FSOA rights of access and audit",
+       "paragraph": "6.3",
+       "requirement": "Ensure contracts with material third-party providers give the firm and the FSOA rights of access and audit"
+      },
+      {
+       "deadline": "without undue delay",
+       "evidence": "require the provider to report incidents to the firm without undue delay",
+       "paragraph": "6.3",
+       "requirement": "Ensure contracts require the provider to report incidents to the firm without undue delay"
+      },
+      {
+       "deadline": null,
+       "evidence": "set out how the service will be transferred or wound down if the arrangement ends",
+       "paragraph": "6.3",
+       "requirement": "Ensure contracts set out how the service will be transferred or wound down if the arrangement ends"
+      },
+      {
+       "deadline": null,
+       "evidence": "Firms must have a documented exit plan for each material third-party provider",
+       "paragraph": "6.4",
+       "requirement": "Have a documented exit plan for each material third-party provider"
+      },
+      {
+       "deadline": "at least once every two years",
+       "evidence": "must test each exit plan at least once every two years",
+       "paragraph": "6.4",
+       "requirement": "Test each exit plan at least once every two years"
+      },
+      {
+       "deadline": null,
+       "evidence": "it must assess the concentration risk and explain to the board how it would manage the failure of that provider",
+       "paragraph": "6.5",
+       "requirement": "Assess concentration risk where the same material third-party provider supports more than one important business service"
+      },
+      {
+       "deadline": null,
+       "evidence": "it must assess the concentration risk and explain to the board how it would manage the failure of that provider",
+       "paragraph": "6.5",
+       "requirement": "Explain to the board how the firm would manage the failure of that provider"
+      },
+      {
+       "deadline": null,
+       "evidence": "Firms remain fully responsible for meeting their regulatory obligations when they outsource.",
+       "paragraph": "6.6",
+       "requirement": "Remain fully responsible for meeting regulatory obligations when outsourcing"
+      }
+     ],
+     "summary": "Firms must keep a register of material third-party providers, notify the FSOA before new or materially changed arrangements, and include specified terms in contracts. They must have and test exit plans, assess concentration risk where one provider supports several important business services, and remain fully responsible when outsourcing.",
+     "title": "Third-party technology providers"
+    },
+    "name": "SectionSummary"
+   }
+  ],
+  "usage": {
+   "cache_creation_input_tokens": 932,
+   "cache_read_input_tokens": 1900,
+   "input_tokens": 2,
+   "output_tokens": 1142
+  }
+ }
+}

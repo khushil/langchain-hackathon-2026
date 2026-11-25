@@ -1,10 +1,11 @@
 """The starting work of the compliance brief: one brief waiting for a reviewer and one signed.
 
-Both briefs are runs of the real workflow on section 7 of PS26/4 for the first firm, answered
-from the recorded model calls. The signed brief is taken through the application's own review
-routes by a fictional reviewer, so every decision and the sign-off are built by the review route
-from the wording in ``PROFILE`` (one decision on the firm profile) and ``DECISIONS`` (one for each
-fact of the document) and nowhere else. Nothing here decides for anyone.
+Both briefs are runs of the real workflow on all ten sections of PS26/4 for the first firm,
+answered from the recorded model calls. The signed brief is taken through the application's own
+review routes by a fictional reviewer, so every decision, answer, accepted assumption and the
+sign-off are built by the review route from the wording in ``PROFILE`` (one decision on the firm
+profile), ``DECISIONS`` (one for each fact of the document) and ``QUESTIONS`` (one for each open
+question) and nowhere else. Nothing here decides for anyone.
 """
 
 from __future__ import annotations
@@ -14,7 +15,7 @@ import logging
 import os
 import re
 import time
-from dataclasses import asdict, dataclass, replace
+from dataclasses import asdict, replace
 from pathlib import Path
 
 from starlette.testclient import TestClient
@@ -25,11 +26,16 @@ from fsi_common.app.session import SessionCodec
 from fsi_common.ids import digest_bytes, digest_json
 from fsi_common.records import Person
 from review_app.context import PREFIX, Services, runs_of
+from review_app.seed_fixture import (
+    DECISIONS,
+    PROFILE,
+    QUESTIONS,
+)
 from utils.models import recordings_dir
 
 DOCUMENT_ID = "PS26-4"
 FIRM_ID = "FIRM-001"
-SECTIONS = ("7",)
+SECTIONS = ("1", "2", "3", "4", "5", "6", "7", "8", "9", "10")
 REVIEWER = Person(name="Dana Whitfield", role="Head of Compliance")
 SEED_DATE = "2026-11-24"
 """The date on every seeded decision, fixed so that starting twice gives the same records."""
@@ -40,109 +46,6 @@ MARKER_FILE = "seeded.json"
 
 WAIT_SECONDS = 180.0
 POLL_SECONDS = 0.1
-
-
-@dataclass(frozen=True)
-class SeedDecision:
-    """One decision of the fictional reviewer on one fact of the document, in her words.
-
-    ``paragraph`` and ``quote`` say which fact ``fact_id`` is, so that a new recording that words
-    a fact differently is reported by what changed and not only by an identifier.
-    """
-
-    fact_id: str
-    paragraph: str
-    quote: str
-    outcome: str
-    reason: str
-    amendment: str | None = None
-
-
-@dataclass(frozen=True)
-class SeedProfile:
-    """The reviewer's one decision on the firm profile, with the facts she was shown."""
-
-    fact_ids: tuple[str, ...]
-    outcome: str
-    reason: str
-    amendment: str | None = None
-
-
-PROFILE = SeedProfile(
-    fact_ids=(
-        "fact:3ea55dfec196c112",
-        "fact:5e3ea5fe0af13cf3",
-        "fact:33cda8305e9f57c6",
-        "fact:7678bf62b4d40a4b",
-        "fact:8960216a3540d0ec",
-        "fact:6493bf9915f4c712",
-        "fact:0b7489f43a5963d5",
-        "fact:98b11a93648d2406",
-        "fact:7531942445b6e556",
-        "fact:460ab6a8123c6350",
-        "fact:a6dd7d8a6886b739",
-        "fact:245c5a69de83b610",
-    ),
-    outcome="accept",
-    reason=(
-        "I read the profile against the firm table and the provider table. Harbour Mutual Bank, "
-        "its type, customers and assets, both providers with their services and contract end "
-        "dates, and the firm's own note on NimbusCloud all match the tables. The tables name no "
-        "operational resilience senior manager, so the profile is right to say none is "
-        "recorded; the firm has to fill that gap."
-    ),
-)
-"""The firm profile as the recorded brief cites it, and the one decision on all of it."""
-
-DECISIONS = (
-    SeedDecision(
-        "fact:be1caf14c1da80d4",
-        "para:7.1",
-        "Firms must submit an initial notification",
-        "accept",
-        "Paragraph 7.1 gives 4 hours from classifying the incident as major, and I read the "
-        "quoted words in the paragraph itself.",
-    ),
-    SeedDecision(
-        "fact:8dcce3936b557550",
-        "para:7.1",
-        "in any case no later than 24 hours",
-        "accept",
-        "Paragraph 7.1 also sets an outer limit of 24 hours after the incident is first "
-        "detected, as quoted.",
-    ),
-    SeedDecision(
-        "fact:98b628305fb9d4a4",
-        "para:7.2",
-        "Firms must submit an intermediate report",
-        "accept",
-        "Paragraph 7.2 gives 72 hours from the initial notification, as quoted.",
-    ),
-    SeedDecision(
-        "fact:80507750f54be85e",
-        "para:7.3",
-        "Firms must submit a final report",
-        "accept",
-        "Paragraph 7.3 gives 30 business days from the incident being resolved, as quoted.",
-    ),
-    SeedDecision(
-        "fact:ad8c659e73a33138",
-        "para:7.3",
-        "The final report must include",
-        "accept",
-        "Paragraph 7.3 also asks for a root-cause analysis and the lessons learned in the "
-        "final report.",
-    ),
-    SeedDecision(
-        "fact:5f2e1907bf090f40",
-        "para:7.4",
-        "the firm remains responsible for reporting it",
-        "accept",
-        "Paragraph 7.4 leaves the reporting with the firm when a third-party provider causes the "
-        "incident. I read the whole sentence, not only the quoted words.",
-    ),
-)
-"""The reviewer's decision on each fact of the document the recorded brief cites."""
 
 
 class _FailureCatcher(logging.Handler):
@@ -217,6 +120,7 @@ def seed_identity() -> str:
             "fixture": [DOCUMENT_ID, FIRM_ID, list(SECTIONS), SEED_DATE],
             "profile": asdict(PROFILE),
             "decisions": [asdict(d) for d in DECISIONS],
+            "questions": [asdict(q) for q in QUESTIONS],
             "recordings": recordings,
         }
     )
@@ -299,6 +203,24 @@ def _words_of(cited) -> str:
     return f'{fact.id} ({fact.subject.anchor}, "{fact.quote[:60]}")'
 
 
+def _question_problems(questions) -> list[str]:
+    """Say which open questions of the brief the seed has no answer for, and the reverse."""
+    anchors = [q.about.anchor for q in questions]
+    wanted = {q.paragraph for q in QUESTIONS}
+    new = [
+        f'{q.about.anchor} ("{q.question[:60]}")' for q in questions if q.about.anchor not in wanted
+    ]
+    gone = sorted(wanted - set(anchors))
+    problems = []
+    if len(set(anchors)) != len(anchors):
+        problems.append("the brief has two open questions about one paragraph")
+    if new:
+        problems.append(f"open questions on the brief with no answer in the seed: {'; '.join(new)}")
+    if gone:
+        problems.append(f"open questions in the seed that are not on the brief: {', '.join(gone)}")
+    return problems
+
+
 def _check_fixture(request) -> None:
     """Refuse a recorded brief the fixture was not written for, naming each fact that changed."""
     from review_app.profile import is_profile
@@ -324,14 +246,13 @@ def _check_fixture(request) -> None:
             problems.append(
                 f"{label} facts in the seed that are not on the brief: {', '.join(gone)}"
             )
+    problems += _question_problems(request.open_questions)
     if problems:
         raise SeedError(
             "The recorded brief is not the one the seed's decisions were written for. "
             + ". ".join(problems)
             + "."
         )
-    if request.open_questions:
-        raise SeedError("The recorded brief has open questions, which the seed does not answer.")
 
 
 def _review_and_sign(client: TestClient, services: Services, thread: str) -> None:
@@ -356,6 +277,29 @@ def _review_and_sign(client: TestClient, services: Services, thread: str) -> Non
         _expect_redirect(
             client.post(f"{run}/decide", data=body), f"the decision on {decision.fact_id}"
         )
+    ids = {q.about.anchor: q.id for q in request.open_questions}
+    for question in QUESTIONS:
+        if question.assumption is not None:
+            body = {
+                "brief_digest": digest,
+                "question_id": ids[question.paragraph],
+                "words": question.assumption,
+            }
+            _expect_redirect(
+                client.post(f"{run}/assume", data=body),
+                f"the assumption for the question about {question.paragraph}",
+            )
+        else:
+            body = {
+                "brief_digest": digest,
+                "question_id": ids[question.paragraph],
+                "answer": question.answer or "",
+                "reason": question.reason or "",
+            }
+            _expect_redirect(
+                client.post(f"{run}/answer", data=body),
+                f"the answer to the question about {question.paragraph}",
+            )
     sign = {"brief_digest": digest, "outcome": "signed"}
     _expect_redirect(client.post(f"{run}/sign", data=sign), "the sign-off")
 

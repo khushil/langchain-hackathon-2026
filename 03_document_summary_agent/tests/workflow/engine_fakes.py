@@ -98,20 +98,54 @@ def default_brief(task: str) -> BriefDraft:
     return BriefDraft(statements=statements)
 
 
+SECOND_READ = re.compile(r"^Second read of paragraph (\S+) alone", re.MULTILINE)
+
+
+def empty_second_read(section: SectionRead, number: str) -> SectionSummary:
+    """Read one paragraph a second time as a model that again finds no obligation in it."""
+    return SectionSummary(
+        number=section.number, title=section.title, summary="No duty.", obligations=[]
+    )
+
+
+def obliging_second_read(section: SectionRead, number: str) -> SectionSummary:
+    """Read one paragraph a second time as a model that now finds its obligation."""
+    paragraph = next(p for p in section.paragraphs if p.number == number)
+    found = DEADLINE.search(paragraph.text)
+    obligation = Obligation(
+        requirement=f"Duty from paragraph {number}",
+        paragraph=number,
+        deadline=found.group(0) if found else None,
+        evidence=" ".join(paragraph.text.split()[:12]),
+    )
+    return SectionSummary(
+        number=section.number, title=section.title, summary="One duty.", obligations=[obligation]
+    )
+
+
 class ScriptedModels:
-    """Gives a fake chat model for each role, and keeps what it was asked and how many at once."""
+    """Gives a fake chat model for each role, and keeps what it was asked and how many at once.
+
+    A second read of one paragraph is told apart by its request and answered by ``paragraph``;
+    ``rereads`` lists the paragraph numbers it was asked about, in the order the calls began.
+    """
 
     def __init__(
         self,
         *,
         section: Callable[[SectionRead], SectionSummary] = default_summary,
+        paragraph: Callable[[SectionRead, str], SectionSummary] = empty_second_read,
         brief: Callable[[str], BriefDraft] = default_brief,
         delay: float = 0.0,
+        reread_delay: Callable[[str], float] = lambda number: 0.0,
         fail_sections: tuple[str, ...] = (),
     ) -> None:
-        self.section, self.brief, self.delay = section, brief, delay
+        self.section, self.paragraph, self.brief, self.delay = section, paragraph, brief, delay
+        self.reread_delay = reread_delay
         self.fail_sections = fail_sections
         self.calls: list[tuple[str, str]] = []
+        self.rereads: list[str] = []
+        self.reread_tasks: list[str] = []
         self.current = self.peak = 0
         self._lock = threading.Lock()
 
@@ -129,6 +163,13 @@ class ScriptedModels:
                 time.sleep(self.delay)
             if role == "section":
                 number = re.search(r"^Number: (\S+)", text, re.MULTILINE).group(1)
+                again = SECOND_READ.search(text)
+                if again:
+                    with self._lock:
+                        self.rereads.append(again.group(1))
+                        self.reread_tasks.append(text)
+                    time.sleep(self.reread_delay(again.group(1)))
+                    return self.paragraph(DOCUMENT.section(number), again.group(1))
                 if number in self.fail_sections:
                     raise RuntimeError(f"the model call for section {number} failed")
                 return self.section(DOCUMENT.section(number))

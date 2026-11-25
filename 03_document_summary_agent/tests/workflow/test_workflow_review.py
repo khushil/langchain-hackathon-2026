@@ -376,3 +376,61 @@ def test_a_fact_whose_paragraph_is_not_held_is_a_workflow_error_and_not_a_review
     with pytest.raises(WorkflowError, match=r"para:7\.1") as caught:
         build_review_request(values, {})
     assert not isinstance(caught.value, ReviewMismatchError)
+
+
+def test_a_question_answered_on_the_screen_still_signs_after_another_run_answered_it_first():
+    harness = Harness(ScriptedModels(section=ghost_summary))
+    waiting = harness.start("7")
+    shown = harness.review_request(waiting).open_questions[0]
+    other = harness.start("7")
+    other_request = harness.review_request(other)
+    first = Decision.on(
+        other_request.open_questions[0],
+        outcome="answer",
+        answer="It is paragraph 7.1.",
+        reason="Read the paragraphs.",
+        reviewer=REVIEWER,
+        date=REVIEW_DATE,
+    )
+    signed_first = respond(other_request)
+    harness.resume(
+        other, signed_first.model_copy(update={"decisions": [*signed_first.decisions, first]})
+    )
+    assert shown.state == "open"
+    mine = Decision.on(
+        shown,
+        outcome="answer",
+        answer="It is paragraph 7.2.",
+        reason="Read them again.",
+        reviewer=REVIEWER,
+        date=REVIEW_DATE,
+    )
+    request = harness.review_request(waiting)
+    response = respond(request)
+    harness.resume(waiting, response.model_copy(update={"decisions": [*response.decisions, mine]}))
+    values = harness.values(waiting)
+    settled = OpenQuestion.model_validate(values["open_questions"][shown.id])
+    assert (settled.state, settled.decision_id) == ("answered", mine.id)
+    assert values["sign_off"]["outcome"] == "signed"
+
+
+def test_a_decision_on_a_question_as_no_run_showed_it_is_still_refused():
+    harness = Harness(ScriptedModels(section=ghost_summary))
+    config = harness.start("7")
+    request = harness.review_request(config)
+    question = request.open_questions[0]
+    unseen = OpenQuestion.model_validate(
+        {**question.to_json(), "state": "answered", "decision_id": "decision:0123456789abcdef"}
+    )
+    stale = Decision.on(
+        unseen,
+        outcome="answer",
+        answer="Paragraph 7.1.",
+        reason="Read it.",
+        reviewer=REVIEWER,
+        date=REVIEW_DATE,
+    )
+    response = respond(request)
+    response = response.model_copy(update={"decisions": [*response.decisions, stale]})
+    with pytest.raises(ReviewMismatchError, match="before it changed"):
+        validate_response(response, request, harness.values(config))

@@ -1,0 +1,206 @@
+{
+ "meta": {
+  "duration_s": 6.237,
+  "init": {
+   "agents": [],
+   "apiKeySource": "none",
+   "claude_code_version": "2.1.302",
+   "mcp_servers": [],
+   "model": "claude-sonnet-5-5",
+   "plugins": [],
+   "skills": [],
+   "slash_commands": [],
+   "tools": [
+    "StructuredOutput"
+   ]
+  },
+  "recorded_at": "2026-11-25T01:07:40.474088+00:00"
+ },
+ "request": {
+  "effort": "medium",
+  "format": 2,
+  "messages": [
+   {
+    "content": "Number: 5\nTitle: Mapping and scenario testing\n\nText:\n5.1 Firms must map the people, processes, technology, facilities and information that support each important business service, including those provided by third parties, by 31 March 2027.\n\n5.2 Mapping must be detailed enough to identify single points of failure and concentrations of risk, including where several important business services depend on the same third-party provider.\n\n5.3 Firms must test their ability to remain within impact tolerance under severe but plausible scenarios. The first round of scenario testing must be completed by 30 September 2027, and testing must be repeated at least once a year after that.\n\n5.4 Scenarios must include, at a minimum, the failure of a material third-party provider, a cyber attack that makes key systems unavailable, and the loss of a key site.\n\n5.5 Where testing shows that a firm cannot remain within an impact tolerance, the firm must record the vulnerability, set out the actions it will take to address it, and report the vulnerability to the board at its next meeting.",
+    "role": "user"
+   }
+  ],
+  "model": "claude-sonnet-5-5",
+  "schema": {
+   "additionalProperties": false,
+   "properties": {
+    "content": {
+     "description": "Text of the reply; may be empty.",
+     "type": "string"
+    },
+    "tool_calls": {
+     "items": {
+      "anyOf": [
+       {
+        "additionalProperties": false,
+        "description": "A summary of one section of the document.",
+        "properties": {
+         "args": {
+          "properties": {
+           "number": {
+            "description": "The section number, for example '4'",
+            "type": "string"
+           },
+           "obligations": {
+            "description": "Every obligation in the section; empty if there are none",
+            "items": {
+             "description": "Something a firm must do under the document.",
+             "properties": {
+              "deadline": {
+               "anyOf": [
+                {
+                 "type": "string"
+                },
+                {
+                 "type": "null"
+                }
+               ],
+               "description": "The deadline exactly as written in the document, or null if none"
+              },
+              "evidence": {
+               "description": "A quote copied word for word from that paragraph, at most 30 words",
+               "type": "string"
+              },
+              "paragraph": {
+               "description": "The paragraph number it comes from, for example '4.2'",
+               "type": "string"
+              },
+              "requirement": {
+               "description": "What the firm must do, in plain English",
+               "type": "string"
+              }
+             },
+             "required": [
+              "requirement",
+              "paragraph",
+              "deadline",
+              "evidence"
+             ],
+             "type": "object"
+            },
+            "type": "array"
+           },
+           "summary": {
+            "description": "One to three sentences on what the section says",
+            "type": "string"
+           },
+           "title": {
+            "description": "The section title",
+            "type": "string"
+           }
+          },
+          "required": [
+           "number",
+           "title",
+           "summary",
+           "obligations"
+          ],
+          "type": "object"
+         },
+         "name": {
+          "const": "SectionSummary"
+         }
+        },
+        "required": [
+         "name",
+         "args"
+        ],
+        "type": "object"
+       }
+      ]
+     },
+     "minItems": 1,
+     "type": "array"
+    }
+   },
+   "required": [
+    "content",
+    "tool_calls"
+   ],
+   "type": "object"
+  },
+  "system": "# Section summariser agent\nYou are given one section: its number, title and text. Return a `SectionSummary` as a single JSON object, with no text before or after it:\n\n- `number`: the section number, for example `\"4\"`.\n- `title`: the section title.\n- `summary`: one to three sentences on what the section says.\n- `obligations`: every obligation in the section. Use an empty list if there are none.\n\nEach `Obligation` has four fields:\n\n- `requirement`: what the firm must do, in plain English.\n- `paragraph`: the paragraph number it comes from, for example `\"4.2\"`.\n- `deadline`: the deadline exactly as written in the document, or `null` if there is none.\n- `evidence`: a quote copied word for word from that paragraph, at most 30 words.\n\nFor example:\n\n```json\n{\n  \"number\": \"7\",\n  \"title\": \"Incident reporting\",\n  \"summary\": \"Firms must report major incidents to the regulator quickly.\",\n  \"obligations\": [\n    {\n      \"requirement\": \"Report major incidents to the regulator\",\n      \"paragraph\": \"7.1\",\n      \"deadline\": \"within 4 hours\",\n      \"evidence\": \"Firms must notify the FSOA of a major incident within 4 hours\"\n    }\n  ]\n}\n```\n\n### What counts as an obligation\n\nAn obligation is something a firm must do. Look for \"must\", \"shall\", \"is required to\" and \"will need to\".\n\n- Do not list recommendations or guidance (\"should\", \"may\", \"we expect\") as obligations.\n- Do not list things only the regulator does.\n- If one paragraph sets several separate requirements, list each one separately.\n- If the section changes a requirement or deadline from an earlier section, say so in the summary.\n\n### Rules for accuracy\n\n- Copy `evidence` word for word. Never paraphrase, correct or shorten the wording inside a quote.\n- Copy `deadline` exactly as written. Do not convert dates or durations, for example \"within 4 hours\" stays as it is.\n- Use only the section you were given. Do not use outside knowledge of the regulation.\n- Do not guess. If a paragraph is ambiguous, say so in the summary rather than inventing a requirement.\n\nThese fields are checked automatically against the source text afterwards. A quote that isn't word for word, or a\ndeadline that isn't in the section, will be flagged.\n"
+ },
+ "request_sha256": "f1edda5b44d5f9bc00e2575c6fb927cac9c52b457468773453dc4d86bc8c4e1c",
+ "response": {
+  "content": "",
+  "model_reported": "claude-sonnet-5-5",
+  "tool_calls": [
+   {
+    "args": {
+     "number": "5",
+     "obligations": [
+      {
+       "deadline": "by 31 March 2027",
+       "evidence": "Firms must map the people, processes, technology, facilities and information that support each important business service, including those provided by third parties, by 31 March 2027.",
+       "paragraph": "5.1",
+       "requirement": "Map the people, processes, technology, facilities and information supporting each important business service, including those provided by third parties"
+      },
+      {
+       "deadline": null,
+       "evidence": "Mapping must be detailed enough to identify single points of failure and concentrations of risk",
+       "paragraph": "5.2",
+       "requirement": "Make mapping detailed enough to identify single points of failure and concentrations of risk, including where several important business services depend on the same third-party provider"
+      },
+      {
+       "deadline": null,
+       "evidence": "Firms must test their ability to remain within impact tolerance under severe but plausible scenarios.",
+       "paragraph": "5.3",
+       "requirement": "Test ability to remain within impact tolerance under severe but plausible scenarios"
+      },
+      {
+       "deadline": "by 30 September 2027",
+       "evidence": "The first round of scenario testing must be completed by 30 September 2027",
+       "paragraph": "5.3",
+       "requirement": "Complete the first round of scenario testing"
+      },
+      {
+       "deadline": "at least once a year after that",
+       "evidence": "testing must be repeated at least once a year after that",
+       "paragraph": "5.3",
+       "requirement": "Repeat scenario testing at least once a year after the first round"
+      },
+      {
+       "deadline": null,
+       "evidence": "Scenarios must include, at a minimum, the failure of a material third-party provider, a cyber attack that makes key systems unavailable, and the loss of a key site.",
+       "paragraph": "5.4",
+       "requirement": "Include as a minimum scenarios for failure of a material third-party provider, a cyber attack making key systems unavailable, and loss of a key site"
+      },
+      {
+       "deadline": null,
+       "evidence": "the firm must record the vulnerability",
+       "paragraph": "5.5",
+       "requirement": "Record the vulnerability where testing shows the firm cannot remain within an impact tolerance"
+      },
+      {
+       "deadline": null,
+       "evidence": "set out the actions it will take to address it",
+       "paragraph": "5.5",
+       "requirement": "Set out the actions it will take to address the vulnerability"
+      },
+      {
+       "deadline": "at its next meeting",
+       "evidence": "report the vulnerability to the board at its next meeting",
+       "paragraph": "5.5",
+       "requirement": "Report the vulnerability to the board"
+      }
+     ],
+     "summary": "Firms must map the resources supporting each important business service, in enough detail to identify single points of failure and risk concentrations. They must run severe but plausible scenario tests, including set minimum scenarios, and record, remediate and report to the board any failure to stay within impact tolerance.",
+     "title": "Mapping and scenario testing"
+    },
+    "name": "SectionSummary"
+   }
+  ],
+  "usage": {
+   "cache_creation_input_tokens": 886,
+   "cache_read_input_tokens": 1900,
+   "input_tokens": 2,
+   "output_tokens": 979
+  }
+ }
+}

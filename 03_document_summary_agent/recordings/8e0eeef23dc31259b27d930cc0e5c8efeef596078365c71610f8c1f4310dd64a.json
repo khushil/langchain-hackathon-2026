@@ -1,6 +1,6 @@
 {
  "meta": {
-  "duration_s": 9.305,
+  "duration_s": 8.398,
   "init": {
    "agents": [],
    "apiKeySource": "none",
@@ -14,14 +14,14 @@
     "StructuredOutput"
    ]
   },
-  "recorded_at": "2026-11-24T22:23:41.491654+00:00"
+  "recorded_at": "2026-11-25T01:06:32.451888+00:00"
  },
  "request": {
   "effort": "medium",
   "format": 2,
   "messages": [
    {
-    "content": "Summarise ONE section of a regulatory document and extract its obligations. Analysis only: do not create or edit files. Return a SectionSummary with the section number, title, a short summary, and every obligation in the section (who must do what, by when, and any thresholds or conditions). Treat 'must' as a binding obligation and 'should'/'we expect' as guidance, and label each one. This section refers to paragraphs in other sections. Keep those paragraph references exactly as written so the orchestrator can link them.\n\nDocument: Policy Statement PS26/4: Operational resilience and third-party technology risk\nSection number: 9\nSection title: Transitional arrangements\nFull text:\n9.1 Small firms, as defined in paragraph 2.3, may meet the requirements in paragraphs 4.1, 4.2, 5.1 and 6.1 by 31 March 2028 instead of 31 March 2027.\n\n9.2 Small firms may complete their first round of scenario testing under paragraph 5.3 by 30 September 2028 instead of 30 September 2027.\n\n9.3 For all firms, contracts with material third-party providers that were in place before 1 January 2027 must be updated to meet paragraph 6.3 at their next renewal, or by 31 December 2028, whichever is earlier.\n\n9.4 The transitional arrangements do not apply to the incident reporting requirements in section 7 or to the requirement to name a senior manager in paragraph 8.1. These apply to all firms from 1 January 2027.",
+    "content": "Analyse only; do not create or edit files. Summarise this ONE section of the regulatory document \"Policy Statement PS26/4: Operational resilience and third-party technology risk\" (document ID PS26-4) and extract every obligation it contains. For each obligation include: the paragraph reference, who it applies to, what must be done, any deadline or time limit, and whether it is mandatory ('must') or guidance ('should'/expectation). Return a SectionSummary.\n\nSection number: 5\nSection title: Mapping and scenario testing\nSection text:\n5.1 Firms must map the people, processes, technology, facilities and information that support each important business service, including those provided by third parties, by 31 March 2027.\n\n5.2 Mapping must be detailed enough to identify single points of failure and concentrations of risk, including where several important business services depend on the same third-party provider.\n\n5.3 Firms must test their ability to remain within impact tolerance under severe but plausible scenarios. The first round of scenario testing must be completed by 30 September 2027, and testing must be repeated at least once a year after that.\n\n5.4 Scenarios must include, at a minimum, the failure of a material third-party provider, a cyber attack that makes key systems unavailable, and the loss of a key site.\n\n5.5 Where testing shows that a firm cannot remain within an impact tolerance, the firm must record the vulnerability, set out the actions it will take to address it, and report the vulnerability to the board at its next meeting.",
     "role": "user"
    }
   ],
@@ -397,57 +397,81 @@
   },
   "system": "# Section summariser agent\nYou are given one section: its number, title and text. Return a `SectionSummary` as a single JSON object, with no text before or after it:\n\n- `number`: the section number, for example `\"4\"`.\n- `title`: the section title.\n- `summary`: one to three sentences on what the section says.\n- `obligations`: every obligation in the section. Use an empty list if there are none.\n\nEach `Obligation` has four fields:\n\n- `requirement`: what the firm must do, in plain English.\n- `paragraph`: the paragraph number it comes from, for example `\"4.2\"`.\n- `deadline`: the deadline exactly as written in the document, or `null` if there is none.\n- `evidence`: a quote copied word for word from that paragraph, at most 30 words.\n\nFor example:\n\n```json\n{\n  \"number\": \"7\",\n  \"title\": \"Incident reporting\",\n  \"summary\": \"Firms must report major incidents to the regulator quickly.\",\n  \"obligations\": [\n    {\n      \"requirement\": \"Report major incidents to the regulator\",\n      \"paragraph\": \"7.1\",\n      \"deadline\": \"within 4 hours\",\n      \"evidence\": \"Firms must notify the FSOA of a major incident within 4 hours\"\n    }\n  ]\n}\n```\n\n### What counts as an obligation\n\nAn obligation is something a firm must do. Look for \"must\", \"shall\", \"is required to\" and \"will need to\".\n\n- Do not list recommendations or guidance (\"should\", \"may\", \"we expect\") as obligations.\n- Do not list things only the regulator does.\n- If one paragraph sets several separate requirements, list each one separately.\n- If the section changes a requirement or deadline from an earlier section, say so in the summary.\n\n### Rules for accuracy\n\n- Copy `evidence` word for word. Never paraphrase, correct or shorten the wording inside a quote.\n- Copy `deadline` exactly as written. Do not convert dates or durations, for example \"within 4 hours\" stays as it is.\n- Use only the section you were given. Do not use outside knowledge of the regulation.\n- Do not guess. If a paragraph is ambiguous, say so in the summary rather than inventing a requirement.\n\nThese fields are checked automatically against the source text afterwards. A quote that isn't word for word, or a\ndeadline that isn't in the section, will be flagged.\n"
  },
- "request_sha256": "9a5059ef4166de61026ff3b698b647f6252a0c02514ad22a8321bb2be4dac9e7",
+ "request_sha256": "8e0eeef23dc31259b27d930cc0e5c8efeef596078365c71610f8c1f4310dd64a",
  "response": {
-  "content": "{\"number\":\"9\",\"title\":\"Transitional arrangements\",\"summary\":\"Section 9 gives small firms (as defined in paragraph 2.3) extra time to meet the requirements in paragraphs 4.1, 4.2, 5.1 and 6.1, which move from 31 March 2027 to 31 March 2028. It also moves their first scenario testing round under paragraph 5.3 from 30 September 2027 to 30 September 2028. All firms must update pre-existing material third-party contracts to meet paragraph 6.3 at next renewal or by 31 December 2028, whichever is earlier. The incident reporting requirements in section 7 and the senior manager requirement in paragraph 8.1 get no transitional relief and apply to all firms from 1 January 2027. No guidance-only (should/we expect) statements appear in this section; every item below is binding (must/may-meet deadlines).\",\"obligations\":[]}",
+  "content": "{\"number\":\"5\",\"title\":\"Mapping and scenario testing\",\"summary\":\"Firms must map the resources supporting each important business service (including third-party ones) by 31 March 2027, in enough detail to identify single points of failure and concentrations of risk. They must also run severe but plausible scenario tests, first by 30 September 2027 and then at least annually, and must record, plan for and report to the board any vulnerabilities found. All requirements in this section are mandatory ('must'); there is no 'should' guidance. All apply to firms.\",\"obligations\":[]}",
   "model_reported": "claude-sonnet-5-5",
   "tool_calls": [
    {
     "args": {
-     "number": "9",
+     "number": "5",
      "obligations": [
       {
-       "deadline": "by 31 March 2028 instead of 31 March 2027",
-       "evidence": "Small firms, as defined in paragraph 2.3, may meet the requirements in paragraphs 4.1, 4.2, 5.1 and 6.1 by 31 March 2028 instead of 31 March 2027.",
-       "paragraph": "9.1",
-       "requirement": "Small firms (as defined in paragraph 2.3) that use the transition must meet the requirements in paragraphs 4.1, 4.2, 5.1 and 6.1 by the extended date, instead of 31 March 2027. Binding, but the extension is permissive ('may'). It changes the earlier deadline for small firms only."
+       "deadline": "by 31 March 2027",
+       "evidence": "Firms must map the people, processes, technology, facilities and information that support each important business service, including those provided by third parties, by 31 March 2027.",
+       "paragraph": "5.1",
+       "requirement": "Map the people, processes, technology, facilities and information supporting each important business service, including those provided by third parties (mandatory; applies to firms)"
       },
       {
-       "deadline": "by 30 September 2028 instead of 30 September 2027",
-       "evidence": "Small firms may complete their first round of scenario testing under paragraph 5.3 by 30 September 2028 instead of 30 September 2027.",
-       "paragraph": "9.2",
-       "requirement": "Small firms that use the transition may complete their first round of scenario testing under paragraph 5.3 by the extended date, instead of 30 September 2027. Binding, but the extension is permissive ('may'). It changes the earlier deadline for small firms only."
+       "deadline": null,
+       "evidence": "Mapping must be detailed enough to identify single points of failure and concentrations of risk",
+       "paragraph": "5.2",
+       "requirement": "Make mapping detailed enough to identify single points of failure and concentrations of risk, including where several important business services depend on the same third-party provider (mandatory; applies to firms)"
       },
       {
-       "deadline": "at their next renewal, or by 31 December 2028, whichever is earlier",
-       "evidence": "contracts with material third-party providers that were in place before 1 January 2027 must be updated to meet paragraph 6.3 at their next renewal, or by 31 December 2028, whichever is earlier.",
-       "paragraph": "9.3",
-       "requirement": "All firms must update contracts with material third-party providers that were in place before 1 January 2027 to meet paragraph 6.3. Binding. The deadline is the next renewal or 31 December 2028, whichever is earlier."
+       "deadline": null,
+       "evidence": "Firms must test their ability to remain within impact tolerance under severe but plausible scenarios.",
+       "paragraph": "5.3",
+       "requirement": "Test ability to remain within impact tolerance under severe but plausible scenarios (mandatory; applies to firms)"
       },
       {
-       "deadline": "from 1 January 2027",
-       "evidence": "The transitional arrangements do not apply to the incident reporting requirements in section 7 or to the requirement to name a senior manager in paragraph 8.1.",
-       "paragraph": "9.4",
-       "requirement": "All firms must comply with the incident reporting requirements in section 7 with no transitional relief. Binding."
+       "deadline": "by 30 September 2027",
+       "evidence": "The first round of scenario testing must be completed by 30 September 2027",
+       "paragraph": "5.3",
+       "requirement": "Complete the first round of scenario testing (mandatory; applies to firms)"
       },
       {
-       "deadline": "from 1 January 2027",
-       "evidence": "These apply to all firms from 1 January 2027.",
-       "paragraph": "9.4",
-       "requirement": "All firms must name a senior manager under paragraph 8.1 with no transitional relief. Binding."
+       "deadline": "at least once a year after that",
+       "evidence": "testing must be repeated at least once a year after that.",
+       "paragraph": "5.3",
+       "requirement": "Repeat scenario testing at least once a year after the first round (mandatory; applies to firms)"
+      },
+      {
+       "deadline": null,
+       "evidence": "Scenarios must include, at a minimum, the failure of a material third-party provider, a cyber attack that makes key systems unavailable, and the loss of a key site.",
+       "paragraph": "5.4",
+       "requirement": "Include as a minimum the scenarios of failure of a material third-party provider, a cyber attack making key systems unavailable, and loss of a key site (mandatory; applies to firms)"
+      },
+      {
+       "deadline": null,
+       "evidence": "the firm must record the vulnerability",
+       "paragraph": "5.5",
+       "requirement": "Record the vulnerability where testing shows the firm cannot remain within an impact tolerance (mandatory; applies to firms)"
+      },
+      {
+       "deadline": null,
+       "evidence": "set out the actions it will take to address it",
+       "paragraph": "5.5",
+       "requirement": "Set out the actions the firm will take to address the vulnerability (mandatory; applies to firms)"
+      },
+      {
+       "deadline": "at its next meeting",
+       "evidence": "report the vulnerability to the board at its next meeting.",
+       "paragraph": "5.5",
+       "requirement": "Report the vulnerability to the board (mandatory; applies to firms)"
       }
      ],
-     "summary": "Section 9 gives small firms (as defined in paragraph 2.3) extra time: the requirements in paragraphs 4.1, 4.2, 5.1 and 6.1 move from 31 March 2027 to 31 March 2028, and their first scenario testing round under paragraph 5.3 moves from 30 September 2027 to 30 September 2028. All firms must update pre-existing material third-party provider contracts to meet paragraph 6.3 at next renewal or by 31 December 2028, whichever is earlier. Incident reporting (section 7) and naming a senior manager (paragraph 8.1) get no transitional relief and apply to all firms from 1 January 2027. All items are binding; the section contains no guidance-only statements. Paragraphs 9.1 and 9.2 are permissive ('may') extensions that modify the earlier deadlines (31 March 2027 and 30 September 2027) rather than new duties.",
-     "title": "Transitional arrangements"
+     "summary": "Firms must map the people, processes, technology, facilities and information supporting each important business service (including third-party provided ones) by 31 March 2027, in enough detail to identify single points of failure and concentrations of risk. They must test their ability to stay within impact tolerance under severe but plausible scenarios, first by 30 September 2027 and at least annually after that, covering minimum scenarios. Where testing shows an impact tolerance cannot be met, firms must record the vulnerability, set out remedial actions and report it to the board. All obligations are mandatory ('must') and apply to firms; there is no 'should' guidance in this section.",
+     "title": "Mapping and scenario testing"
     },
     "name": "SectionSummary"
    }
   ],
   "usage": {
-   "cache_creation_input_tokens": 1054,
+   "cache_creation_input_tokens": 1040,
    "cache_read_input_tokens": 6399,
    "input_tokens": 2,
-   "output_tokens": 1526
+   "output_tokens": 1381
   }
  }
 }
