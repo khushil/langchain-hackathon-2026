@@ -1,3 +1,404 @@
 {
-  "experiments": []
+  "experiments": [
+    {
+      "name": "starter-sections-r1-520adde4",
+      "experiment_id": "8276a186-5d46-4a79-a093-72ca1530af14",
+      "agent": "starter",
+      "dataset": "sections",
+      "repetition": 1,
+      "ran_at": "2026-11-25T03:08:01+00:00",
+      "examples": 10,
+      "failed_examples": [],
+      "model": "claude-sonnet-5-5",
+      "effort": "medium",
+      "prompt_version": "section-6d563108",
+      "measures": {
+        "obligations_found": {
+          "numerator": 36,
+          "denominator": 39,
+          "population": "labelled obligations in scope"
+        },
+        "invented_obligations": {
+          "numerator": 5,
+          "denominator": 43,
+          "population": "predicted obligations"
+        },
+        "quotes_word_for_word": {
+          "numerator": 43,
+          "denominator": 43,
+          "population": "predicted obligations citing a paragraph in scope"
+        },
+        "deadlines_as_written": {
+          "numerator": 25,
+          "denominator": 25,
+          "population": "predicted obligations with a deadline"
+        },
+        "deadlines_matched": {
+          "numerator": 16,
+          "denominator": 16,
+          "population": "matched obligations whose labelled deadline is not empty"
+        },
+        "paragraph_recall": {
+          "numerator": 23,
+          "denominator": 23,
+          "population": "paragraphs holding a labelled obligation"
+        },
+        "paragraph_precision": {
+          "numerator": 23,
+          "denominator": 28,
+          "population": "paragraphs holding a predicted obligation"
+        }
+      }
+    },
+    {
+      "name": "starter-sections-r2-76fa8980",
+      "experiment_id": "8ec0c5c9-150c-4fff-8843-553a6c449fe8",
+      "agent": "starter",
+      "dataset": "sections",
+      "repetition": 2,
+      "ran_at": "2026-11-25T03:08:51+00:00",
+      "examples": 10,
+      "failed_examples": [],
+      "model": "claude-sonnet-5-5",
+      "effort": "medium",
+      "prompt_version": "section-6d563108",
+      "measures": {
+        "obligations_found": {
+          "numerator": 35,
+          "denominator": 39,
+          "population": "labelled obligations in scope"
+        },
+        "invented_obligations": {
+          "numerator": 6,
+          "denominator": 43,
+          "population": "predicted obligations"
+        },
+        "quotes_word_for_word": {
+          "numerator": 43,
+          "denominator": 43,
+          "population": "predicted obligations citing a paragraph in scope"
+        },
+        "deadlines_as_written": {
+          "numerator": 26,
+          "denominator": 26,
+          "population": "predicted obligations with a deadline"
+        },
+        "deadlines_matched": {
+          "numerator": 16,
+          "denominator": 16,
+          "population": "matched obligations whose labelled deadline is not empty"
+        },
+        "paragraph_recall": {
+          "numerator": 23,
+          "denominator": 23,
+          "population": "paragraphs holding a labelled obligation"
+        },
+        "paragraph_precision": {
+          "numerator": 23,
+          "denominator": 28,
+          "population": "paragraphs holding a predicted obligation"
+        }
+      }
+    },
+    {
+      "name": "starter-sections-r3-8b2b6167",
+      "experiment_id": "482407ea-2257-4b28-9fb2-2af79fecf56b",
+      "agent": "starter",
+      "dataset": "sections",
+      "repetition": 3,
+      "ran_at": "2026-11-25T03:09:24+00:00",
+      "examples": 10,
+      "failed_examples": [],
+      "model": "claude-sonnet-5-5",
+      "effort": "medium",
+      "prompt_version": "section-6d563108",
+      "measures": {
+        "obligations_found": {
+          "numerator": 36,
+          "denominator": 39,
+          "population": "labelled obligations in scope"
+        },
+        "invented_obligations": {
+          "numerator": 6,
+          "denominator": 44,
+          "population": "predicted obligations"
+        },
+        "quotes_word_for_word": {
+          "numerator": 44,
+          "denominator": 44,
+          "population": "predicted obligations citing a paragraph in scope"
+        },
+        "deadlines_as_written": {
+          "numerator": 25,
+          "denominator": 25,
+          "population": "predicted obligations with a deadline"
+        },
+        "deadlines_matched": {
+          "numerator": 16,
+          "denominator": 16,
+          "population": "matched obligations whose labelled deadline is not empty"
+        },
+        "paragraph_recall": {
+          "numerator": 23,
+          "denominator": 23,
+          "population": "paragraphs holding a labelled obligation"
+        },
+        "paragraph_precision": {
+          "numerator": 23,
+          "denominator": 28,
+          "population": "paragraphs holding a predicted obligation"
+        }
+      }
+    },
+    {
+      "name": "starter-document-r1-659ede03",
+      "experiment_id": "ecc48388-482d-4634-ae46-db7f06ffbee5",
+      "agent": "starter",
+      "dataset": "document",
+      "repetition": 1,
+      "ran_at": "2026-11-25T03:10:26+00:00",
+      "examples": 1,
+      "failed_examples": [],
+      "model": "claude-sonnet-5-5",
+      "effort": "medium",
+      "prompt_version": "section-6d563108",
+      "measures": {
+        "obligations_found": {
+          "numerator": 35,
+          "denominator": 39,
+          "population": "labelled obligations in scope"
+        },
+        "invented_obligations": {
+          "numerator": 5,
+          "denominator": 43,
+          "population": "predicted obligations"
+        },
+        "quotes_word_for_word": {
+          "numerator": 43,
+          "denominator": 43,
+          "population": "predicted obligations citing a paragraph in scope"
+        },
+        "deadlines_as_written": {
+          "numerator": 26,
+          "denominator": 26,
+          "population": "predicted obligations with a deadline"
+        },
+        "deadlines_matched": {
+          "numerator": 16,
+          "denominator": 16,
+          "population": "matched obligations whose labelled deadline is not empty"
+        },
+        "paragraph_recall": {
+          "numerator": 23,
+          "denominator": 23,
+          "population": "paragraphs holding a labelled obligation"
+        },
+        "paragraph_precision": {
+          "numerator": 23,
+          "denominator": 28,
+          "population": "paragraphs holding a predicted obligation"
+        }
+      }
+    },
+    {
+      "name": "engine-sections-r1-2a8b7eac",
+      "experiment_id": "ee54141c-1dbf-48ba-8811-ff55c445814b",
+      "agent": "engine",
+      "dataset": "sections",
+      "repetition": 1,
+      "ran_at": "2026-11-25T03:10:51+00:00",
+      "examples": 10,
+      "failed_examples": [],
+      "model": "claude-sonnet-5-5",
+      "effort": "medium",
+      "prompt_version": "section-6d563108",
+      "measures": {
+        "obligations_found": {
+          "numerator": 37,
+          "denominator": 39,
+          "population": "labelled obligations in scope"
+        },
+        "invented_obligations": {
+          "numerator": 7,
+          "denominator": 46,
+          "population": "predicted obligations"
+        },
+        "quotes_word_for_word": {
+          "numerator": 46,
+          "denominator": 46,
+          "population": "predicted obligations citing a paragraph in scope"
+        },
+        "deadlines_as_written": {
+          "numerator": 25,
+          "denominator": 25,
+          "population": "predicted obligations with a deadline"
+        },
+        "deadlines_matched": {
+          "numerator": 16,
+          "denominator": 16,
+          "population": "matched obligations whose labelled deadline is not empty"
+        },
+        "paragraph_recall": {
+          "numerator": 23,
+          "denominator": 23,
+          "population": "paragraphs holding a labelled obligation"
+        },
+        "paragraph_precision": {
+          "numerator": 23,
+          "denominator": 29,
+          "population": "paragraphs holding a predicted obligation"
+        }
+      }
+    },
+    {
+      "name": "engine-sections-r2-0af12c04",
+      "experiment_id": "05a3e17a-a16f-4384-ba3a-672104962b27",
+      "agent": "engine",
+      "dataset": "sections",
+      "repetition": 2,
+      "ran_at": "2026-11-25T03:11:20+00:00",
+      "examples": 10,
+      "failed_examples": [],
+      "model": "claude-sonnet-5-5",
+      "effort": "medium",
+      "prompt_version": "section-6d563108",
+      "measures": {
+        "obligations_found": {
+          "numerator": 36,
+          "denominator": 39,
+          "population": "labelled obligations in scope"
+        },
+        "invented_obligations": {
+          "numerator": 6,
+          "denominator": 45,
+          "population": "predicted obligations"
+        },
+        "quotes_word_for_word": {
+          "numerator": 45,
+          "denominator": 45,
+          "population": "predicted obligations citing a paragraph in scope"
+        },
+        "deadlines_as_written": {
+          "numerator": 25,
+          "denominator": 25,
+          "population": "predicted obligations with a deadline"
+        },
+        "deadlines_matched": {
+          "numerator": 16,
+          "denominator": 16,
+          "population": "matched obligations whose labelled deadline is not empty"
+        },
+        "paragraph_recall": {
+          "numerator": 23,
+          "denominator": 23,
+          "population": "paragraphs holding a labelled obligation"
+        },
+        "paragraph_precision": {
+          "numerator": 23,
+          "denominator": 29,
+          "population": "paragraphs holding a predicted obligation"
+        }
+      }
+    },
+    {
+      "name": "engine-sections-r3-016a151e",
+      "experiment_id": "6958af25-95ae-4ebb-a073-1f6cee6da615",
+      "agent": "engine",
+      "dataset": "sections",
+      "repetition": 3,
+      "ran_at": "2026-11-25T03:11:50+00:00",
+      "examples": 10,
+      "failed_examples": [],
+      "model": "claude-sonnet-5-5",
+      "effort": "medium",
+      "prompt_version": "section-6d563108",
+      "measures": {
+        "obligations_found": {
+          "numerator": 36,
+          "denominator": 39,
+          "population": "labelled obligations in scope"
+        },
+        "invented_obligations": {
+          "numerator": 5,
+          "denominator": 43,
+          "population": "predicted obligations"
+        },
+        "quotes_word_for_word": {
+          "numerator": 43,
+          "denominator": 43,
+          "population": "predicted obligations citing a paragraph in scope"
+        },
+        "deadlines_as_written": {
+          "numerator": 25,
+          "denominator": 25,
+          "population": "predicted obligations with a deadline"
+        },
+        "deadlines_matched": {
+          "numerator": 16,
+          "denominator": 16,
+          "population": "matched obligations whose labelled deadline is not empty"
+        },
+        "paragraph_recall": {
+          "numerator": 23,
+          "denominator": 23,
+          "population": "paragraphs holding a labelled obligation"
+        },
+        "paragraph_precision": {
+          "numerator": 23,
+          "denominator": 27,
+          "population": "paragraphs holding a predicted obligation"
+        }
+      }
+    },
+    {
+      "name": "engine-document-r1-dc51c53e",
+      "experiment_id": "1b186e7c-507d-4ef9-8b91-dac65f3b588f",
+      "agent": "engine",
+      "dataset": "document",
+      "repetition": 1,
+      "ran_at": "2026-11-25T03:12:45+00:00",
+      "examples": 1,
+      "failed_examples": [],
+      "model": "claude-sonnet-5-5",
+      "effort": "medium",
+      "prompt_version": "section-6d563108",
+      "measures": {
+        "obligations_found": {
+          "numerator": 35,
+          "denominator": 39,
+          "population": "labelled obligations in scope"
+        },
+        "invented_obligations": {
+          "numerator": 6,
+          "denominator": 43,
+          "population": "predicted obligations"
+        },
+        "quotes_word_for_word": {
+          "numerator": 43,
+          "denominator": 43,
+          "population": "predicted obligations citing a paragraph in scope"
+        },
+        "deadlines_as_written": {
+          "numerator": 24,
+          "denominator": 24,
+          "population": "predicted obligations with a deadline"
+        },
+        "deadlines_matched": {
+          "numerator": 16,
+          "denominator": 16,
+          "population": "matched obligations whose labelled deadline is not empty"
+        },
+        "paragraph_recall": {
+          "numerator": 23,
+          "denominator": 23,
+          "population": "paragraphs holding a labelled obligation"
+        },
+        "paragraph_precision": {
+          "numerator": 23,
+          "denominator": 28,
+          "population": "paragraphs holding a predicted obligation"
+        }
+      }
+    }
+  ]
 }

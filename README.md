@@ -126,7 +126,32 @@ The obligation marker check was added after the first whole-document run missed 
 
 In the replayed run the engine read 57 facts and all 57 passed their checks, 48 of 48 paragraphs were accounted for, the brief has 50 statements, 4 open questions went to the reviewer, and the marker check sent 0 paragraphs for a second read. Those counts are printed by the notebook and tied to this README by the figures test. What the engine adds is outside the seven measures: every paragraph is accounted for, a person decides before anything is signed, and a reviewer sees each open question. The planted faults and the self-test above test those, and the labels do not score them.
 
-`evals/upload.py` puts the two datasets in LangSmith. This repository reports no LangSmith experiment results.
+### Repeated runs in LangSmith
+
+`evals/upload.py` puts the two datasets in LangSmith, and `python -m evals.experiments` runs each agent on them as LangSmith experiments, calling the model live, scored by the same seven measures; each run's counts are written to `03_document_summary_agent/evals/data/experiments.json`, and a test ties the table below to that file. The runs below were made on 2026-11-25.
+
+Each column is one experiment. A column for the starter's agent runs its section sub-agent as step 2 of the notebook builds it, one section at a time, with no check after it. A column for this engine runs its section step with the obligation marker check and any second read, and scores the obligations that passed their checks. The table above scores the notebook's own run, where the starter's main agent hands each section to its sub-agent and the engine's first read is scored before any check, so the two tables are read side by side and not cell by cell.
+
+| Measure | Starter's agent, run 1 | Starter's agent, run 2 | Starter's agent, run 3 | Starter's agent, whole document | This engine, run 1 | This engine, run 2 | This engine, run 3 | This engine, whole document |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Obligations found | 36 of 39 | 35 of 39 | 36 of 39 | 35 of 39 | 37 of 39 | 36 of 39 | 36 of 39 | 35 of 39 |
+| Invented obligations | 5 of 43 | 6 of 43 | 6 of 44 | 5 of 43 | 7 of 46 | 6 of 45 | 5 of 43 | 6 of 43 |
+| Quotes word for word | 43 of 43 | 43 of 43 | 44 of 44 | 43 of 43 | 46 of 46 | 45 of 45 | 43 of 43 | 43 of 43 |
+| Deadlines as written | 25 of 25 | 26 of 26 | 25 of 25 | 26 of 26 | 25 of 25 | 25 of 25 | 25 of 25 | 24 of 24 |
+| Deadlines matched | 16 of 16 | 16 of 16 | 16 of 16 | 16 of 16 | 16 of 16 | 16 of 16 | 16 of 16 | 16 of 16 |
+| Paragraph recall | 23 of 23 | 23 of 23 | 23 of 23 | 23 of 23 | 23 of 23 | 23 of 23 | 23 of 23 | 23 of 23 |
+| Paragraph precision | 23 of 28 | 23 of 28 | 23 of 28 | 23 of 28 | 23 of 29 | 23 of 29 | 23 of 27 | 23 of 28 |
+
+The experiments, by column:
+
+- Starter's agent, run 1: `starter-sections-r1-520adde4`, LangSmith experiment `8276a186-5d46-4a79-a093-72ca1530af14`
+- Starter's agent, run 2: `starter-sections-r2-76fa8980`, LangSmith experiment `8ec0c5c9-150c-4fff-8843-553a6c449fe8`
+- Starter's agent, run 3: `starter-sections-r3-8b2b6167`, LangSmith experiment `482407ea-2257-4b28-9fb2-2af79fecf56b`
+- Starter's agent, whole document: `starter-document-r1-659ede03`, LangSmith experiment `ecc48388-482d-4634-ae46-db7f06ffbee5`
+- This engine, run 1: `engine-sections-r1-2a8b7eac`, LangSmith experiment `ee54141c-1dbf-48ba-8811-ff55c445814b`
+- This engine, run 2: `engine-sections-r2-0af12c04`, LangSmith experiment `05a3e17a-a16f-4384-ba3a-672104962b27`
+- This engine, run 3: `engine-sections-r3-016a151e`, LangSmith experiment `6958af25-95ae-4ebb-a073-1f6cee6da615`
+- This engine, whole document: `engine-document-r1-dc51c53e`, LangSmith experiment `1b186e7c-507d-4ef9-8b91-dac65f3b588f`
 
 ## How the reference labels were made
 

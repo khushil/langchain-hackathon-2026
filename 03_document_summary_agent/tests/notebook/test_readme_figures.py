@@ -220,6 +220,34 @@ def run_figures(notebook: dict) -> dict[str, int]:
     }
 
 
+def measure_table_rows(readme: str) -> list[str]:
+    """Return the body rows of the README's measure table, and of no other table.
+
+    The measure table is the first table whose header reads "Measure" and then "Starter's agent".
+    The spread table of repeated runs below it names runs in its header ("Starter's agent, run 1")
+    and starts its rows with the same measure names, so it must not be read as this one.
+
+    Args:
+        readme: The README's text.
+
+    Returns:
+        The table's lines after its header, separator row included; empty when there is no table.
+    """
+    lines = readme.splitlines()
+    for at, line in enumerate(lines):
+        if not line.startswith("|"):
+            continue
+        cells = [c.strip() for c in line.strip().strip("|").split("|")]
+        if len(cells) > 2 and cells[0] == "Measure" and cells[1] == "Starter's agent":
+            block = []
+            for row in lines[at + 1 :]:
+                if not row.startswith("|"):
+                    break
+                block.append(row)
+            return block
+    return []
+
+
 def readme_table(readme: str) -> dict[str, dict[str, str]]:
     """Read the README's measure table.
 
@@ -232,7 +260,7 @@ def readme_table(readme: str) -> dict[str, dict[str, str]]:
     Raises:
         FiguresNotFoundError: If a measure has no row or a row has no four figures.
     """
-    rows = [line for line in readme.splitlines() if line.startswith("|")]
+    rows = measure_table_rows(readme)
     found: dict[str, dict[str, str]] = {}
     for label, key in MEASURES.items():
         matches = [r for r in rows if r.split("|")[1].strip().startswith(label)]
@@ -571,3 +599,11 @@ def test_the_guides_fact_counts_follow_the_facts_the_brief_cites_not_the_facts_r
     )
     problems = guide_problems(guide, fewer)
     assert len(problems) == 3 and all("56" in p for p in problems), problems
+
+
+def test_a_spread_table_after_the_measure_table_is_not_read_as_it(readme, notebook):
+    spread = (
+        "\n| Measure | Starter's agent, run 1 |\n| --- | --- |\n"
+        "| Obligations found | 1 of 39 |\n| Invented obligations | 1 of 2 |\n"
+    )
+    assert figure_problems(readme + spread, notebook) == []
