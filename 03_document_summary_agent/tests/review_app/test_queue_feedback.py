@@ -11,6 +11,7 @@ import time
 from types import SimpleNamespace
 
 import pytest
+from langsmith import APIConnectionError
 from langsmith.utils import LangSmithConnectionError
 from review_fakes import FakeRuns, examples_review
 from review_fixtures import DANA, make_client, make_client_for
@@ -26,6 +27,34 @@ STARTED = datetime.datetime.fromisoformat(STARTED_AT)
 QUEUE_ID = "3f2e1d0c-0000-4000-8000-00000000beef"
 
 
+ITEMS_CREATE = "annotation_queues.items.create"
+"""The name a test gives to make the queue call fail."""
+
+
+class FakeQueueItems:
+    """The queue's items resource. ``create`` is a coroutine, as the real one is."""
+
+    def __init__(self, owner):
+        self.owner = owner
+
+    async def create(self, queue_id, *, items=None, **kwargs):
+        self.owner.items_calls += 1
+        if ITEMS_CREATE in self.owner.fail:
+            raise APIConnectionError(message=f"{ITEMS_CREATE} could not connect", request=None)
+        self.owner.added.append({"queue_id": queue_id, "items": items, **kwargs})
+
+
+class FakeGenerated:
+    """What the real resource keeps as ``_client``: the client that takes retry options."""
+
+    def __init__(self, owner):
+        self.owner = owner
+
+    def with_options(self, *, max_retries):
+        self.owner.max_retries.append(max_retries)
+        return self.owner.queues_owner
+
+
 class FakeLangSmith:
     """The parts of the LangSmith client the application uses, recording each call."""
 
@@ -35,10 +64,17 @@ class FakeLangSmith:
         self.created: list[dict] = []
         self.added: list[dict] = []
         self.attempts: list[dict] = []
+        self.items_calls = 0
+        self.max_retries: list[int] = []
         self.hold = (
             None  # an event the feedback call waits for, to stand in for a stalled LangSmith
         )
         self.fail_feedback_at, self.fail = fail_feedback_at, set(fail)
+        self.queues_owner = SimpleNamespace(annotation_queues=self.annotation_queues)
+
+    @property
+    def annotation_queues(self):
+        return SimpleNamespace(items=FakeQueueItems(self), _client=FakeGenerated(self))
 
     def _maybe_fail(self, name):
         if name in self.fail:
@@ -64,10 +100,6 @@ class FakeLangSmith:
         self.created.append({"name": name, "description": description})
         self.queues.append(queue)
         return queue
-
-    def add_runs_to_annotation_queue(self, queue_id, *, runs=None, run_ids=None):
-        self._maybe_fail("add_runs_to_annotation_queue")
-        self.added.append({"queue_id": queue_id, "runs": runs, "run_ids": run_ids})
 
 
 def signed_run(run_id=RUN_ID, *, project_id=PROJECT_ID, started_at=STARTED_AT):
@@ -133,11 +165,10 @@ def test_the_run_goes_into_the_named_queue_which_is_made_once_when_it_is_absent(
         sign(make_client(runs, feedback=lambda: ls, notes={}), runs)
     assert [q["name"] for q in ls.created] == [QUEUE_NAME] == ["compliance-brief-reviews"]
     assert [a["queue_id"] for a in ls.added] == [QUEUE_ID, QUEUE_ID]
-    assert [a["runs"][0]["run_id"] for a in ls.added] == [RUN_ID, other_run_id]
-    assert ls.added[0]["runs"] == [
-        {"run_id": RUN_ID, "session_id": PROJECT_ID, "start_time": STARTED}
+    assert [a["items"][0]["run_id"] for a in ls.added] == [RUN_ID, other_run_id]
+    assert ls.added[0]["items"] == [
+        {"item_type": "RUN", "run_id": RUN_ID, "project_id": PROJECT_ID, "start_time": STARTED_AT}
     ]
-    assert ls.added[0]["run_ids"] is None
 
 
 def test_a_queue_that_exists_is_used_and_not_made_again():
@@ -207,12 +238,41 @@ def test_every_feedback_is_asked_for_at_most_two_attempts():
 
 
 def test_a_queue_that_cannot_be_reached_is_said_in_the_same_sentence():
-    ls = FakeLangSmith(fail=["add_runs_to_annotation_queue"])
+    ls = FakeLangSmith(fail=[ITEMS_CREATE])
     runs = signed_run()
     client = make_client(runs, feedback=lambda: ls, notes={})
     sign(client, runs)
     assert len(ls.feedback) == 3
     assert client.get(f"{RUN}/signed").text.count(FAILED_WORDS) == 1
+
+
+def test_the_run_is_put_in_the_queue_with_one_call_that_tries_twice_at_most():
+    ls = FakeLangSmith()
+    runs = signed_run()
+    sign(make_client(runs, feedback=lambda: ls, notes={}), runs)
+    assert ls.items_calls == 1 and ls.max_retries == [feedback.SEND_ATTEMPTS - 1] == [1]
+
+
+class FakeLangSmithWithoutRetrySetting(FakeLangSmith):
+    """A client whose queue resource has no ``_client``, so the retry limit cannot be set."""
+
+    @property
+    def annotation_queues(self):
+        return SimpleNamespace(items=FakeQueueItems(self))
+
+
+def test_a_queue_resource_without_a_retry_setting_still_queues_the_run_and_warns_once(caplog):
+    ls = FakeLangSmithWithoutRetrySetting()
+    runs = signed_run()
+    with caplog.at_level("WARNING", logger="review_app.feedback"):
+        client = make_client(runs, feedback=lambda: ls, notes={})
+        sign(client, runs)
+        page = client.get(f"{RUN}/signed").text
+    assert [a["items"][0]["run_id"] for a in ls.added] == [RUN_ID]
+    assert ls.items_calls == 1 and ls.max_retries == []
+    assert FAILED_WORDS not in page
+    warned = [r for r in caplog.records if r.levelname == "WARNING"]
+    assert len(warned) == 1 and "no retry setting" in warned[0].getMessage()
 
 
 def test_a_queue_that_cannot_be_listed_leaves_the_feedback_sent_and_says_so():
@@ -273,8 +333,9 @@ def test_the_current_forms_are_called_with_the_project_id_and_the_start_time():
         assert sent["run_id"] == RUN_ID
         assert sent["session_id"] == PROJECT_ID and sent["start_time"] == STARTED
     [added] = ls.added
-    assert added["run_ids"] is None
-    assert added["runs"] == [{"run_id": RUN_ID, "session_id": PROJECT_ID, "start_time": STARTED}]
+    assert added["items"] == [
+        {"item_type": "RUN", "run_id": RUN_ID, "project_id": PROJECT_ID, "start_time": STARTED_AT}
+    ]
 
 
 @pytest.mark.parametrize("missing", ["project_id", "started_at"])
@@ -430,7 +491,7 @@ def test_the_run_services_root_run_is_what_the_sign_route_sends_to_langsmith():
     assert ls.feedback and {f["run_id"] for f in ls.feedback} == {root.run_id}
     assert {f["session_id"] for f in ls.feedback} == {PROJECT_ID}
     assert {f["start_time"] for f in ls.feedback} == {datetime.fromisoformat(root.started_at)}
-    assert ls.added[0]["runs"][0]["run_id"] == root.run_id
+    assert ls.added[0]["items"][0]["run_id"] == root.run_id
     assert ls.feedback[-1]["value"] == "returned"
 
 

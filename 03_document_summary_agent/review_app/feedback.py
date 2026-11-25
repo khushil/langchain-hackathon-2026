@@ -4,17 +4,23 @@ Each decision on the brief goes as feedback on the brief's root run, with the re
 reason, name and role, and the run joins an annotation queue so a person can look at it there.
 Sending is never a condition of the decision: the decision and the sign-off are kept before
 anything is sent, and a failure to send is one sentence on the signed page.
+
+The run joins the queue through the queue's items, which the client offers as a coroutine; it is run
+to the end here, inside the same time limit as every other call of the send.
 """
 
 from __future__ import annotations
 
+import asyncio
+import concurrent.futures
 import datetime
 import logging
 import os
 import threading
-from collections.abc import Callable, Mapping
-from typing import Any, Protocol
+from collections.abc import Awaitable, Callable, Mapping
+from typing import Any, Protocol, TypeVar
 
+from langsmith import LangsmithError
 from langsmith.utils import LangSmithError
 
 from fsi_common.evals.upload import DEFAULT_ENDPOINT
@@ -22,6 +28,7 @@ from utils.models import tracing_enabled
 from utils.state import ReviewResponse
 
 LOG = logging.getLogger("review_app.feedback")
+_T = TypeVar("_T")
 QUEUE_NAME = "compliance-brief-reviews"
 QUEUE_DESCRIPTION = "Briefs signed or returned in the reviewer's application, with each decision."
 FEEDBACK_KEY = "reviewer_decision"
@@ -37,6 +44,7 @@ SEND_BUDGET_SECONDS = 8.0
 """The longest the sign request waits for LangSmith in all; a send still going then is left."""
 SEND_ERRORS = (
     LangSmithError,
+    LangsmithError,
     OSError,
     ValueError,
     TypeError,
@@ -44,11 +52,13 @@ SEND_ERRORS = (
     KeyError,
     RuntimeError,
 )
-"""What a send can raise. The first three are LangSmith's errors, a broken connection and a refused
-request. The rest are what the client or the libraries under it raise when LangSmith answers in a
-shape it does not expect (a closed session or a stopped thread pool raise `RuntimeError`),
-which can only be told from a fault of ours by the request failing: the decision is already kept, so
-the person is told in one sentence and the traceback goes to the log."""
+"""What a send can raise. The first four are LangSmith's errors, in the two families the client
+raises (the older calls raise the first, the queue call the second, with a time-out among them), a
+broken connection and a refused request. The rest are what the client or the libraries under it
+raise when LangSmith answers in a shape it does not expect (a closed session or a stopped thread
+pool raise `RuntimeError`), which can only be told from a fault of ours by the request failing: the
+decision is already kept, so the person is told in one sentence and the traceback goes to the
+log."""
 
 
 class FeedbackUnavailableError(Exception):
@@ -75,10 +85,9 @@ class FeedbackClient(Protocol):
     def create_annotation_queue(self, *, name: str, **kwargs: Any) -> Any:
         """Make a queue and return it."""
 
-    def add_runs_to_annotation_queue(
-        self, queue_id: Any, *, runs: Any = None, **kwargs: Any
-    ) -> Any:
-        """Add runs to a queue."""
+    @property
+    def annotation_queues(self) -> Any:
+        """The queue resource: its ``items.create`` is a coroutine that adds runs to a queue."""
 
 
 def new_client(env: Mapping[str, str]) -> FeedbackClient:
@@ -136,6 +145,76 @@ def _queue_id(client: FeedbackClient) -> Any:
     return client.create_annotation_queue(name=QUEUE_NAME, description=QUEUE_DESCRIPTION).id
 
 
+def run_to_completion(make: Callable[[], Awaitable[_T]]) -> _T:
+    """Run a coroutine to the end from synchronous code, for no longer than the send budget.
+
+    The send runs in a thread of its own that has no event loop, so the coroutine gets one. Where a
+    loop is already running in the calling thread, a second cannot be started there, so the
+    coroutine runs in a helper thread with a loop of its own and the caller waits for it.
+
+    Args:
+        make: Makes the coroutine; called once, in the thread that runs it.
+
+    Returns:
+        What the coroutine returned.
+
+    Raises:
+        TimeoutError: If the coroutine had not finished when the budget ran out.
+        Exception: Whatever the coroutine raised.
+    """
+
+    async def bounded() -> _T:
+        return await asyncio.wait_for(make(), timeout=SEND_BUDGET_SECONDS)
+
+    try:
+        asyncio.get_running_loop()
+    except RuntimeError:
+        return asyncio.run(bounded())
+    with concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:
+        return pool.submit(asyncio.run, bounded()).result()
+
+
+def _queue_resource(client: FeedbackClient) -> Any:
+    """The client's queue resource, set to try a request at most ``SEND_ATTEMPTS`` times.
+
+    The client's own retry setting does not reach the queue resource, which keeps the generated
+    client's default of three attempts. The generated client is the resource's ``_client``, and it
+    copies itself with a lower limit. When the resource does not have one, the default stays and the
+    send budget is the only limit.
+    """
+    resource = client.annotation_queues
+    generated = getattr(resource, "_client", None)
+    if generated is None or not hasattr(generated, "with_options"):
+        LOG.warning("The queue resource has no retry setting; the send budget is its only limit")
+        return resource
+    return generated.with_options(max_retries=SEND_ATTEMPTS - 1).annotation_queues
+
+
+def add_run_to_queue(client: FeedbackClient, queue_id: Any, root: Traced) -> None:
+    """Put the brief's root run in the queue, as one item that names where the run is.
+
+    Args:
+        client: The LangSmith client.
+        queue_id: The queue.
+        root: Where the brief's root run was traced; its run id, project and start time are known.
+
+    Raises:
+        LangsmithError: If LangSmith refuses the item, cannot be reached or does not answer in time.
+        TimeoutError: If the whole call outlasts the send budget.
+    """
+    started = datetime.datetime.fromisoformat(str(root.started_at))
+    if started.tzinfo is None:
+        started = started.replace(tzinfo=datetime.UTC)  # LangSmith keeps run times in UTC
+    item = {
+        "item_type": "RUN",
+        "run_id": str(root.run_id),
+        "project_id": str(root.project_id),
+        "start_time": started.isoformat(),
+    }
+    resource = _queue_resource(client)
+    run_to_completion(lambda: resource.items.create(str(queue_id), items=[item]))
+
+
 def _send(
     client: FeedbackClient, root: Traced, response: ReviewResponse, progress: dict[str, Any]
 ) -> bool:
@@ -167,10 +246,7 @@ def _send(
         except SEND_ERRORS:
             LOG.exception("The decision on %s could not be sent to LangSmith", subject)
             return False
-    client.add_runs_to_annotation_queue(
-        _queue_id(client),
-        runs=[{"run_id": run_id, "session_id": root.project_id, "start_time": started}],
-    )
+    add_run_to_queue(client, _queue_id(client), root)
     progress["queued"] = True
     return True
 

@@ -97,7 +97,7 @@ make gate
 takes about ten minutes on the shared machine this was written on, most of it the application's browser tests, and ends with exit code 0. It runs, in order:
 
 1. `ruff check` and `ruff format --check` over every file of the repository.
-2. The tests of `fsi_common` and of topic 03. A few tests are skipped by design: the live model call needs `FSI_LIVE_MODEL_TESTS=1`, and the notebook runs belong to `make notebook`.
+2. The tests of `fsi_common` and of topic 03. A few tests are skipped by design: the live model call needs `FSI_LIVE_MODEL_TESTS=1`, and the notebook runs belong to `make notebook`. The tests include a scan of every source file and notebook for the LangSmith client methods and HTTP paths that LangSmith removes on 31 January 2027, and a test of the review queue call against a server on the same machine.
 3. That the 9 JSON Schemas and the 62 example files are what the code makes, byte for byte.
 4. The validator's self-test: 52 valid example records pass, and 45 of 45 planted invalid examples are caught by the check each declares and by no other; 38 of 38 checks have a planted case.
 5. The evaluation's planted faults: 6 of 6 caught, each lowering only the measures declared for it.
