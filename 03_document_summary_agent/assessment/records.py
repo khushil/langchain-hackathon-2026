@@ -327,6 +327,14 @@ class SeedMatch(Part):
     seeded_clauses: list[ClauseRef]
 
 
+class NotIncluded(Part):
+    """A regulation a run left out, with why and the commands that bring it in."""
+
+    regulation: RegulationKey
+    reason: NonBlank
+    commands: list[NonBlank] = Field(min_length=1)
+
+
 class BundleIndex(Part):
     """The bundle's own record: what it is, what it was built from and what it counts."""
 
@@ -338,6 +346,11 @@ class BundleIndex(Part):
     scope: list[str] = Field(
         description="The obligation ids the run assessed; empty means every applicable one. Only "
         "a fake run may narrow it."
+    )
+    not_included: list[NotIncluded] = Field(
+        default_factory=list,
+        description="Regulations the run left out, each with its reason and the commands that "
+        "fetch its text and record its calls",
     )
     source_ids: list[SourceId] = Field(min_length=1)
     counts: dict[str, int]
