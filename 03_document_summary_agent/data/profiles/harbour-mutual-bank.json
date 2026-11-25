@@ -1,0 +1,100 @@
+{
+  "corpus": "harbour-mutual-bank",
+  "as_of": "2026-11-25",
+  "entities": [
+    {
+      "name": "Harbour Mutual Bank plc",
+      "jurisdiction": "UK",
+      "microenterprise": null,
+      "microenterprise_basis": "Not a DORA entity, so the question does not arise",
+      "roles": [
+        {
+          "regulation": "SS1-23",
+          "role": "firm",
+          "qualifier": "UK-incorporated bank with internal model approval",
+          "evidence": {
+            "document": "HMB-POL-MRM-004-v2.0",
+            "clause": "2.1"
+          },
+          "quote": "Harbour Mutual Bank plc holds permission from the Prudential Regulation Authority to use the internal ratings based approach to calculate its capital requirements for credit risk"
+        },
+        {
+          "regulation": "AI-ACT",
+          "role": "provider",
+          "qualifier": "Article 50",
+          "evidence": {
+            "document": "HMB-STD-AI-014-v1.0",
+            "clause": "2.3"
+          },
+          "quote": "The Bank puts a customer chat assistant into service under its own name for its customers in the United Kingdom and in Ireland"
+        }
+      ]
+    },
+    {
+      "name": "Harbour Mutual Bank Europe DAC",
+      "jurisdiction": "EU",
+      "microenterprise": false,
+      "microenterprise_basis": "Assumed, and put to a person: the documents give no staff numbers or turnover; a credit institution with its own board, savings accounts and personal loans across Ireland is read as larger than a microenterprise",
+      "roles": [
+        {
+          "regulation": "DORA",
+          "role": "financial_entity",
+          "qualifier": "credit institution",
+          "evidence": {
+            "document": "HMB-FRM-GOV-000-v2.0",
+            "clause": "2.3"
+          },
+          "quote": "Harbour Mutual Bank Europe DAC is a credit institution authorised in Ireland"
+        },
+        {
+          "regulation": "AI-ACT",
+          "role": "deployer_high_risk",
+          "qualifier": "high-risk",
+          "evidence": {
+            "document": "HMB-STD-AI-014-v1.0",
+            "clause": "2.2"
+          },
+          "quote": "The Bank treats the consumer credit scoring system as a high-risk AI System and Harbour Mutual Bank Europe DAC as its deployer"
+        },
+        {
+          "regulation": "AI-ACT",
+          "role": "deployer",
+          "qualifier": null,
+          "evidence": {
+            "document": "HMB-STD-AI-014-v1.0",
+            "clause": "2.2"
+          },
+          "quote": "Harbour Mutual Bank Europe DAC deploys a consumer credit scoring system"
+        }
+      ]
+    }
+  ],
+  "ai_systems": [
+    {
+      "name": "consumer credit scoring system",
+      "entity": "Harbour Mutual Bank Europe DAC",
+      "role": "deployer",
+      "high_risk": true,
+      "interacts_with_natural_persons": false,
+      "generates_synthetic_content": false,
+      "evidence": {
+        "document": "HMB-STD-AI-014-v1.0",
+        "clause": "2.2"
+      },
+      "quote": "to assess the creditworthiness of applicants for personal loans in Ireland"
+    },
+    {
+      "name": "customer chat assistant",
+      "entity": "Harbour Mutual Bank plc",
+      "role": "provider",
+      "high_risk": false,
+      "interacts_with_natural_persons": true,
+      "generates_synthetic_content": null,
+      "evidence": {
+        "document": "HMB-STD-AI-014-v1.0",
+        "clause": "2.3"
+      },
+      "quote": "The Bank's customer chat assistant answers questions about accounts, payments and the Bank's products"
+    }
+  ]
+}
