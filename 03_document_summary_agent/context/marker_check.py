@@ -77,13 +77,14 @@ def unconfirmed_questions(
                 question=(
                     f'Paragraph {number} of {source.key} contains "{marker}", which can mark an '
                     "obligation, and no obligation that passed its checks was read from it, even "
-                    f"on a second read of that paragraph alone. Does paragraph {number} place an "
-                    "obligation on the firm, and if so what is it?"
+                    f"when the paragraph was read again on its own. Does paragraph {number} place "
+                    "an obligation on the firm, and if so what is it?"
                 ),
                 why_unknown=(
-                    f'A plain-code check found "{marker}" in paragraph {number}. The first read '
-                    f"of section {found.paragraph.section} gave no obligation from it that passed "
-                    f"its checks, and a second read of paragraph {number} alone gave none."
+                    f'Paragraph {number} contains "{marker}", which usually marks a duty. No '
+                    f"obligation that passed its checks was read from it in section "
+                    f"{found.paragraph.section}, and none was read when paragraph {number} was "
+                    "read again on its own."
                 ),
                 impact=(
                     "If the paragraph places an obligation on the firm, the brief leaves it out "
@@ -139,9 +140,9 @@ def unmarked_obligation_questions(
                     f"Does paragraph {number} place an obligation on the firm?"
                 ),
                 why_unknown=(
-                    f"The section reader read an obligation from paragraph {number}. A plain-code "
-                    f"check found none of {listed} in the paragraph, so the obligation rests on "
-                    "the reader's inference alone."
+                    f"An obligation was read from paragraph {number}, but the paragraph has none "
+                    f"of {listed}, the words that usually mark a duty, so the obligation rests on "
+                    "how the paragraph was understood and not on its wording."
                 ),
                 impact=(
                     "The facts stay on the record, and the brief cites each only if it passed its "

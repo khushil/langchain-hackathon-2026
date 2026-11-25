@@ -20,7 +20,9 @@ from review_app.context import (
     RunInfo,
     Services,
     document_map,
+    earlier_decisions,
     naming_of,
+    plain_error,
     read_run,
     run_tabs,
     run_url,
@@ -101,12 +103,14 @@ def load_review(
         return RedirectResponse(run_url(thread), status_code=303)
     except RunNotFoundError as exc:
         raise no_such_run(thread) from exc
+    carried = [q.decision_id for q in request.open_questions if q.decision_id]
     model = ReviewModel(
         request,
         services.drafts.get(thread, person),
         viewer=person,
         firm_name=info.firm_name,
         document_title=info.document_title,
+        earlier=earlier_decisions(services, thread, carried),
     )
     return info, request, model
 
@@ -215,6 +219,7 @@ def review_context(
             info,
             lambda anchor, ids: open_paragraph(thread, model, anchor, ids),
             current,
+            model.settled_questions(),
         )
         if tab == "brief"
         else None,
@@ -381,14 +386,22 @@ def routes(services: Services) -> list[Route]:
             person=person,
             on=services.today(),
         )
-        runs_of(services).submit(info.thread_id, response)
+        runs = runs_of(services)
+        status = runs.submit(info.thread_id, response)
+        if status == "awaiting_review":
+            # The engine refused the response on resume and left the run at the review.
+            raise ReviewInputError(
+                f"The brief was not recorded as {response.sign_off.outcome}. "
+                + plain_error(runs.error(info.thread_id))
+            )
+        if status == "failed":
+            return RedirectResponse(run_url(info.thread_id), status_code=303)
         try:
             services.drafts.clear(info.thread_id)
         except DraftFileError:  # the brief is signed; drafts left on a signed run are never shown
             LOG.exception(
                 "Run %s is signed but its pending work could not be cleared", info.thread_id
             )
-        runs = runs_of(services)
         note = report_to_queue(services.feedback, lambda: runs.root_run(info.thread_id), response)
         if note:
             services.feedback_notes[info.thread_id] = note

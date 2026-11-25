@@ -4,24 +4,22 @@
     <h2 class="profile-heading">The firm profile the brief was written against</h2>
     {% for group in profile %}
     <h3 class="profile-owner">{{ group.heading }}</h3>
-    <div class="table-wrap">
-    <table class="data profile-table">
-      <tbody>
-        {% for row in group.rows %}
-        <tr>
-          <th scope="row">{{ row.label }}</th>
-          <td>{{ row.value }}</td>
-          <td>{{ parts.fact_state(row.state, person) }}</td>
-          <td><a class="fact-link" href="{{ fact_href(row.fact_id) }}" data-fact="{{ row.fact_id }}" title="Open the source of {{ group.heading }}, {{ row.label|lower }}" {% if panel and panel.fact.id == row.fact_id %}aria-current="true"{% endif %}>Source</a></td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-    </div>
+    <ul class="profile-rows">
+      {% for row in group.rows %}
+      <li class="profile-row">
+        <span class="profile-label">{{ row.label }}</span>
+        <span class="profile-value">{{ row.value }}</span>
+        <span class="profile-state">
+          {{ parts.fact_state(row.state, person) }}
+          <a class="fact-link" href="{{ fact_href(row.fact_id) }}" data-fact="{{ row.fact_id }}" title="Open the source of {{ group.heading }}, {{ row.label|lower }}" {% if panel and panel.fact.id == row.fact_id %}aria-current="true"{% endif %}>Source</a>
+        </span>
+      </li>
+      {% endfor %}
+    </ul>
     {% endfor %}
     {% set shared = model.profile_decision %}
     {% if shared %}
-    <p class="note" data-hook="profile-decision">{{ decision_line(shared.decision, person) }}, covering {{ shared.fact_ids|length }} {{ "fact" if shared.fact_ids|length == 1 else "facts" }}. {% if shared.decision.amendment %}{{ "Your wording" if shared.decision.reviewer == person else "Wording" }}: {{ shared.decision.amendment }}. {% endif %}Reason given: {{ shared.decision.reason }}</p>
+    <p class="note" data-hook="profile-decision">{{ decision_line(shared.decision, person) }}, covering {{ shared.fact_ids|length }} {{ "fact" if shared.fact_ids|length == 1 else "facts" }}. {% if shared.decision.amendment %}{{ "Your wording" if shared.decision.reviewer == person else "Wording" }}: {{ sentence_end(shared.decision.amendment) }} {% endif %}Reason given: {{ shared.decision.reason }}</p>
     {% endif %}
     {% if person %}
     <form method="post" action="/compliance-brief/runs/{{ thread }}/profile" class="decision-form" data-hook="profile-form">

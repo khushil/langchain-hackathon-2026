@@ -32,10 +32,14 @@ INDEX = """{% extends "base.html" %}
   <a href="/toy/runs/{{ run }}" title="Open the run">Run</a>
   <a href="/toy/table.csv" title="Download the rows">Export CSV</a>
   <a href="#note" title="Go to the note">To the note</a>
+  <p id="note">The first page has its own note.</p>
+  <p id="hint">Read this first.</p>
+  <span aria-describedby="hint">A described thing</span>
+  <label for="loose">A label outside the form</label>
+  <input id="loose" type="text" name="loose">
   <form method="post" action="/toy/post" id="form-one">
-    <label for="note">Note</label>
-    <textarea id="note" name="note" aria-describedby="hint"></textarea>
-    <p id="hint">Say what you think.</p>
+    <label for="typed">Say it in the form</label>
+    <textarea id="typed" name="typed"></textarea>
     <button type="submit" title="Send the note">Send</button>
     <input type="submit" value="Go" title="Go">
     <button type="button" title="Plain button">Not a submit</button>

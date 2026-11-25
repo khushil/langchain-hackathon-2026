@@ -17,7 +17,7 @@
 <p class="paragraph" data-hook="paragraph">{% if panel.segments %}{% for seg in panel.segments %}{% if seg.marked %}<mark>{{ seg.text }}</mark>{% else %}{{ seg.text }}{% endif %}{% endfor %}{% else %}{{ panel.unit_text }}{% endif %}</p>
 {% endif %}
 {% if not panel.quote_found %}<p>{{ ui.badge("failed", "The quoted words are not in this " ~ ("row" if panel.row else "paragraph")) }}</p>{% endif %}
-<p class="meta">Document digest <code class="digest" data-hook="digest">{{ panel.digest }}</code></p>
+<div class="meta" data-hook="digest">Document digest <details class="digest-details digest-inline"><summary class="digest" title="{{ panel.digest }}">{{ panel.digest[:15] }}…</summary><code class="digest">{{ panel.digest }}</code></details></div>
 {% endmacro %}
 
 {% macro record(fact) %}

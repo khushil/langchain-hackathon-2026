@@ -87,7 +87,7 @@ def test_unconfirmed_question_names_the_paragraph_and_the_marker_and_rests_on_th
     (question,) = unconfirmed_questions(marked, source=SOURCE)
     assert question.about.anchor == "para:9.3" and question.about.source_id == SOURCE.id
     assert "paragraph 9.3" in question.question and '"must"' in question.question
-    assert "second read" in question.why_unknown and "paragraph 9.3" in question.why_unknown
+    assert "read again" in question.why_unknown and "paragraph 9.3" in question.why_unknown
     assert question.cites == [paragraph_unit(SOURCE, PARAGRAPHS9[2]).id]
     assert question.reason == "ambiguous_meaning"
     assert (question.state, question.priority, question.ask_role) == (

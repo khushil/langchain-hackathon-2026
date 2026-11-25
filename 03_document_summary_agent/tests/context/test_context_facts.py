@@ -92,6 +92,9 @@ def test_read_section_makes_no_fact_for_a_paragraph_that_does_not_exist_and_asks
     assert "7.9" in question.question
     assert "section 7" in question.question
     assert invented.evidence in question.question
+    assert "7.9" in question.why_unknown and "none is 7.9" in question.why_unknown
+    for words in ("section reader", "model", "reader"):
+        assert words not in question.why_unknown.lower() + question.question.lower()
     section_anchors = {p.anchor for p in SECTION7.paragraphs}
     held = {u.id for u in DOCUMENT.units if u.anchor in section_anchors}
     assert question.cites and set(question.cites) == held

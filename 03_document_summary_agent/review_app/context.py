@@ -3,13 +3,15 @@
 from __future__ import annotations
 
 import logging
-from collections.abc import Callable, Sequence
+import re
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
 from urllib.parse import urlencode
 
 from starlette.exceptions import HTTPException
 
+from fsi_common.records import Decision
 from review_app.drafts import DraftFileError, DraftStore
 from review_app.feedback import FeedbackClient, default_client
 from review_app.library import Library, read_library
@@ -74,6 +76,28 @@ class RunInfo:
 STATE_ERRORS = (StateFolderError, DraftFileError)
 LOG = logging.getLogger("review_app.context")
 STATE_ACTION = "The server could not save your work. Tell the person who runs this server."
+
+
+NO_ANSWER_HELD = "No saved answer is held for part of this brief, so it could not be written here."
+_HASH = re.compile(r"\s*\b(?:sha256:)?[0-9a-f]{32,}\b")
+
+
+def plain_error(text: str | None) -> str:
+    """Put an engine failure in the words a reviewer reads: no hash, no internal mode name.
+
+    Args:
+        text: What the engine gave as the reason, or None when it gave none.
+
+    Returns:
+        A sentence. A missing saved answer is said as that; any other reason keeps its words
+        with the long identifiers taken out.
+    """
+    if not text:
+        return "The engine gave no reason."
+    if "no recording for request" in text:
+        return NO_ANSWER_HELD
+    plain = _HASH.sub("", text).strip()
+    return plain[:1].upper() + plain[1:]
 
 
 def state_unavailable(exc: Exception, what: str) -> HTTPException:
@@ -193,11 +217,75 @@ def read_run(services: Services, thread_id: str) -> RunInfo:
     )
 
 
+def earlier_decisions(
+    services: Services, thread_id: str, wanted: Sequence[str]
+) -> dict[str, Decision]:
+    """Find decisions an earlier brief holds, by their ids.
+
+    A question another brief has answered arrives on this brief as settled, naming that answer by
+    id only; the answer itself is in the state of the brief that settled it. This reads every
+    finished brief but the one being read, whatever its firm, document or age, and takes a
+    decision by its id alone. That is safe because a decision's id is made from its content, so
+    one id names one record wherever it is held; no brief can supply a different answer under it.
+
+    Args:
+        services: The services.
+        thread_id: The run being read, which is never searched.
+        wanted: The ids of the decisions to find.
+
+    Returns:
+        The decisions found, by id; an id no finished brief holds is left out.
+    """
+    missing = set(wanted)
+    found: dict[str, Decision] = {}
+    if not missing:
+        return found
+    runs = runs_of(services)
+    for other in runs.list_runs():
+        if other == thread_id or runs.status(other) not in {"signed", "returned"}:
+            continue
+        held = runs.result(other).get("decisions", {}) or {}
+        for decision_id in sorted(missing & set(held)):
+            found[decision_id] = Decision.model_validate(held[decision_id])
+        missing -= set(found)
+        if not missing:
+            break
+    return found
+
+
+def carried_decision_ids(services: Services, info: RunInfo) -> set[str]:
+    """Find the decisions of a finished brief that an earlier brief had already made.
+
+    A decision carried into a later brief keeps its id, so a decision of this brief that also
+    stands in the state of a brief started before it was not made on this one.
+
+    Args:
+        services: The services.
+        info: The finished run.
+
+    Returns:
+        The ids of those decisions.
+    """
+    held = set(info.state.get("decisions", {}) or {})
+    runs = runs_of(services)
+    order = runs.list_runs()  # newest first
+    earlier = order[order.index(info.thread_id) + 1 :] if info.thread_id in order else []
+    carried: set[str] = set()
+    for other in earlier:
+        if runs.status(other) not in {"signed", "returned"}:
+            continue
+        carried |= held & set(runs.result(other).get("decisions", {}) or {})
+        if carried == held:
+            break
+    return carried
+
+
 def document_map(
     services: Services,
     info: RunInfo,
     href_for: Callable[[str, Sequence[str]], str],
     current: str | None = None,
+    settled: Mapping[str, str] | None = None,
 ) -> DocumentMap | None:
     """Draw the picture of the document a run was asked to read.
 
@@ -206,6 +294,8 @@ def document_map(
         info: The run.
         href_for: Gives the address that opens a paragraph, from its anchor and first fact.
         current: The anchor of the paragraph open now, if any.
+        settled: How each question a person has settled was settled, by question id; the others
+            are drawn as open.
 
     Returns:
         The picture, or None when the run holds no accounting of the document.
@@ -213,5 +303,10 @@ def document_map(
     document = services.library().document(info.document_id)
     titles = {s.number: s.title for s in document.sections} if document else {}
     return build_map(
-        info.state, sections=info.sections, titles=titles, href_for=href_for, current=current
+        info.state,
+        sections=info.sections,
+        titles=titles,
+        href_for=href_for,
+        current=current,
+        settled=settled,
     )

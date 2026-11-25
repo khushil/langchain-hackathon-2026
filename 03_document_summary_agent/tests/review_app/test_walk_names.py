@@ -25,16 +25,19 @@ def cited(runs):
 
 
 def test_a_firm_or_provider_fact_is_named_in_words_wherever_it_is_listed(table_runs):
-    text = text_of(make_client(table_runs).get(f"{RUN}/review").text)
+    client = make_client(table_runs)
+    text = text_of(client.get(f"{RUN}/review").text)
+    assert "Paragraph 7.1, obligation" in text and "Firm profile" in text
+    profile = text_of(client.get(f"{RUN}/review?tab=profile").text)
     for name in (
-        "Harbour Mutual Bank, firm profile: total assets",
-        "Harbour Mutual Bank, firm profile: operational resilience senior manager",
-        "Harbour Mutual Bank, firm profile: link to NimbusCloud",
-        "NimbusCloud, provider: name",
-        "PayCore Ltd, provider: service",
-        "Paragraph 7.1, obligation",
+        "Harbour Mutual Bank, firm profile",
+        "Total assets",
+        "Operational resilience senior manager",
+        "Provider NimbusCloud, contract ends",
+        "NimbusCloud, provider",
+        "PayCore Ltd, provider",
     ):
-        assert name in text, name
+        assert name in profile, name
     facts_page = text_of(make_client(table_runs).get(f"{RUN}/facts").text)
     assert "Harbour Mutual Bank, firm profile: total assets" in facts_page
     assert "PayCore Ltd, provider: service" in facts_page

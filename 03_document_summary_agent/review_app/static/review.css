@@ -73,32 +73,72 @@ mark { background: var(--mark); color: var(--ink); border-bottom: 2px solid var(
 .decision-form .problem { margin: 6px 0; }
 
 .digest-details { display: block; }
+.meta .digest-inline { display: inline-block; vertical-align: top; }
 .digest-details summary { cursor: pointer; font-family: var(--mono); font-size: 0.867rem; }
 .digest-details[open] summary { margin-bottom: 4px; }
 
 .profile-heading { font-size: 1.1rem; margin: 0 0 6px; }
 .profile-owner { font-size: 0.933rem; margin: 10px 0 2px; color: var(--muted); font-weight: 600; }
-.profile-table th { width: 34%; white-space: normal; font-weight: 600; }
 .profile .decision-form { margin-top: 10px; }
 
-/* The picture of the document: grey by default, amber and coral only for a question or a failed check. */
-.left-column { display: flex; flex-direction: column; min-width: 0; max-height: calc(100vh - 372px); }
-.left-column .pane { flex: 1 1 auto; max-height: none; min-height: 7rem; }
-.map { flex: none; max-height: 10rem; overflow: auto; margin: 0 0 8px; padding-right: 4px; }
-.exhibit > .map { max-height: none; }
-.map-count { margin: 0 0 4px; font-weight: 600; }
-.map-section { margin: 0 0 4px; }
-.map-title { font-size: 0.867rem; margin: 2px 0; color: var(--muted); font-weight: 600; }
-.map-cells { list-style: none; display: flex; flex-wrap: wrap; gap: 4px; margin: 0; padding: 0; }
+/* The picture of the document: a band across the page above the brief, grey by default; amber and
+   coral only for a question still open or a failed check. */
+.brief-exhibit > .map { margin: 0 0 10px; }
+.map-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 2px 18px; margin: 0 0 2px; }
+.map-count { margin: 0; font-weight: 600; }
+.map-key { list-style: none; display: flex; flex-wrap: wrap; gap: 2px 14px; margin: 0; padding: 0; font-size: 0.867rem; color: var(--muted); }
+.map-key-item { display: inline-flex; align-items: center; gap: 4px; }
+.map-key .icon { width: 12px; height: 12px; flex: none; }
+.key-question { color: var(--amber-ink); }
+.key-failed { color: var(--coral-ink); }
+.map-sections { display: flex; flex-wrap: wrap; gap: 2px 16px; }
+.map-section { display: flex; flex-direction: column; min-width: 8.5rem; max-width: 100%; }
+/* A title wraps to the width of its boxes, so a long name is never cut and never widens its section. */
+.map-title { width: 0; min-width: 100%; font-size: 0.867rem; line-height: 1.25; margin: 0 0 2px; color: var(--muted); font-weight: 600; }
+.map-cells { list-style: none; display: flex; flex-wrap: wrap; gap: 3px; margin: 0; padding: 0; }
 .map-cell {
-  display: flex; flex-direction: column; min-width: 5.4rem; padding: 2px 8px; text-decoration: none;
+  display: inline-flex; align-items: center; gap: 2px; padding: 1px 3px; text-decoration: none;
   border: 1px solid var(--line); border-radius: 4px; background: var(--surface); font-size: 0.867rem;
 }
 .map-number { font-weight: 700; }
-.map-mark { display: inline-flex; align-items: center; gap: 4px; }
+.map-word { display: none; }
+.map-mark { display: inline-flex; align-items: center; }
 .map-mark .icon { width: 12px; height: 12px; flex: none; }
 .map-nothing { background: var(--bg); color: var(--muted); }
 .map-question { background: var(--amber-bg); color: var(--amber-ink); border-color: var(--amber-line); }
 .map-failed { background: var(--coral-bg); color: var(--coral-ink); border-color: var(--coral-line); }
-.map-cell[aria-current="true"] { border-width: 3px; padding: 0 6px; }
-@media (max-width: 1100px) { .left-column { max-height: none; } }
+.map-cell[aria-current="true"] { border-width: 3px; padding: 0 1px; }
+
+@media (min-width: 1100px) { .review-page .pane { max-height: calc(100vh - 300px); } }
+/* The Brief tab: the answer is set beside its tiles so the picture, the statements and the source fit. */
+.brief-exhibit .pane { max-height: calc(100vh - 384px); }
+main:has(.review-page) { padding-bottom: 10px; }
+@media (min-width: 1100px) {
+  .review-page .answer { display: flex; align-items: flex-start; gap: 8px 24px; margin-bottom: 10px; }
+  .review-page .sentence { font-size: 1.15rem; margin: 0; flex: 1 1 50%; max-width: none; }
+  .review-page .tiles { flex: 0 0 auto; grid-template-columns: repeat(3, max-content); gap: 8px; }
+  .review-page .tile-label { white-space: nowrap; }
+  .review-page .tile { padding: 5px 10px; }
+  .review-page .tile-value { font-size: 1.3rem; }
+  .review-page .tabs { margin-bottom: 8px; }
+  .review-page .brief-exhibit { padding: 8px 16px 10px; }
+}
+@media (max-width: 1100px) { .brief-exhibit .pane { max-height: none; } }
+
+/* The firm profile: each fact is a row of its own, so its state and its source are always in view. */
+.profile-rows { list-style: none; margin: 0 0 8px; padding: 0; }
+.profile-row { display: grid; grid-template-columns: minmax(8rem, 32%) minmax(0, 1fr); gap: 0 12px; padding: 6px 0; border-bottom: 1px solid var(--rule); }
+.profile-label { font-weight: 600; color: var(--muted); }
+.profile-value { overflow-wrap: anywhere; }
+.profile-state { grid-column: 2; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; margin-top: 2px; }
+
+@media (max-width: 640px) {
+  .record { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .record dt { margin-top: 8px; }
+  .profile-row { grid-template-columns: minmax(0, 1fr); }
+  .profile-state { grid-column: 1; }
+  .map-sections { gap: 6px 14px; }
+}
+
+/* A badge beside a fact wraps inside its line, so a long date is never cut at a narrow window. */
+.cites .badge { white-space: normal; max-width: 100%; }

@@ -111,7 +111,8 @@ def test_the_finished_page_reads_outcome_then_the_brief_then_the_record_then_the
 def test_the_record_shows_the_digest_shortened_with_the_whole_value_on_hover_and_focus():
     runs = finished("signed")
     full = runs._runs["run-1"].review.request.brief_digest
-    page = make_client(runs).get(f"{RUN}/signed").text
+    whole = make_client(runs).get(f"{RUN}/signed").text
+    page = whole[whole.index('data-hook="sign-off-record"') :]
     summary = re.search(r'<summary[^>]*class="digest"[^>]*>(.*?)</summary>', page, flags=re.S)
     assert summary, "the digest is not a control that can take focus"
     assert f'title="{full}"' in summary.group(0)

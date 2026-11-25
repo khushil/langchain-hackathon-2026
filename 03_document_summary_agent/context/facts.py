@@ -93,7 +93,7 @@ def _unresolved_questions(
                     f"evidence given was {quoted}. Which paragraph is meant?"
                 ),
                 why_unknown=(
-                    f"The section reader cited paragraph {number}; the paragraphs of section "
+                    f"Paragraph {number} was named as the source; the paragraphs of section "
                     f"{section.number} are {first} to {last}, and none is {number}."
                 ),
                 impact="The obligation is not a fact, because a fact needs a paragraph to cite, "

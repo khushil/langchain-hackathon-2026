@@ -51,7 +51,7 @@ a:hover { background: var(--mark); }
   font-size: 0.867rem; border: 1px solid var(--line); border-radius: 3px;
   padding: 1px 7px; color: var(--muted); background: var(--bg);
 }
-.who { max-width: 28ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.who { max-width: 44ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .inline { display: inline; margin: 0; }
 
 main { padding: 18px 24px 24px; max-width: 1760px; margin: 0 auto; }
@@ -137,4 +137,14 @@ table.data th a { text-decoration: none; }
   main { padding: 12px 12px 20px; }
   .sentence { font-size: 1.25rem; }
   .tiles { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* A phone: a table reads as one card for each row, with every column's name beside its value. */
+@media (max-width: 640px) {
+  table.data[data-hook="table"], table.data[data-hook="table"] tbody { display: block; }
+  table.data[data-hook="table"] thead tr { display: flex; flex-wrap: wrap; gap: 2px 14px; border-bottom: 1px solid var(--line); padding-bottom: 4px; }
+  table.data[data-hook="table"] thead th { border: none; padding: 2px 0; }
+  table.data[data-hook="table"] tbody tr { display: block; border-bottom: 1px solid var(--line); padding: 6px 0; }
+  table.data[data-hook="table"] td { display: grid; grid-template-columns: 7rem minmax(0, 1fr); gap: 0 8px; border: none; padding: 2px 0; }
+  table.data[data-hook="table"] td::before { content: attr(data-label); font-weight: 600; color: var(--muted); }
 }

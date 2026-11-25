@@ -10,7 +10,7 @@ from context.marker_check import (
 )
 from context.reader import paragraph_unit, read_document
 from fsi_common.records import CheckResult, Fact, UnitAccounting
-from review_app.paragraph_map import build_map, paragraph_panel
+from review_app.paragraph_map import build_map, paragraph_panel, plain_reason
 from utils.records import FACT_CONTEXT
 
 DOCUMENT = read_document("PS26-4")
@@ -110,5 +110,9 @@ def test_the_paragraph_opened_from_the_picture_says_in_words_which_marker_was_fo
     reason = marked_no_fact_reason("must")
     state = _state([_fact("9.1")], without={"para:9.2": "n", "para:9.3": reason, "para:9.4": "n"})
     panel = paragraph_panel(state, "9.3")
-    assert panel is not None and panel.reason == reason
-    assert '"must"' in panel.reason and "open question" in panel.reason
+    assert panel is not None and panel.reason == plain_reason(reason)
+    assert panel.reason == (
+        'The paragraph contains "must", which can mark an obligation, but no obligation was '
+        "recorded from it. A question about it is open."
+    )
+    assert "second read" not in panel.reason and "reviewer" not in panel.reason

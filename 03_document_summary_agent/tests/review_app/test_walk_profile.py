@@ -83,7 +83,12 @@ def test_a_profile_fact_in_the_brief_leads_to_the_profile_and_has_no_form_of_its
     client = make_client(table_runs)
     profile_fact = facts_of(table_runs, profile=True)[0]
     page = client.get(f"{RUN}/review")
-    link = re.search(rf'href="([^"]+)" data-fact="{profile_fact.id}"', page.text)
+    assert 'data-hook="profile-badge"' in page.text
+    assert f'data-fact="{profile_fact.id}"' not in page.text
+    link = re.search(
+        rf'href="([^"]+)" data-fact="{profile_fact.id}"',
+        client.get(f"{RUN}/review?tab=profile").text,
+    )
     assert link and "tab=profile" in link.group(1)
     opened = client.get(f"{RUN}/review", params={"fact": profile_fact.id})
     assert "decision-form" not in opened.text
@@ -102,8 +107,11 @@ def test_one_confirmation_records_one_decision_for_each_fact_with_one_reason(tab
     assert "Accepted by you, on 25 November 2026, covering 5 facts" in text
     assert "Reason given: The firm and provider tables say this." in text
     assert tiles(page)[1] == "5 of 6"
+    badges = re.findall(r'data-state="yours">Accepted by you', page.text)
+    assert len(badges) == 5
     brief = client.get(f"{RUN}/review")
-    assert text_of(brief.text).count("Accepted by you") == 5
+    firm = re.findall(r'data-hook="profile-badge">(.*?)</li>', brief.text, flags=re.S)
+    assert firm and all("Accepted by you" in b for b in firm)
     # the decisions are held one per fact, so sign-off sends one per subject
     decide(client, table_runs._runs["run-1"].review, facts_of(table_runs, profile=False)[0])
     signed = client.post(

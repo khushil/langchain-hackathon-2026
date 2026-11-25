@@ -30,6 +30,10 @@ class RealExport:
         assert response.status_code == 200, address
         return response.text
 
+    def served_without_controls(self, address: str) -> str:
+        """Return the served page without its forms and buttons, which a file cannot have."""
+        return re.sub(r"<(form|button)\b.*?</\1>", "", self.served(address), flags=re.S)
+
     def sentence(self, address: str) -> str:
         """Return the answer sentence the application serves at an address."""
         return unescape(SENTENCE.search(self.served(address)).group(1)).strip()

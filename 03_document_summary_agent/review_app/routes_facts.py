@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
+from dataclasses import dataclass
 from urllib.parse import urlencode
 
 from starlette.exceptions import HTTPException
@@ -17,6 +18,7 @@ from fsi_common.records import Decision, Fact, Person, SignOff
 from review_app.context import (
     RunInfo,
     Services,
+    carried_decision_ids,
     document_map,
     naming_of,
     read_run,
@@ -24,7 +26,7 @@ from review_app.context import (
     run_url,
 )
 from review_app.naming import Naming
-from review_app.paragraph_map import paragraph_panel
+from review_app.paragraph_map import paragraph_panel, settled_by_state
 from review_app.profile import PROFILE_KINDS, shared_decision
 from review_app.record_view import (
     cited_ids,
@@ -61,6 +63,19 @@ DECISION_COLUMNS = (
     Column("date", "Date"),
     Column("reason", "Reason"),
 )
+
+
+@dataclass(frozen=True)
+class FactTable:
+    """The facts page's table, its counts and what its picture and tabs need."""
+
+    view: object
+    total: int
+    decided: int
+    failed: int
+    open_at: Callable[[str, Sequence[str]], str]
+    settled: dict[str, str]
+    has_profile: bool
 
 
 def _plural(count: int, one: str) -> str:
@@ -120,7 +135,7 @@ def decision_text(
 def routes(services: Services) -> list[Route]:
     """Return the facts and signed pages' routes, bound to the services."""
 
-    def fact_table(request: Request, info: RunInfo):
+    def fact_table(request: Request, info: RunInfo) -> FactTable:
         viewer = current_person(request)
         naming = naming_of(services)
         loaded = load_review(services, info.thread_id, viewer)
@@ -179,6 +194,8 @@ def routes(services: Services) -> list[Route]:
             empty="The brief cites no facts.",
         )
         if isinstance(loaded, Response):
+            settled = settled_by_state(info.state)
+            has_profile = False
             cited = set(cited_ids(info))
 
             def open_at(anchor: str, ids: Sequence[str]) -> str:
@@ -188,11 +205,13 @@ def routes(services: Services) -> list[Route]:
 
         else:
             model = loaded[2]
+            settled = model.settled_questions()
+            has_profile = bool(model.profile_ids)
 
             def open_at(anchor: str, ids: Sequence[str]) -> str:
                 return open_paragraph(info.thread_id, model, anchor, ids)
 
-        return view, total, decided, failed, open_at
+        return FactTable(view, total, decided, failed, open_at, settled, has_profile)
 
     def info_for(request: Request) -> RunInfo:
         info = read_run(services, request.path_params["thread"])
@@ -202,7 +221,8 @@ def routes(services: Services) -> list[Route]:
 
     def facts_page(request: Request) -> Response:
         info = info_for(request)
-        view, total, decided, failed, open_at = fact_table(request, info)
+        found = fact_table(request, info)
+        total, decided = found.total, found.decided
         waiting = total - decided
         sentence = f"{_plural(total, 'fact')} support the brief for {info.firm_name}; " + (
             f"{waiting} still need a decision." if waiting else "every one has a decision."
@@ -212,23 +232,23 @@ def routes(services: Services) -> list[Route]:
             tiles=(
                 Tile("Facts", str(total)),
                 Tile("Decided", f"{decided} of {total}", "needs_person" if waiting else "normal"),
-                Tile("Failed checks", str(failed), "failed" if failed else "normal"),
+                Tile("Failed checks", str(found.failed), "failed" if found.failed else "normal"),
             ),
         )
         context = {
             "page_title": "Facts",
             "answer": answer,
-            "table": view,
-            "map": document_map(services, info, open_at),
+            "table": found.view,
+            "map": document_map(services, info, found.open_at, None, found.settled),
             "info": info,
-            "tabs_for": run_tabs(info.thread_id, info.status),
+            "tabs_for": run_tabs(info.thread_id, info.status, has_profile=found.has_profile),
             "thread": info.thread_id,
         }
         return render(request, "compliance_brief/facts.html", context)
 
     def facts_csv(request: Request) -> Response:
         info = info_for(request)
-        view = fact_table(request, info)[0]
+        view = fact_table(request, info).view
         return PlainTextResponse(
             table_csv(view),
             media_type="text/csv",
@@ -239,7 +259,8 @@ def routes(services: Services) -> list[Route]:
         info = read_run(services, request.path_params["thread"])
         if info.status not in {"signed", "returned"}:
             raise HTTPException(404, "The brief has no decisions to export yet.")
-        view, _ = decisions_view(request, info, naming_of(services))
+        carried = frozenset(carried_decision_ids(services, info))
+        view = decisions_view(request, info, naming_of(services), carried)[0]
         return PlainTextResponse(
             table_csv(view),
             media_type="text/csv",
@@ -252,7 +273,8 @@ def routes(services: Services) -> list[Route]:
             return RedirectResponse(run_url(info.thread_id, "review"), status_code=303)
         if info.status not in {"signed", "returned"}:
             return RedirectResponse(run_url(info.thread_id), status_code=303)
-        context = signed_context(request, info, naming_of(services))
+        carried = frozenset(carried_decision_ids(services, info))
+        context = signed_context(request, info, naming_of(services), carried)
         context["queue_note"] = services.feedback_notes.get(info.thread_id)
         return render(request, "compliance_brief/signed.html", context)
 
@@ -264,7 +286,12 @@ def routes(services: Services) -> list[Route]:
     ]
 
 
-def profile_row(shared, facts: dict, naming: Naming) -> dict[str, Cell]:
+CARRIED_WORDS = "carried from an earlier review"
+
+
+def profile_row(
+    shared, facts: dict, naming: Naming, carried: frozenset[str] = frozenset()
+) -> dict[str, Cell]:
     """Return the one row that stands for the decision on the whole firm profile."""
     names = [
         naming.fact_name(Fact.model_validate(facts[fid], context=FACT_CONTEXT))
@@ -278,14 +305,20 @@ def profile_row(shared, facts: dict, naming: Naming) -> dict[str, Cell]:
             f"Firm profile, {count} {'fact' if count == 1 else 'facts'}: {'; '.join(names)}"
         ),
         "requirement": Cell(DOES_NOT_APPLY),
-        "decision": Cell(outcome_word(decision) + (f": {what}" if what else "")),
+        "decision": Cell(
+            outcome_word(decision)
+            + (f", {CARRIED_WORDS}" if decision.id in carried else "")
+            + (f": {what}" if what else "")
+        ),
         "reviewer": Cell(f"{decision.reviewer.name}, {decision.reviewer.role}"),
         "date": Cell(long_date(decision.date), sort_value=decision.date),
         "reason": Cell(decision.reason),
     }
 
 
-def decisions_view(request: Request, info: RunInfo, naming: Naming):
+def decisions_view(
+    request: Request, info: RunInfo, naming: Naming, carried: frozenset[str] = frozenset()
+):
     """Return the table of the decisions a finished brief stands on, one for each subject."""
     brief = info.state.get("draft_brief") or {}
     facts = {fid: contents[0] for fid, contents in records_of(info, "facts").items()}
@@ -297,7 +330,7 @@ def decisions_view(request: Request, info: RunInfo, naming: Naming):
     profile_ids = [f for f in cited_ids(info) if facts.get(f, {}).get("kind") in PROFILE_KINDS]
     shared = shared_decision(profile_ids, decisions)
     if shared:
-        rows.append(profile_row(shared, facts, naming))
+        rows.append(profile_row(shared, facts, naming, carried))
     for subject_id, decision in decisions.items():
         if subject_id not in wanted or (shared and subject_id in profile_ids):
             continue
@@ -316,7 +349,11 @@ def decisions_view(request: Request, info: RunInfo, naming: Naming):
             {
                 "about": Cell(about),
                 "requirement": Cell(requirement),
-                "decision": Cell(outcome_word(decision) + (f": {what}" if what else "")),
+                "decision": Cell(
+                    outcome_word(decision)
+                    + (f", {CARRIED_WORDS}" if decision.id in carried else "")
+                    + (f": {what}" if what else "")
+                ),
                 "reviewer": Cell(f"{decision.reviewer.name}, {decision.reviewer.role}"),
                 "date": Cell(long_date(decision.date), sort_value=decision.date),
                 "reason": Cell(decision.reason),
@@ -343,17 +380,19 @@ def decisions_view(request: Request, info: RunInfo, naming: Naming):
         caption="Decisions made on the brief",
         empty="No decisions were recorded.",
     )
-    return view, len(rows)
+    return view, len(rows), sum(CARRIED_WORDS in row["decision"].text for row in rows)
 
 
-def signed_context(request: Request, info: RunInfo, naming: Naming) -> dict:
+def signed_context(
+    request: Request, info: RunInfo, naming: Naming, carried: frozenset[str] = frozenset()
+) -> dict:
     """Build what the page of a signed or returned brief shows."""
     sign_off = SignOff.model_validate(info.state["sign_off"])
     brief = info.state.get("draft_brief") or {}
     wanted = request.query_params.get("fact")
     number = None if wanted else request.query_params.get("para")
     para_panel = paragraph_panel(info.state, number) if number else None
-    view, decisions = decisions_view(request, info, naming)
+    view, decisions, carried_rows = decisions_view(request, info, naming, carried)
     word = "signed" if sign_off.outcome == "signed" else "returned"
     who = f"{sign_off.reviewer.name}, {sign_off.reviewer.role}"
     sentence = f"{who}, {word} the brief for {info.firm_name}."
@@ -370,6 +409,11 @@ def signed_context(request: Request, info: RunInfo, naming: Naming) -> dict:
         "answer": answer,
         "sign_off": sign_off,
         "table": view,
+        "carried_note": (
+            f"{carried_rows} of {decisions} decisions were carried from an earlier review."
+            if carried_rows
+            else None
+        ),
         "statements": record_statements(info, naming),
         "panel": None if para_panel else record_panel(info, naming, wanted),
         "para_panel": para_panel,

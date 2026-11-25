@@ -32,7 +32,7 @@
   <aside class="pane source" id="source" aria-label="Source paragraph" data-hook="source">
     {{ source.text(panel) }}
     {% if panel.decision %}
-    <p class="note" data-hook="decision-record">{{ decision_line(panel.decision, person) }}.{% if panel.decision.amendment %} Wording: {{ panel.decision.amendment }}.{% endif %} Reason given: {{ panel.decision.reason }}</p>
+    <p class="note" data-hook="decision-record">{{ decision_line(panel.decision, person) }}.{% if panel.decision.amendment %} Wording: {{ sentence_end(panel.decision.amendment) }}{% endif %} Reason given: {{ panel.decision.reason }}</p>
     {% endif %}
     {{ source.record(panel.fact) }}
   </aside>
@@ -54,6 +54,7 @@
   </dl>
 </section>
 <section class="panel" aria-label="Decisions made on the brief">
+  {% if carried_note %}<p class="meta" data-hook="carried-note">{{ carried_note }}</p>{% endif %}
   {{ ui.table(table) }}
 </section>
 {% endblock %}

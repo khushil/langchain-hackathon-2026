@@ -72,7 +72,7 @@ It prints a brief that begins `# PS26/4 brief for Harbour Mutual Bank (FIRM-001)
 make notebook
 ```
 
-runs it top to bottom on the saved calls with no key and no live call, and ends with `30 passed`. `make gate` includes it.
+runs it top to bottom on the saved calls with no key and no live call, and ends with all its tests passing. `make gate` includes it.
 
 ## The reviewer's application
 
@@ -82,7 +82,7 @@ make serve
 
 starts the application on `APP_HOST` and `APP_PORT`. Without them it listens on every interface of the machine, on the port the comment above the `serve` target in the `Makefile` names. To keep it to your own machine, start it as `APP_HOST=127.0.0.1 APP_PORT=4821 make serve`, which prints `Uvicorn running on http://127.0.0.1:4821 (Press CTRL+C to quit)`, and open that address. Add `PYTHON=/path/to/python` when you did not use `uv sync`.
 
-With `MODEL_BACKEND` at its default of `replay`, the application can only start a brief that has saved calls, which is the whole of PS26-4, all ten sections, for Harbour Mutual Bank; a brief on part of the document stops with the reason "Replay has no recording for request" followed by the request's hash. With `MODEL_BACKEND=claude-code` in `.env`, any sections or the whole document can be started and each brief's model calls run on headless Claude Code.
+With `MODEL_BACKEND` at its default of `replay`, the application can only start a brief that has saved calls, which is the whole of PS26-4, all ten sections, for Harbour Mutual Bank; a brief on part of the document stops with the reason "No saved answer is held for part of this brief, so it could not be written here." With `MODEL_BACKEND=claude-code` in `.env`, any sections or the whole document can be started and each brief's model calls run on headless Claude Code.
 
 The application is called Review desk. Its pages are the home page, About, sign-in, and for the compliance brief topic the list of briefs with the form that starts one, the review page, the facts table and the page of a signed or returned brief. About says what the data is. `make serve` keeps the runs, decisions, sign-offs and drafts in files under `.app-state` in the repository root, which git ignores, so a restart shows the same briefs; deleting that folder starts afresh. `docs/user-guide.md` follows every step from starting the application with the seed to a second run that carries earlier decisions.
 
@@ -96,13 +96,13 @@ make gate
 
 takes about ten minutes on the shared machine this was written on, most of it the application's browser tests, and ends with exit code 0. It runs, in order:
 
-1. `ruff check` and `ruff format --check` over 215 files.
-2. The tests of `fsi_common` (405 passed, 1 skipped, a live model call that needs `FSI_LIVE_MODEL_TESTS=1`) and of topic 03 (939 passed, 3 skipped, the notebook runs that `make notebook` does).
+1. `ruff check` and `ruff format --check` over every file of the repository.
+2. The tests of `fsi_common` and of topic 03. A few tests are skipped by design: the live model call needs `FSI_LIVE_MODEL_TESTS=1`, and the notebook runs belong to `make notebook`.
 3. That the 9 JSON Schemas and the 62 example files are what the code makes, byte for byte.
 4. The validator's self-test: 52 valid example records pass, and 45 of 45 planted invalid examples are caught by the check each declares and by no other; 38 of 38 checks have a planted case.
 5. The evaluation's planted faults: 6 of 6 caught, each lowering only the measures declared for it.
 6. The dataset check: 10 of 10 sections and 48 of 48 paragraphs covered by the labels.
-7. The notebook run: 30 tests passed, which include the check that this README's measure table matches the figures the notebook printed.
+7. The notebook run, whose tests include the check that this README's measure table matches the figures the notebook printed.
 
 If `make gate` fails, the first failing target names the check. Run that target alone, for example `make test` or `make selftest`, to see its full output.
 

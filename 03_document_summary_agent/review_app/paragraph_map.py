@@ -7,19 +7,59 @@ the count beside it says how many of the paragraphs read are accounted for.
 
 from __future__ import annotations
 
+import re
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 
-from fsi_common.records import Fact
-from review_app.source_view import kind_label
+from fsi_common.records import Decision, Fact, SignOff
+from review_app.source_view import decision_line, kind_label
 from utils.records import FACT_CONTEXT
 
 FAILED = "failed"
 QUESTION = "question"
+SETTLED = "settled"
 OBLIGATION = "obligation"
 OTHER = "other"
 NOTHING = "nothing"
 PARAGRAPH_SCHEME = "para:"
+SETTLED_WORD = "Question settled"
+KEY_WORDS = (
+    (FAILED, "Failed check"),
+    (QUESTION, "Open question"),
+    (SETTLED, SETTLED_WORD),
+    (OBLIGATION, "Obligation"),
+    (OTHER, "Other fact"),
+    (NOTHING, "No fact"),
+)
+"""The kinds of mark in the order the key lists them, each with the word the key gives it."""
+NO_OBLIGATION_FOUND = "No obligation was found in this paragraph."
+_NO_FACT = re.compile(r"^The section reader found no obligation in this paragraph\.?$")
+_MARKED = re.compile(
+    r'^The paragraph contains "(?P<marker>[^"]+)", which marks an obligation, and none was read '
+    r"from it, even on a second read of the paragraph alone; it is an open question for the "
+    r"reviewer\.?$"
+)
+
+
+def plain_reason(reason: str) -> str:
+    """Say why a paragraph gave no fact in the words a reviewer uses.
+
+    Args:
+        reason: The reason the run recorded for the paragraph.
+
+    Returns:
+        The reason without any account of how the run reads, and the reason itself when it holds
+        none.
+    """
+    if _NO_FACT.match(reason):
+        return NO_OBLIGATION_FOUND
+    marked = _MARKED.match(reason)
+    if marked:
+        return (
+            f'The paragraph contains "{marked["marker"]}", which can mark an obligation, but no '
+            "obligation was recorded from it. A question about it is open."
+        )
+    return reason
 
 
 @dataclass(frozen=True)
@@ -62,6 +102,12 @@ class DocumentMap:
     scope: str
 
     @property
+    def key(self) -> tuple[tuple[str, str], ...]:
+        """The marks the picture uses, each with its word, so a reader can tell them apart."""
+        used = {cell.finding.kind for section in self.sections for cell in section.cells}
+        return tuple((kind, word) for kind, word in KEY_WORDS if kind in used)
+
+    @property
     def count(self) -> str:
         """Say how many paragraphs read are accounted for."""
         return f"{self.accounted} of {self.total} paragraphs of {self.scope} accounted for"
@@ -81,25 +127,47 @@ def _scope(sections: Sequence[str] | None) -> str:
     return f"sections {', '.join(sections[:-1])} and {sections[-1]}"
 
 
-def _finding(facts: Sequence[Fact], questions: Sequence[Mapping], reason: str | None) -> Finding:
-    if not facts and questions:
-        return Finding(QUESTION, "Open question", reason or "A question rests on this paragraph.")
+def _settled_detail(asked: Sequence[Mapping], settled: Mapping[str, str]) -> str:
+    return "; ".join(f"{SETTLED_WORD}: {settled[q['id']]}" for q in asked)
+
+
+def _finding(
+    facts: Sequence[Fact],
+    questions: Sequence[Mapping],
+    reason: str | None,
+    settled: Mapping[str, str],
+) -> Finding:
+    waiting = [q for q in questions if q["id"] not in settled]
+    done = [q for q in questions if q["id"] in settled]
+    if not facts and waiting:
+        return Finding(
+            QUESTION, "Open question", plain_reason(reason) if reason else "A question is open."
+        )
+    if not facts and done:
+        return Finding(SETTLED, SETTLED_WORD, _settled_detail(done, settled))
     if not facts:
-        return Finding(NOTHING, "No fact", reason or "No fact was read from this paragraph.")
+        return Finding(
+            NOTHING,
+            "No fact",
+            plain_reason(reason) if reason else "No fact was read from this paragraph.",
+        )
     found = []
     failed = [f for f in facts if not f.passed_checks]
     obligations = [f for f in facts if f.kind == "obligation"]
     if failed:
-        found.append(("Failed check", FAILED))
-    if questions:
-        found.append(("Open question", QUESTION))
+        found.append(("Failed check", FAILED, "Failed check"))
+    if waiting:
+        found.append(("Open question", QUESTION, "Open question"))
+    if done:
+        found.append((SETTLED_WORD, SETTLED, _settled_detail(done, settled)))
     if obligations:
         deadline = any(f.attributes.get("deadline") for f in obligations)
-        found.append(("Obligation, deadline" if deadline else "Obligation", OBLIGATION))
+        word = "Obligation, deadline" if deadline else "Obligation"
+        found.append((word, OBLIGATION, word))
     kinds = dict.fromkeys(kind_label(f.kind) for f in facts if f.kind != "obligation")
-    found += [(k, OTHER) for k in kinds]
-    word, kind = found[0]
-    return Finding(kind, word, "; ".join(w for w, _ in found))
+    found += [(k, OTHER, k) for k in kinds]
+    word, kind, _ = found[0]
+    return Finding(kind, word, "; ".join(detail for _, _, detail in found))
 
 
 def build_map(
@@ -109,6 +177,7 @@ def build_map(
     titles: Mapping[str, str],
     href_for: Callable[[str, Sequence[str]], str],
     current: str | None = None,
+    settled: Mapping[str, str] | None = None,
 ) -> DocumentMap | None:
     """Draw the document's paragraphs from a run's state.
 
@@ -119,6 +188,8 @@ def build_map(
         href_for: Gives the address that opens a paragraph, from its anchor and the ids of the
             facts read from it.
         current: The anchor of the paragraph open now, if any.
+        settled: How each question that a person has settled was settled, by question id, in
+            words. A question not in it is drawn as open.
 
     Returns:
         The picture, or None when the state holds no accounting of a document.
@@ -150,7 +221,7 @@ def build_map(
         asked = [
             q for q in questions if q["about"]["anchor"] == anchor or ids & set(q.get("cites", []))
         ]
-        finding = _finding(held, asked, without.get(anchor))
+        finding = _finding(held, asked, without.get(anchor), settled or {})
         number = anchor.removeprefix(PARAGRAPH_SCHEME)
         fact_id = held[0].id if held else None
         cell = MapCell(
@@ -221,6 +292,30 @@ def paragraph_panel(state: Mapping, number: str | None) -> ParagraphPanel | None
             source_title=source.get("title", ""),
             digest=source.get("digest", ""),
             unit_text=(state.get("unit_text", {}) or {}).get(unit["id"], ""),
-            reason=reasons.get(anchor, left_out),
+            reason=plain_reason(reasons[anchor]) if anchor in reasons else left_out,
         )
     return None
+
+
+def settled_by_state(state: Mapping) -> dict[str, str]:
+    """Say how each question of a finished run was settled, from the decisions it holds.
+
+    Args:
+        state: The state of a signed or returned run.
+
+    Returns:
+        For each question answered by a decision or accepted as an assumption in the sign-off, a
+        sentence such as ``Answered by Dana Whitfield, Head of Compliance, on 24 November 2026``.
+    """
+    questions = set(state.get("open_questions", {}) or {})
+    found: dict[str, str] = {}
+    for raw in (state.get("decisions", {}) or {}).values():
+        decision = Decision.model_validate(raw)
+        if decision.outcome == "answer" and decision.subject_id in questions:
+            found[decision.subject_id] = decision_line(decision)
+    held = state.get("sign_off")
+    if held:
+        for assumption in SignOff.model_validate(held).assumptions:
+            if assumption.question_id in questions:
+                found.setdefault(assumption.question_id, "Accepted as an assumption")
+    return found

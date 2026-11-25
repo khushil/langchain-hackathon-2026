@@ -254,6 +254,19 @@ def decision_line(decision: Decision, viewer: Person | None = None) -> str:
     return f"{decision_by(decision, viewer)}, on {long_date(decision.date)}"
 
 
+def sentence_end(text: str) -> str:
+    """Give a person's words a full stop unless they already end with a mark that closes one.
+
+    Args:
+        text: The words, such as an amended wording a reviewer wrote.
+
+    Returns:
+        The words, trimmed, ending in one full stop, question mark or exclamation mark.
+    """
+    words = text.strip()
+    return words if words.endswith((".", "?", "!")) else f"{words}."
+
+
 def pick_decision(candidates: list[Decision], sign_off: SignOff | None) -> Decision | None:
     """Choose the decision a finished brief stands on when a fact has more than one.
 

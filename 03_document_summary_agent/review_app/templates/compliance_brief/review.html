@@ -2,6 +2,7 @@
 {% import "macros.html" as ui %}
 {% import "compliance_brief/_parts.html" as parts %}
 {% block main %}
+<div class="review-page">
 {{ ui.answer(answer) }}
 {{ parts.tab_bar(tabs_for, tab) }}
 {% if form_error and not error_target %}{{ parts.form_problem(form_error) }}{% endif %}
@@ -10,4 +11,5 @@
 {% elif tab == "questions" %}{% include "compliance_brief/_questions.html" %}
 {% else %}{% include "compliance_brief/_signoff.html" %}
 {% endif %}
+</div>
 {% endblock %}

@@ -47,9 +47,10 @@ def test_the_runs_table_exports_the_rows_it_shows(runs):
     )
     c = make_client(runs)
     rows = list(csv.reader(io.StringIO(c.get(f"{BASE}/runs.csv?sort=status&dir=asc").text)))
-    assert rows[0] == ["Brief", "Sections", "Status"]
+    assert rows[0] == ["Brief", "Sections", "Status", "Reviewed by"]
     assert len(rows) == 3
     assert {r[2] for r in rows[1:]} == {"Waiting for a reviewer", "Stopped"}
+    assert {r[3] for r in rows[1:]} == {"Not yet"}
 
 
 def test_starting_a_brief_needs_a_signed_in_person_and_calls_nothing_without_one(runs):

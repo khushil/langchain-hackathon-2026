@@ -3,9 +3,9 @@
 The pages are rendered by the application itself, through Starlette's test client over the real
 routes. Every address a reader can reach from the entry page is fetched, each page becomes one
 section of the file, every internal link becomes an anchor inside the file, the style sheets are
-inlined, a table's CSV export becomes a ``data:`` address, and every form is shown with its buttons
-disabled, because a file has no server and no person to decide. Nothing is fetched when the file is
-opened, and nothing is added to what the served pages say.
+inlined, a table's CSV export becomes a ``data:`` address, and every form and button is left out,
+because a file has no server and no person to decide, so no control in it could do anything.
+Nothing is fetched when the file is opened, and nothing is added to what the served pages say.
 
 Run it with ``python -m fsi_common.app.offline --topic NAME --out FILE``; a topic supplies what to
 start through an ``OfflineTopic`` in its ``review_app/offline.py``.
@@ -42,7 +42,8 @@ VOID_TAGS = {"area", "base", "br", "col", "embed", "hr", "img", "input", "link",
 ID_LISTS = ("aria-labelledby", "aria-describedby", "aria-controls", "headers")
 FORBIDDEN_ATTRIBUTES = {"src", "srcset", "data", "poster", "ping", "xlink:href", "formaction"}
 FORBIDDEN_TAGS = {"script", "iframe", "object", "embed", "img", "video", "audio", "source", "base"}
-SUBMITTING_INPUTS = {"submit", "image"}
+DROPPED_TAGS = ("form", "button")
+"""Elements the file leaves out with everything inside them: a file cannot record or sign out."""
 
 REPLAY_ENV = {
     "MODEL_BACKEND": "replay",
@@ -129,7 +130,7 @@ class _PageParser(HTMLParser):
     """Reads one page and rewrites its body for the file.
 
     With ``page_id`` it writes the body with ids made unique, links resolved by ``resolve`` and
-    forms disabled; without it, it only collects the title, style sheets and links.
+    forms and buttons left out; without it, it only collects the title, style sheets and links.
     """
 
     def __init__(
@@ -143,7 +144,8 @@ class _PageParser(HTMLParser):
         self.out: list[str] = []
         self._in_body = False
         self._in_title = False
-        self._forms = 0
+        self._dropping: str | None = None
+        self._dropped_depth = 0
         self.links = 0
 
     def _fail(self, message: str) -> OfflineExportError:
@@ -166,10 +168,16 @@ class _PageParser(HTMLParser):
             return
         if not self._in_body:
             return
+        if self._dropping is not None:
+            if tag == self._dropping and not closed:
+                self._dropped_depth += 1
+            return
+        if tag in DROPPED_TAGS:
+            if not closed:
+                self._dropping, self._dropped_depth = tag, 1
+            return
         if tag in FORBIDDEN_TAGS:
             raise self._fail(f"holds a <{tag}>, which would fetch or run something")
-        if tag == "form":
-            self._forms += 1
         items = self._rewrite(tag, attrs)
         if self.page_id is not None:
             self.out.append(_tag_text(tag, items, closed=closed and tag not in VOID_TAGS))
@@ -200,15 +208,7 @@ class _PageParser(HTMLParser):
             items.append((name, value))
         if download is not None:
             items.append(("download", download))
-        if self._forms and self._submits(tag, dict(attrs)) and "disabled" not in dict(attrs):
-            items.append(("disabled", None))
         return items
-
-    def _submits(self, tag: str, values: dict[str, str | None]) -> bool:
-        kind = (values.get("type") or "").lower()
-        if tag == "button":
-            return kind in {"", "submit"}
-        return tag == "input" and kind in SUBMITTING_INPUTS
 
     def _link(self, href: str) -> _Target:
         self.links += 1
@@ -231,27 +231,31 @@ class _PageParser(HTMLParser):
             return
         if not self._in_body:
             return
-        if tag == "form":
-            self._forms -= 1
+        if self._dropping is not None:
+            if tag == self._dropping:
+                self._dropped_depth -= 1
+                if self._dropped_depth == 0:
+                    self._dropping = None
+            return
         if tag not in VOID_TAGS and self.page_id is not None:
             self.out.append(f"</{tag}>")
 
     def handle_data(self, data: str) -> None:
         if self._in_title:
             self.scan.title += data
-        if self._in_body and self.page_id is not None:
+        if self._in_body and self.page_id is not None and self._dropping is None:
             self.out.append(data)
 
     def handle_entityref(self, name: str) -> None:
         if self._in_title:
             self.scan.title += f"&{name};"
-        if self._in_body and self.page_id is not None:
+        if self._in_body and self.page_id is not None and self._dropping is None:
             self.out.append(f"&{name};")
 
     def handle_charref(self, name: str) -> None:
         if self._in_title:
             self.scan.title += f"&#{name};"
-        if self._in_body and self.page_id is not None:
+        if self._in_body and self.page_id is not None and self._dropping is None:
             self.out.append(f"&#{name};")
 
     def handle_comment(self, data: str) -> None:

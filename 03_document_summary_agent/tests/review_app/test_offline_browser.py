@@ -143,16 +143,14 @@ def test_the_csv_export_of_the_facts_table_downloads_the_rows_the_server_gives(o
     assert refused == []
 
 
-def test_the_forms_show_and_their_buttons_cannot_be_pressed(offline, real):
+def test_no_page_shows_a_form_a_button_or_a_sign_out(offline, real):
     page, seen, refused, errors = offline
-    page.goto(url_of(real))
-    button = page.get_by_role("button", name="Record my decision")
-    assert button.count() == 1 and button.is_disabled()
-    page.goto(url_of(real, real.export.ids[f"{real.export.entry}?tab=signoff"]))
-    assert (
-        page.locator(".offline-page:visible [data-hook='signoff-form'] button[disabled]").count()
-        == 2
-    )
+    for address in real.export.addresses:
+        page.goto(url_of(real, real.export.ids[address]))
+        assert page.locator("button").count() == 0, address
+        assert page.locator("form").count() == 0, address
+        assert page.get_by_text("Sign out").count() == 0, address
+        assert page.get_by_text("Record my decision").count() == 0, address
     assert refused == []
 
 

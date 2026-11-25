@@ -8,9 +8,10 @@ import pytest
 from review_fakes import FakeRuns, section_seven_review
 from review_fixtures import DANA, TODAY, make_client
 from review_helpers import RUN, accept_on, text_of
-from review_map_fakes import NO_FACT, map_review
+from review_map_fakes import map_review
 
 from fsi_common.records import SignOff
+from review_app.paragraph_map import NO_OBLIGATION_FOUND
 
 NUMBERS = ["6.1", "6.2", "7.1", "7.2", "7.3", "7.4", "7.5"]
 MARKS = {
@@ -109,7 +110,7 @@ def test_a_paragraph_with_a_fact_opens_its_source_and_one_without_opens_the_para
     without = client.get(by_number["6.1"]["href"])
     text = text_of(without.text)
     assert without.status_code == 200 and "Paragraph 6.1" in text
-    assert NO_FACT in text and "<mark>" not in without.text
+    assert NO_OBLIGATION_FOUND in text and "<mark>" not in without.text
     assert "decision-form" not in without.text
     failed = client.get(by_number["6.2"]["href"])
     assert "Paragraph 6.2" in text_of(failed.text) and "<mark>" not in failed.text
@@ -151,7 +152,7 @@ def test_the_picture_of_a_finished_brief_opens_its_sources_on_the_record(map_run
     record = client.get(found["7.2"]["href"].split("#")[0])
     assert "<mark>" in record.text and "decision-form" not in record.text
     nothing = client.get(found["6.1"]["href"].split("#")[0])
-    assert NO_FACT in text_of(nothing.text) and "<mark>" not in nothing.text
+    assert NO_OBLIGATION_FOUND in text_of(nothing.text) and "<mark>" not in nothing.text
 
 
 def test_a_run_whose_state_holds_no_accounting_draws_no_picture():

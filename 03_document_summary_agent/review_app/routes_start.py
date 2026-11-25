@@ -11,12 +11,15 @@ from starlette.routing import Route
 
 from fsi_common.app import Answer, Cell, Column, Tile, current_person, render, sign_in_address
 from fsi_common.app.pages import build_table, table_csv
+from fsi_common.app.rendering import long_date
+from fsi_common.records import SignOff
 from review_app.context import (
     PREFIX,
     STATE_ERRORS,
     STATUS_WORDS,
     RunInfo,
     Services,
+    plain_error,
     read_run,
     run_url,
     runs_of,
@@ -31,7 +34,13 @@ from review_app.service import (
 )
 from workflow.requests import brief_request_text
 
-RUN_COLUMNS = (Column("brief", "Brief"), Column("sections", "Sections"), Column("status", "Status"))
+RUN_COLUMNS = (
+    Column("brief", "Brief"),
+    Column("sections", "Sections"),
+    Column("status", "Status"),
+    Column("reviewed", "Reviewed by"),
+)
+NOT_REVIEWED = "Not yet"
 START_TEMPLATE = "compliance_brief/start.html"
 
 
@@ -43,12 +52,18 @@ def run_cells(info: RunInfo) -> dict[str, Cell]:
     """Return one run's table cells."""
     status = {"awaiting_review": "needs_person", "failed": "failed"}.get(info.status, "normal")
     sections = ", ".join(info.sections) if info.sections else "All"
+    held = info.state.get("sign_off")
+    reviewed = NOT_REVIEWED
+    if held:
+        sign_off = SignOff.model_validate(held)
+        reviewed = f"{sign_off.reviewer.name}, {sign_off.reviewer.role}, {long_date(sign_off.date)}"
     return {
         "brief": Cell(
             info.label, href=run_url(info.thread_id), title=f"Open the brief for {info.firm_name}"
         ),
         "sections": Cell(sections, sort_value=sections),
         "status": Cell(STATUS_WORDS[info.status], status=status),  # type: ignore[arg-type]
+        "reviewed": Cell(reviewed),
     }
 
 
@@ -222,7 +237,7 @@ def run_context(info: RunInfo, services: Services) -> dict:
     rows = [(n, titles.get(n, ""), n in read) for n in wanted]
     done = sum(r for _, _, r in rows)
     if info.status == "failed":
-        error = runs_of(services).error(info.thread_id) or "The engine gave no reason."
+        error = plain_error(runs_of(services).error(info.thread_id))
         answer = Answer(sentence=f"The brief for {info.firm_name} stopped before it was finished.")
         return {
             "page_title": "Brief stopped",

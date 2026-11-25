@@ -68,7 +68,7 @@ def test_every_page_the_export_reached_is_in_the_file_with_the_words_the_server_
     assert len(sections) == len(real.export.addresses) == len(set(sections))
     for address in real.export.addresses:
         file_words = body_text(section_html(real.export.html, real.export.ids[address]))
-        assert file_words == body_text(real.served(address)), address
+        assert file_words == body_text(real.served_without_controls(address)), address
 
 
 def test_the_pages_include_the_shell_the_review_the_questions_the_sign_off_and_the_facts(real):
@@ -107,15 +107,26 @@ def test_the_demo_tag_and_about_are_the_served_ones_and_nothing_is_added(real):
         assert note not in body_text(text).lower()
 
 
-def test_the_forms_are_there_and_cannot_submit(real):
+def test_no_page_of_the_file_has_a_form_a_button_or_a_sign_out(real):
     text = real.export.html
-    assert "Record my decision" in text
-    forms = re.findall(r"<form[^>]*>(.*?)</form>", text, flags=re.S)
-    assert forms
-    for form in forms:
-        for button in re.findall(r"<button[^>]*>", form):
-            assert " disabled" in button, button
-    assert "/compliance-brief/runs/" not in " ".join(re.findall(r"<form[^>]*>", text))
+    for part in ("<form", "<button", "<textarea", 'type="submit"'):
+        assert part not in text, part
+    assert not re.search(r"<[a-z][^>]*\sdisabled", text)
+    assert "Sign out" not in text and "Record my decision" not in text
+    assert "/compliance-brief/runs/" not in text.replace('href="#', "")
+
+
+def test_the_list_page_has_no_start_a_brief_panel_without_its_form(real):
+    assert "Start a brief" in real.served("/compliance-brief/")
+    assert "Start a brief" not in real.export.html
+
+
+def test_every_page_still_shows_the_decisions_and_the_source_read_only(real):
+    text = real.export.html
+    assert text.count('data-hook="source"') >= 1 and "<mark>" in text
+    assert "Needs a person" in text and "Document digest" in text
+    for address in real.export.addresses:
+        assert real.export.ids[address] in text
 
 
 def test_the_same_recordings_export_to_the_same_bytes(real, tmp_path):

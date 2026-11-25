@@ -73,7 +73,9 @@ def test_each_section_shows_the_words_the_server_shows(toy, exported):
     }
     for page_id, address in served.items():
         wrapped = f"<html><body>{sections[page_id]}</body></html>"
-        assert body_text(wrapped) == body_text(client.get(address).text), address
+        served_html = client.get(address).text
+        controls = re.sub(r"<(form|button)\b.*?</\1>", "", served_html, flags=re.S)
+        assert body_text(wrapped) == body_text(controls), address
 
 
 def test_nothing_is_added_that_the_served_pages_do_not_say(exported):
@@ -104,7 +106,7 @@ def test_ids_are_unique_in_the_file_and_each_page_keeps_its_own(exported):
     ids = re.findall(r'\bid="([^"]+)"', exported.html)
     assert len(ids) == len(set(ids))
     assert "page-toy--note" in ids and "page-toy-second-x-1--note" in ids
-    assert 'for="page-toy--note"' in exported.html
+    assert 'for="page-toy--loose"' in exported.html and 'id="page-toy--loose"' in exported.html
     assert 'aria-describedby="page-toy--hint"' in exported.html
     assert 'href="#page-toy--note"' in exported.html
 
@@ -119,18 +121,14 @@ def test_the_run_identifier_is_named_in_order_not_kept(exported):
     assert 'href="#page-toy-runs-run-1" title="Open the run"' in exported.html
 
 
-def test_a_form_is_shown_with_its_buttons_disabled_and_nowhere_to_post(exported):
-    form = re.search(
-        r'<form method="post" id="page-toy--form-one">(.*?)</form>', exported.html, re.S
-    )
-    assert form, "the form's address was not removed or its id was not made unique"
-    body = form.group(1)
-    assert re.search(r'<button type="submit" title="Send the note" disabled>', body)
-    assert re.search(r'<input type="submit" value="Go" title="Go" disabled>', body)
-    assert '<button type="button" title="Plain button">' in body
-    assert "/toy/post" not in exported.html and "/signout" not in exported.html
-    signout = re.search(r'<form method="post" class="inline">(.*?)</form>', exported.html, re.S)
-    assert signout and "disabled" in signout.group(1)
+def test_no_form_and_no_button_is_in_the_file_because_none_could_do_anything(exported):
+    html = exported.html
+    for part in ("<form", "<button", "<textarea", 'type="submit"'):
+        assert part not in html, part
+    assert not re.search(r"<[a-z][^>]*\sdisabled", html)
+    assert "/toy/post" not in html and "/signout" not in html and "Sign out" not in html
+    assert "Say it in the form" not in html  # the form's own words went with it
+    assert 'title="Open the second page"' in html  # the links beside the form stay
 
 
 def test_a_csv_export_becomes_a_download_holding_the_same_rows(toy, exported):

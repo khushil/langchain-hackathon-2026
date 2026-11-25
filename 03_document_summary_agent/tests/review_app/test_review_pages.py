@@ -363,7 +363,7 @@ def test_the_facts_table_lists_every_fact_sorts_and_exports_the_same_rows(client
     shown = [
         m
         for m in re.findall(
-            r'<td>\s*<a href="[^"]+" title="[^"]+">([^<]+)</a>',
+            r'<td[^>]*>\s*<a href="[^"]+" title="[^"]+">([^<]+)</a>',
             client.get(f"{RUN}/facts?sort=source&dir=desc").text,
         )
     ]

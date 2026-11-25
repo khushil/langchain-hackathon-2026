@@ -6,6 +6,7 @@ its tiles and every badge read it, so they cannot disagree.
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Literal
 
@@ -15,6 +16,7 @@ from fsi_common.records import Decision, OpenQuestion, Person
 from fsi_common.records.questions import SETTLED_STATES
 from review_app.drafts import Draft
 from review_app.profile import ProfileDecision, is_profile, shared_decision
+from review_app.source_view import decision_line
 from utils.state import CitedFact, ReviewRequest
 
 FactKind = Literal["yours", "carried", "needs"]
@@ -70,9 +72,11 @@ class ReviewModel:
         viewer: Person | None,
         firm_name: str,
         document_title: str,
+        earlier: Mapping[str, Decision] | None = None,
     ) -> None:
         self.request = request
         self.viewer = viewer
+        self.earlier = dict(earlier or {})
         self.firm_name = firm_name
         self.document_title = document_title
         self.cited: dict[str, CitedFact] = {}
@@ -125,7 +129,7 @@ class ReviewModel:
         if question.id in self._draft_assumptions:
             return QuestionState(question, "assumed", None, self._draft_assumptions[question.id])
         if question.state in SETTLED_STATES:
-            return QuestionState(question, "settled")
+            return QuestionState(question, "settled", self.earlier.get(question.decision_id or ""))
         return QuestionState(question, "open")
 
     @property
@@ -192,6 +196,44 @@ class ReviewModel:
     def profile_yours(self) -> bool:
         """Whether the person signed in has decided any fact of the profile."""
         return any(self.fact_states[fid].kind == "yours" for fid in self.profile_ids)
+
+    @property
+    def profile_state(self) -> FactState | None:
+        """Where the firm profile stands as a whole, or None when the brief has no profile."""
+        if not self.profile_ids:
+            return None
+        states = [self.fact_states[fid] for fid in self.profile_ids]
+        waiting = next((s for s in states if not s.settled), None)
+        if waiting is not None:
+            return waiting
+        return next((s for s in states if s.kind == "yours"), states[0])
+
+    @property
+    def statements_in_reading_order(self) -> list:
+        """The statements with what the document requires first and the firm's own after them."""
+        about_firm = set(self.profile_ids)
+
+        def only_firm(statement) -> bool:
+            return all(c.fact.id in about_firm for c in statement.facts)
+
+        ordered = [s for s in self.request.statements if not only_firm(s)]
+        return ordered + [s for s in self.request.statements if only_firm(s)]
+
+    def settled_questions(self) -> dict[str, str]:
+        """Say how each question a person has settled was settled, by question id."""
+        found: dict[str, str] = {}
+        for state in self.question_states:
+            if state.kind == "answered" and state.decision is not None:
+                found[state.question.id] = decision_line(state.decision, self.viewer)
+            elif state.kind == "assumed":
+                found[state.question.id] = "Accepted by you as an assumption"
+            elif state.kind == "settled":
+                found[state.question.id] = (
+                    decision_line(state.decision, self.viewer)
+                    if state.decision is not None
+                    else "Answered in an earlier review"
+                )
+        return found
 
     @property
     def questions_waiting(self) -> list[OpenQuestion]:

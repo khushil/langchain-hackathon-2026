@@ -48,7 +48,7 @@
       <tr>
         {% for column in view.columns %}
         {% set cell = row[column.key] %}
-        <td>
+        <td data-label="{{ column.label }}">
           {% if cell.href %}<a href="{{ cell.href }}" title="{{ cell.title or 'Open ' ~ cell.text }}">{{ cell.text }}</a>
           {% elif cell.status != "normal" %}{{ badge(cell.status, cell.text) }}
           {% else %}<span {% if cell.title %}title="{{ cell.title }}"{% endif %}>{{ cell.text }}</span>{% endif %}

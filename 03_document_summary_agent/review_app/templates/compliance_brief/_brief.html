@@ -1,26 +1,33 @@
 {% import "compliance_brief/_source.html" as source %}
 {% import "compliance_brief/_map.html" as picture %}
-<div class="exhibit review-grid" data-hook="exhibit">
-  <div class="left-column">
+<div class="exhibit brief-exhibit" data-hook="exhibit">
   {% if map %}{{ picture.draw(map) }}{% endif %}
+  <div class="review-grid">
   <section class="pane statements" aria-label="The brief" data-hook="statements">
-    {% for statement in model.request.statements %}
+    {% for statement in model.statements_in_reading_order %}
+    {% set own = statement.facts|rejectattr("fact.id", "in", model.profile_ids)|list %}
+    {% set firm = statement.facts|selectattr("fact.id", "in", model.profile_ids)|list %}
     <article class="statement" data-hook="statement">
       {% if statement.heading %}<h2 class="statement-heading">{{ statement.heading }}</h2>{% endif %}
       <p class="statement-text">{{ statement.text }}</p>
       <ul class="cites">
-        {% for cited in statement.facts %}
+        {% for cited in own %}
         {% set fid = cited.fact.id %}
         <li>
           <a class="fact-link" href="{{ fact_href(fid) }}" data-fact="{{ fid }}" title="Open {{ place_of(cited) }} and its quoted words" {% if panel and panel.cited.fact.id == fid %}aria-current="true"{% endif %}>{{ place_of(cited) }}</a>
           {{ parts.fact_state(model.fact_states[fid], person) }}
         </li>
         {% endfor %}
+        {% if firm %}
+        <li data-hook="profile-badge">
+          <a class="profile-link" href="{{ profile_href }}" title="Open the firm profile this statement rests on">Firm profile</a>
+          {{ parts.fact_state(model.profile_state, person) }}
+        </li>
+        {% endif %}
       </ul>
     </article>
     {% endfor %}
   </section>
-  </div>
   {% if para_panel %}
   <aside class="pane source" aria-label="Source paragraph" data-hook="source">
     {{ source.text(para_panel) }}
@@ -40,7 +47,7 @@
     </div>
     {% endif %}
     {% if st.kind == "yours" %}
-    <p class="note" data-hook="your-decision">Your decision: {{ decision_line(st.decision) }}. {% if st.decision.amendment %}Your wording: {{ st.decision.amendment }}. {% endif %}Your reason: {{ st.decision.reason }}</p>
+    <p class="note" data-hook="your-decision">Your decision: {{ decision_line(st.decision) }}. {% if st.decision.amendment %}Your wording: {{ sentence_end(st.decision.amendment) }} {% endif %}Your reason: {{ st.decision.reason }}</p>
     {% endif %}
     {% if fact.id in model.profile_ids %}
     <p class="note" data-hook="profile-note">This fact is part of the firm profile, which is decided together. <a href="{{ profile_href }}" title="Open the firm profile and decide it">Decide the firm profile</a>.</p>
@@ -70,4 +77,5 @@
     {{ source.record(fact) }}
   </aside>
   {% endif %}
+</div>
 </div>

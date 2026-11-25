@@ -13,7 +13,13 @@ from review_app.drafts import DraftStore
 from review_app.naming import Naming
 from review_app.seed import SEED_NAME, seed_compliance_brief
 from review_app.service import BriefRuns, EngineMissingError
-from review_app.source_view import check_label, decision_by, decision_line, difference_label
+from review_app.source_view import (
+    check_label,
+    decision_by,
+    decision_line,
+    difference_label,
+    sentence_end,
+)
 
 HERE = Path(__file__).parent
 ABOUT = (
@@ -102,6 +108,7 @@ def build_plugin(services: Services | None = None) -> TopicPlugin:
             "decision_by": decision_by,
             "decision_line": decision_line,
             "place_of": naming.place_of,
+            "sentence_end": sentence_end,
             "anchor_label_of": naming.place,
         },
         template_filters={"difference_label": difference_label},

@@ -6,10 +6,9 @@
 <div class="exhibit" data-hook="exhibit">
   {{ ui.table(table) }}
 </div>
-<section class="panel" aria-labelledby="start-heading">
+{% if person %}<form method="post" action="/compliance-brief/runs" class="panel start-form" aria-labelledby="start-heading">{% else %}<section class="panel start-form" aria-labelledby="start-heading">{% endif %}
   <h2 id="start-heading">Start a brief</h2>
   {% if problem %}<p class="problem" role="alert" data-hook="form-problem">{{ ui.badge("failed", problem) }}</p>{% endif %}
-  <form method="post" action="/compliance-brief/runs" class="start-form">
     <div class="start-fields">
       <div>
         <label for="document_id">Document</label>
@@ -39,9 +38,8 @@
     {% if person %}
     <button class="button" type="submit" title="Start a brief for the chosen document, firm and sections">Start the brief</button>
     {% else %}
-    <p><a href="{{ sign_in }}" title="Sign in with your name and role to start a brief">Sign in</a> to start a brief.</p>
+    <p><a href="{{ sign_in }}" title="Sign in with your name and role to start a brief">Sign in with your name and role to start a brief.</a></p>
     {% endif %}
-  </form>
-</section>
+{% if person %}</form>{% else %}</section>{% endif %}
 </div>
 {% endblock %}
