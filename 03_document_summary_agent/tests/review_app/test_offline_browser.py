@@ -6,7 +6,7 @@ import re
 from pathlib import Path
 
 import pytest
-from review_offline_support import RealExport, make_export
+from review_offline_support import RealExport, make_export, section_html
 
 SIZE = {"width": 1366, "height": 768}
 VISIBLE = """
@@ -30,6 +30,44 @@ FOLLOW = """
     .filter(p => getComputedStyle(p).display !== 'none')
     .map(p => ({id: p.id, sentence: p.querySelector('[data-hook="sentence"]')?.innerText ?? ''}));
   return {missing: false, hash: location.hash, shown};
+}
+"""  # noqa: E501
+
+FOLLOW_DISTINCT = """
+(pageIds) => {
+  const premise = {
+    scripts: document.querySelectorAll('script').length,
+    handlers: [...document.querySelectorAll('*')]
+      .filter(e => [...e.attributes].some(a => /^on/i.test(a.name))).length,
+    targeted: document.querySelectorAll('a[target]').length,
+    fragmentDownloads: document.querySelectorAll("a[href^='#'][download]").length,
+    otherLinks: [...document.querySelectorAll('a')]
+      .filter(a => !(a.getAttribute('href') ?? '').startsWith('#') && !a.hasAttribute('download'))
+      .length,
+    scriptUrls: document.querySelectorAll("a[href^='javascript:' i]").length,
+  };
+  const pairs = [];
+  const followed = [];
+  const seen = new Set();
+  for (const pageId of pageIds) {
+    const own = [...document.querySelectorAll(`#${pageId} a`)];
+    const hrefs = [...new Set(own.map(a => a.getAttribute('href')).filter(h => h?.startsWith('#')))];
+    for (const href of hrefs) {
+      const link = own.find(a => a.getAttribute('href') === href);
+      const named = href.match(/^#(page-.*?)(--.*)?$/);
+      pairs.push({page: pageId, href, present: !!link, target: !!named && !!document.getElementById(named[1])});
+      if (!link || seen.has(href)) continue;
+      seen.add(href);
+      location.hash = '#' + pageId;
+      if (location.hash === href) location.hash = '';
+      link.click();
+      const shown = [...document.querySelectorAll('.offline-page')]
+        .filter(p => getComputedStyle(p).display !== 'none')
+        .map(p => ({id: p.id, sentence: p.querySelector('[data-hook="sentence"]')?.innerText ?? ''}));
+      followed.push({page: pageId, href, missing: false, hash: location.hash, shown});
+    }
+  }
+  return {premise, pairs, followed};
 }
 """  # noqa: E501
 
@@ -91,25 +129,65 @@ def test_every_page_opens_by_its_address_and_shows_its_own_sentence(offline, rea
     assert all(u.startswith("file:") for u in seen)
 
 
+def follow_links(page, page_ids: list[str]) -> dict:
+    """Check the file's premise, every (page, href) pair, and one real click per distinct href."""
+    return page.evaluate(FOLLOW_DISTINCT, page_ids)
+
+
+def link_faults(records: list[dict], sentences: dict[str, str], addresses: dict[str, str]) -> list:
+    """Return one line per link that fails the four checks, naming its page address and href."""
+    faults = []
+    for record in records:
+        where = (addresses[record["page"]], record["href"])
+        if record["missing"]:
+            faults.append((*where, "the link is not on its page"))
+            continue
+        target = re.match(r"#(page-.*?)(--.*)?$", record["href"]).group(1)
+        if record["hash"] != record["href"]:
+            faults.append((*where, f"the hash is {record['hash']!r}"))
+        elif [s["id"] for s in record["shown"]] != [target]:
+            faults.append((*where, f"the pages shown are {[s['id'] for s in record['shown']]}"))
+        elif record["shown"][0]["sentence"] != sentences[target]:
+            faults.append((*where, "the page shown has another sentence"))
+    return faults
+
+
+def links_in_file(html: str, page_ids: list[str]) -> list[tuple[str, str]]:
+    """Read the file's own text for every (page, address) pair of in-file links, to count them."""
+    pairs = []
+    for page_id in page_ids:
+        section = section_html(html, page_id)
+        hrefs = dict.fromkeys(re.findall(r"<a\b[^>]*?\bhref=\"(#[^\"]*)\"", section))
+        pairs.extend((page_id, href) for href in hrefs)
+    return pairs
+
+
 def test_every_link_in_the_file_leads_to_the_page_it_names(offline, real):
     page, seen, refused, errors = offline
-    sentences = {real.export.ids[a]: real.sentence(a) for a in real.export.addresses}
+    ids = {real.export.ids[a]: a for a in real.export.addresses}
+    sentences = {i: real.sentence(a) for i, a in ids.items()}
     page.goto(url_of(real))
-    followed = 0
-    for address in real.export.addresses:
-        page_id = real.export.ids[address]
-        hrefs = page.eval_on_selector_all(
-            f"#{page_id} a[href^='#']", "els => [...new Set(els.map(e => e.getAttribute('href')))]"
-        )
-        for href in hrefs:
-            result = page.evaluate(FOLLOW, [page_id, href])
-            assert not result["missing"], (address, href)
-            target = re.match(r"#(page-.*?)(--.*)?$", href).group(1)
-            assert result["hash"] == href, (address, href)
-            assert [s["id"] for s in result["shown"]] == [target], (address, href)
-            assert result["shown"][0]["sentence"] == sentences[target], (address, href)
-            followed += 1
-    assert followed > len(real.export.addresses)
+    found = follow_links(page, list(ids))
+    # With no script and no handler, the page a link shows depends on its href alone.
+    premise = found["premise"]
+    assert premise == {
+        "scripts": 0,
+        "handlers": 0,
+        "targeted": 0,
+        "fragmentDownloads": 0,
+        "otherLinks": 0,
+        "scriptUrls": 0,
+    }, premise
+    pairs = links_in_file(real.path.read_text(encoding="utf-8"), list(ids))
+    assert [(r["page"], r["href"]) for r in found["pairs"]] == pairs
+    assert len(pairs) > len(ids)
+    gone = [
+        (ids[r["page"]], r["href"]) for r in found["pairs"] if not (r["present"] and r["target"])
+    ]
+    assert gone == []
+    distinct = list(dict.fromkeys(href for _, href in pairs))
+    assert [r["href"] for r in found["followed"]] == distinct
+    assert link_faults(found["followed"], sentences, ids) == []
     assert refused == [] and errors == []
     assert all(u.startswith("file:") for u in seen), seen
 
