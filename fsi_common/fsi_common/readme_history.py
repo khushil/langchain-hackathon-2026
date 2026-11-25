@@ -89,7 +89,9 @@ def build_sentence(root: Path, end: str) -> str:
         for _, subject in rows
     )
     first, last = min(times), max(times)
-    hours, minutes = divmod(int((last - first).total_seconds() // 60), 60)
+    # The times are printed to the minute, so the length is taken between the printed times.
+    shown_first, shown_last = first.replace(second=0), last.replace(second=0)
+    hours, minutes = divmod(int((shown_last - shown_first).total_seconds() // 60), 60)
 
     def day(moment: datetime) -> str:
         return f"{moment.day} {moment:%B %Y}"
@@ -151,8 +153,10 @@ def check_readme(readme: Path, root: Path, *, strict: bool = False) -> CheckResu
         strict: Also fail when later commits changed more than the README.
 
     Returns:
-        The result. ``MISMATCH`` names the README line and shows both sentences; ``STALE`` says how
-        many commits since the named one changed more than the README.
+        The result. ``MISSING_COMMIT`` says the named commit is absent, or is not an ancestor of
+        HEAD (say, on another branch), with or without ``strict``. ``MISMATCH`` names the README
+        line and shows both sentences; ``STALE`` says how many commits since the named one changed
+        more than the README.
     """
     reason = _cannot_check(root)
     if reason:
@@ -172,6 +176,12 @@ def check_readme(readme: Path, root: Path, *, strict: bool = False) -> CheckResu
         return CheckResult(
             CheckStatus.MISSING_COMMIT,
             f"{readme.name}:{number} names commit {named}, which is not in {root}",
+        )
+    if _git(root, "merge-base", "--is-ancestor", named, "HEAD").returncode:
+        return CheckResult(
+            CheckStatus.MISSING_COMMIT,
+            f"{readme.name}:{number} names commit {named}, which is in {root} but not in the "
+            "history of HEAD",
         )
     expected = build_sentence(root, named)
     if found.group(0) != expected:

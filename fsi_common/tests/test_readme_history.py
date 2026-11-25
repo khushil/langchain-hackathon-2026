@@ -60,7 +60,7 @@ def sentence_at_head(repo: Path) -> str:
     return (
         f"The build up to commit `{short(repo)}` ran from 18:37 UTC on 24 November "
         "2026 to 09:00 UTC "
-        "on 25 November 2026, 14 hours 22 minutes, in 4 commits (2 feat, 1 docs, 1 fix)."
+        "on 25 November 2026, 14 hours 23 minutes, in 4 commits (2 feat, 1 docs, 1 fix)."
     )
 
 
@@ -147,6 +147,43 @@ def test_a_commit_the_readme_names_that_is_not_in_the_history_fails(repo):
     result = check_readme(readme, repo)
     assert result.status is CheckStatus.MISSING_COMMIT
     assert "1111111" in result.message
+
+
+def sentence_on_a_side_branch(repo: Path) -> str:
+    """The correct sentence for a commit that is on another branch, not in HEAD's history."""
+    git(repo, "checkout", "-q", "-b", "side", "HEAD~2")
+    git(
+        repo, "commit", "-q", "--allow-empty", "-m", "feat: aside", when="2026-11-25T08:00:00+00:00"
+    )
+    sentence = build_sentence(repo, "side")
+    git(repo, "checkout", "-q", "-")
+    return sentence
+
+
+@pytest.mark.parametrize("strict", [False, True])
+def test_a_commit_on_another_branch_fails_even_though_git_has_it(repo, strict):
+    readme = write_readme(repo, sentence_on_a_side_branch(repo))
+    result = check_readme(readme, repo, strict=strict)
+    assert result.status is CheckStatus.MISSING_COMMIT
+    assert "README.md:7" in result.message and "not in" in result.message
+    argv = ["--check", str(readme), "--root", str(repo)]
+    assert main(argv + (["--strict"] if strict else [])) == 1
+
+
+def test_a_commit_in_the_history_of_head_passes_after_head_has_moved_on(repo):
+    readme = write_readme(repo, build_sentence(repo, "HEAD~2"))
+    assert check_readme(readme, repo).status is CheckStatus.OK
+
+
+def test_the_length_agrees_with_the_times_shown_to_the_minute(tmp_path):
+    """18:37:54 to 13:41:48 is 19 h 3 min 54 s, yet the times as printed are 19 h 4 min apart."""
+    git(tmp_path, "init", "-q")
+    for stamp in ("2026-11-24T18:37:54+00:00", "2026-11-25T13:41:48+00:00"):
+        git(tmp_path, "commit", "-q", "--allow-empty", "-m", "feat: a", when=stamp)
+    assert build_sentence(tmp_path, "HEAD") == (
+        f"The build up to commit `{short(tmp_path)}` ran from 18:37 UTC on 24 November 2026 to "
+        "13:41 UTC on 25 November 2026, 19 hours 4 minutes, in 2 commits (2 feat)."
+    )
 
 
 def test_a_folder_without_git_is_skipped_with_the_reason_stated(tmp_path, capsys):
