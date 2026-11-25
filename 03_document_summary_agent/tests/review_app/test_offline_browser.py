@@ -232,6 +232,9 @@ def test_no_page_shows_a_form_a_button_or_a_sign_out(offline, real):
     # Counting them again at each of the 106 addresses re-scanned 7.5 MB of the same DOM each time.
     assert page.get_by_text("Sign out").count() == 0
     assert page.get_by_text("Record my decision").count() == 0
+    # Playwright's locators reach into shadow roots, where querySelectorAll does not.
+    assert page.locator("button").count() == 0
+    assert page.locator("form").count() == 0
     assert refused == []
 
 
