@@ -6,7 +6,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from fsi_common.evals.upload import UploadError, upload_dataset
+from fsi_common.evals.upload import DEFAULT_ENDPOINT, UploadError, upload_dataset
 
 from .build_dataset import (
     DATA_DIR,
@@ -20,7 +20,6 @@ from .build_dataset import (
 
 SECTIONS_NAME = "compliance-brief-ps26-4-sections"
 DOCUMENT_NAME = "compliance-brief-ps26-4-document"
-DEFAULT_ENDPOINT = "https://eu.api.smith.langchain.com"
 DESCRIPTIONS = {
     SECTIONS_NAME: "One example per section of the fictional policy statement PS26-4: the "
     "section's text and its labelled items, made by two independent labelling agents under "

@@ -311,6 +311,7 @@ class FakeRuns:
         self.calls = 0
         self.on_loop: list[str] = []  # calls made while an event loop ran in the calling thread
         self.raises: dict[str, Exception] = {}  # a failure to raise from a named call
+        self.roots: dict[str, Any] = {}  # where each run's graph run was traced, when a test says
 
     def _note(self, name: str) -> None:
         """Record a call: whether it ran on an event loop, and raise the failure set for it."""
@@ -390,6 +391,12 @@ class FakeRuns:
         run.state["sign_off"] = response.sign_off.to_json()
         run.status = response.sign_off.outcome
         return run.status
+
+    def root_run(self, thread_id: str) -> Any:
+        """Return where the run was traced, when a test has given it a place."""
+        self._note("root_run")
+        self._run(thread_id)
+        return self.roots.get(thread_id)
 
     def result(self, thread_id: str) -> dict[str, Any]:
         """Return the run's state as it stands."""

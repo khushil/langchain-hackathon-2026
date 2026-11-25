@@ -16,9 +16,28 @@ TODAY = "2026-11-25"
 DANA = Person(name="Dana Whitfield", role="Head of Compliance")
 
 
-def make_client(runs: FakeRuns, *, signed_in: Person | None = DANA) -> TestClient:
-    """Make a test client for the application over a fake run service."""
-    services = Services(runs=lambda: runs, drafts=DraftStore(), today=lambda: TODAY)
+def make_client(
+    runs: FakeRuns, *, signed_in: Person | None = DANA, feedback=None, notes=None
+) -> TestClient:
+    """Make a test client for the application over a fake run service.
+
+    Args:
+        runs: The fake run service.
+        signed_in: The person signed in, or None for nobody.
+        feedback: Gives the LangSmith client the decisions go to; the application's own when None.
+        notes: Where the sentence about a failed send is kept; the application's own when None.
+    """
+    options = {}
+    if feedback is not None:
+        options["feedback"] = feedback
+    if notes is not None:
+        options["feedback_notes"] = notes
+    services = Services(runs=lambda: runs, drafts=DraftStore(), today=lambda: TODAY, **options)
+    return make_client_for(services, signed_in=signed_in)
+
+
+def make_client_for(services: Services, *, signed_in: Person | None = DANA) -> TestClient:
+    """Make a test client for the application over services the test has built."""
     config = AppConfig(secret=b"test-secret", topic_folders=())
     app = create_app(config, topics=[build_plugin(services)])
     cookies = {}

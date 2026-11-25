@@ -38,6 +38,7 @@
   </aside>
   {% endif %}
 </div>
+{% if queue_note %}<p class="problem" role="status" data-hook="queue-note">{{ queue_note }}</p>{% endif %}
 <section class="panel" aria-label="The sign-off record">
   <dl class="record" data-hook="sign-off-record">
     <dt>Reviewer</dt><dd>{{ sign_off.reviewer.name }}</dd>

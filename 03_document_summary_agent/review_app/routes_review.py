@@ -28,6 +28,7 @@ from review_app.context import (
     state_unavailable,
 )
 from review_app.drafts import DraftFileError
+from review_app.feedback import report_to_queue
 from review_app.naming import Naming, RowField
 from review_app.paragraph_map import paragraph_panel
 from review_app.profile_view import profile_groups
@@ -387,6 +388,10 @@ def routes(services: Services) -> list[Route]:
             LOG.exception(
                 "Run %s is signed but its pending work could not be cleared", info.thread_id
             )
+        runs = runs_of(services)
+        note = report_to_queue(services.feedback, lambda: runs.root_run(info.thread_id), response)
+        if note:
+            services.feedback_notes[info.thread_id] = note
         return RedirectResponse(run_url(info.thread_id, "signed"), status_code=303)
 
     return [

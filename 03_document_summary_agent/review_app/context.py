@@ -11,6 +11,7 @@ from urllib.parse import urlencode
 from starlette.exceptions import HTTPException
 
 from review_app.drafts import DraftFileError, DraftStore
+from review_app.feedback import FeedbackClient, default_client
 from review_app.library import Library, read_library
 from review_app.naming import Naming
 from review_app.paragraph_map import DocumentMap, build_map
@@ -44,6 +45,10 @@ class Services:
     today: Callable[[], str] = today
     state_dir: Path | None = None
     """The folder that keeps the state, when the application is durable."""
+    feedback: Callable[[], FeedbackClient | None] = default_client
+    """Gives the LangSmith client the decisions on a signed brief go to; None with tracing off."""
+    feedback_notes: dict[str, str] = field(default_factory=dict)
+    """For each run whose decisions were not all sent, the sentence the signed page shows."""
 
 
 @dataclass(frozen=True)

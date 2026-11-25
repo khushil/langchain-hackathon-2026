@@ -253,6 +253,7 @@ def routes(services: Services) -> list[Route]:
         if info.status not in {"signed", "returned"}:
             return RedirectResponse(run_url(info.thread_id), status_code=303)
         context = signed_context(request, info, naming_of(services))
+        context["queue_note"] = services.feedback_notes.get(info.thread_id)
         return render(request, "compliance_brief/signed.html", context)
 
     return [

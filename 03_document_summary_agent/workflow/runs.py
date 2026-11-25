@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
+import datetime
 import logging
 import threading
 import uuid
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from pathlib import Path
 from typing import Any
 
@@ -14,6 +15,7 @@ from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.store.base import BaseStore
 from langgraph.store.memory import InMemoryStore
 from langgraph.types import Command
+from langsmith.utils import LangSmithError
 
 from context.reader import read_document
 from context.tables import read_tables
@@ -24,11 +26,13 @@ from workflow.graph import build_graph
 from workflow.requests import selected_sections
 from workflow.review import validate_response
 from workflow.run_registry import (
+    RootRun,
     Run,
     RunStatus,
     StateFolder,
     StateFolderError,
     config_of,
+    default_project_id,
     open_state_folder,
 )
 from workflow.sections import ModelSource
@@ -65,6 +69,7 @@ class BriefRuns:
         checkpointer: BaseCheckpointSaver | None = None,
         store: BaseStore | None = None,
         state_dir: Path | str | None = None,
+        project_id: Callable[[], str | None] = default_project_id,
     ) -> None:
         """Compile the graph with a checkpointer and a store.
 
@@ -96,6 +101,7 @@ class BriefRuns:
         }
         if models is not None:
             options["models"] = models
+        self._project_id = project_id
         self._graph = build_graph(**options)
         self._runs: dict[str, Run] = {}
         self._order: list[str] = []
@@ -162,13 +168,16 @@ class BriefRuns:
         document = read_document(request["document_id"])
         read_tables(request["firm_id"])
         selected_sections(document, request)
+        project_id = self._find_project()  # a network call, so made before the lock is held
         with self._lock:
             if any(run.status == "running" for run in self._runs.values()):
                 raise RunInProgressError("A run is still running; wait for it to reach the review.")
             thread_id = str(uuid.uuid4())
             run = Run(
                 thread_id=thread_id,
-                config=self._config(thread_id, request, document),
+                config=self._config(thread_id, request, document, str(uuid.uuid4())),
+                project_id=project_id,
+                started_at=datetime.datetime.now(datetime.UTC).isoformat(),
                 request=dict(request),
             )
             if self._folder is not None:
@@ -182,7 +191,9 @@ class BriefRuns:
         return thread_id
 
     @staticmethod
-    def _config(thread_id: str, request: Mapping[str, Any], document: Any) -> dict[str, Any]:
+    def _config(
+        thread_id: str, request: Mapping[str, Any], document: Any, run_id: str
+    ) -> dict[str, Any]:
         return config_of(
             thread_id,
             {
@@ -190,7 +201,16 @@ class BriefRuns:
                 "firm_id": request["firm_id"],
                 "document_digest": document.source.digest,
             },
+            run_id=run_id,
         )
+
+    def _find_project(self) -> str | None:
+        """Look the trace project up; a failed lookup leaves it unknown and never stops a run."""
+        try:
+            return self._project_id()
+        except (LangSmithError, OSError, ValueError):
+            LOG.exception("The trace project could not be looked up")
+            return None
 
     def _get(self, thread_id: str) -> Run:
         with self._lock:
@@ -206,6 +226,8 @@ class BriefRuns:
         except Exception as exc:  # the thread must record any failure, and never raise
             LOG.exception("Run %s failed", run.thread_id)
             status, error = self._after_failure(run), str(exc) or type(exc).__name__
+        if run.project_id is None:  # the first trace creates a project, so look again
+            run.project_id = self._find_project()
         with self._lock:
             run.status, run.error = status, error
             try:
@@ -305,12 +327,44 @@ class BriefRuns:
             except StateFolderError:
                 run.status = "awaiting_review"
                 raise
+        # The resumed graph run is a run of its own: it must not take the brief's run id.
         config = {
-            **run.config,
+            **{k: v for k, v in run.config.items() if k != "run_id"},
             "metadata": {**run.config["metadata"], "reviewer": response.reviewer.name},
         }
         self._execute(run, Command(resume=response.model_dump(mode="json", by_alias=True)), config)
         return self.status(thread_id)
+
+    def root_run_id(self, thread_id: str) -> str | None:
+        """Return the id the brief's first graph run was traced under.
+
+        Args:
+            thread_id: The run's thread id.
+
+        Returns:
+            The id, or None for a run made before the service kept one.
+
+        Raises:
+            RunNotFoundError: If the thread id is unknown.
+        """
+        return self._get(thread_id).run_id
+
+    def root_run(self, thread_id: str) -> RootRun:
+        """Return where the brief's first graph run was traced.
+
+        Args:
+            thread_id: The run's thread id.
+
+        Returns:
+            The run id, the trace project's id and when the service started the run; each is None
+            when it is not known.
+
+        Raises:
+            RunNotFoundError: If the thread id is unknown.
+        """
+        run = self._get(thread_id)
+        with self._lock:
+            return RootRun(run.run_id, run.project_id, run.started_at)
 
     def result(self, thread_id: str) -> BriefState:
         """Return the run's state as it stands.

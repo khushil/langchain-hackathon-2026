@@ -60,6 +60,10 @@ Sections 1, 3 and 10 hold no labelled obligation, so their obligation measures r
 | `matching.py`, `normalise.py` | The pairing rule and the text rules the measures share |
 | `planted_faults.py` | Puts one fault at a time into a summary built from the labels and checks that the right measures fall |
 | `upload.py` | Uploads the two datasets to LangSmith, once |
+| `experiments.py` | Runs the starter's agent and this engine as LangSmith experiments on the two datasets, and writes each experiment's counts to `data/experiments.json` |
+| `experiment_targets.py` | The two agents an experiment runs, each returning the starter's `SectionSummary` shape: the starter's section sub-agent, and the engine's section step with its obligation-marker check |
+| `experiment_results.py` | Reads and writes `data/experiments.json`, and compares the README's spread table with it |
+| `data/experiments.json` | One entry for each finished experiment: its name, LangSmith id, agent, dataset, repetition, date and the seven measures as counts |
 
 `build_dataset.py --check` fails when the labels do not cover 48 of 48 paragraphs, when a labelled quote or deadline is not word for word in its paragraph, when the labels' digest is not the one on record, or when a file on disk differs from what the build produces.
 
@@ -88,3 +92,16 @@ python -m evals.reference_summary
 ```
 
 The last command scores the summaries built from the labels and must show every measure in full. `python -m evals.upload` puts the two datasets in LangSmith once, as `compliance-brief-ps26-4-sections` with ten examples and `compliance-brief-ps26-4-document` with one; a second run adds nothing, and a run with changed content is refused.
+
+## Running the experiments
+
+One recorded run is one draw from a model that answers a little differently each time, so the measures are also taken over repeated runs. `evals.experiments` runs each agent on the sections dataset three times and on the document dataset once, as LangSmith experiments scored by the seven measures. The starter's agent is its section sub-agent on one section, built as the notebook's step 2 builds it: a deep agent with the sub-agent's instructions and its `SectionSummary` as the response format, given the section's number, title and text, with no checks after it. The engine is its section step on the same section, with the obligation-marker check and any second read, and what it delivers is the obligations that passed their checks. The notebook's measure table scores a different run: the starter's main agent handing each section to its sub-agent, and the engine's first read before any check. The two sets of figures are for different questions and are not compared cell by cell. For the document dataset each agent reads all ten sections in turn.
+
+The experiments call the model live through headless Claude Code, never from the recordings, and the runner refuses to start on any other `MODEL_BACKEND`. They are not saved and not replayed. Each experiment is named `agent-dataset-rN` with LangSmith's own suffix, and its counts are written to `data/experiments.json` as soon as it finishes, so a run that stops keeps what it made. An experiment already in the file is not run again.
+
+```bash
+export PYTHONPATH=../fsi_common
+MODEL_BACKEND=claude-code python -m evals.experiments --repetitions 3
+```
+
+`--agents` takes `starter`, `engine` or both, `--datasets` takes `sections`, `document` or both, and `--concurrency` sets how many examples run at once, up to four. The README's spread table has one column for each experiment in the file, headed by the agent and the run, and a list under it names each experiment and its LangSmith id. A test ties each column to its entry by agent and repetition and fails, naming the cell, when a figure differs from the file.

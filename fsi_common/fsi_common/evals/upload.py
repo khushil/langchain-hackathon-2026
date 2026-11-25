@@ -7,6 +7,8 @@ from dataclasses import dataclass
 from typing import Any, Protocol
 
 DIGEST_KEY = "content_sha256"
+DEFAULT_ENDPOINT = "https://eu.api.smith.langchain.com"
+"""The EU workspace, where the account is, used when the environment names no other."""
 
 
 class UploadError(Exception):
