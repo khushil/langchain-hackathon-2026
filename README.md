@@ -284,7 +284,7 @@ Two independent labelling agents each read every paragraph of PS26-4, working to
 
 ## How it was built
 
-The build up to commit `1a6490f` ran from 18:37 UTC on 24 November 2026 to 15:17 UTC on 25 November 2026, 20 hours 40 minutes, in 63 commits (34 feat, 12 fix, 7 build, 7 docs, 3 test). The record types and the model seam came first and were fixed before anything else was built on them, so that the parts could be built side by side without disagreeing about a record. The repository shows the rest of the method in its tests: a suite for every part, a planted fault for every check, and one command, `make gate`, that runs them all.
+The build up to commit `90866f7` ran from 18:37 UTC on 24 November 2026 to 16:46 UTC on 25 November 2026, 22 hours 9 minutes, in 67 commits (34 feat, 13 fix, 9 docs, 7 build, 4 test). The record types and the model seam came first and were fixed before anything else was built on them, so that the parts could be built side by side without disagreeing about a record. The repository shows the rest of the method in its tests: a suite for every part, a planted fault for every check, and one command, `make gate`, that runs them all.
 
 By commit time on 24 November 2026, the first parts landed in this order:
 
