@@ -1,0 +1,14 @@
+{% extends "kyc/page.html" %}
+{% import "macros.html" as ui %}
+{% block head_extra %}{% if refresh %}<meta http-equiv="refresh" content="3">{% endif %}{% endblock %}
+{% block main %}
+{{ ui.answer(answer) }}
+<div class="exhibit" data-hook="exhibit">
+  {% if error %}
+  <p class="problem" role="alert" data-hook="run-error">{{ ui.badge("failed", "Stopped") }} <span>{{ error }}</span></p>
+  <p><a href="/kyc/" title="Go back to the batches and start another">Back to the batches</a></p>
+  {% else %}
+  <p class="meta">{{ progress }}</p>
+  {% endif %}
+</div>
+{% endblock %}

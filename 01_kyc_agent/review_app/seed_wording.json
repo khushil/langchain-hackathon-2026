@@ -1,0 +1,215 @@
+{
+  "decisions": [
+    {
+      "customer": "CUST-001",
+      "outcome": "accept",
+      "reason": "No list entry resembles the name, and the application describes a software engineer paid a salary."
+    },
+    {
+      "customer": "CUST-002",
+      "outcome": "accept",
+      "reason": "The application states the post the list gives, and the name is identical."
+    },
+    {
+      "customer": "CUST-003",
+      "outcome": "accept",
+      "reason": "The spelling differs in two places and the date of birth is the same."
+    },
+    {
+      "customer": "CUST-004",
+      "outcome": "accept",
+      "reason": "No list entry resembles the name, and the application describes a nurse paid a salary."
+    },
+    {
+      "customer": "CUST-005",
+      "outcome": "accept",
+      "reason": "No list entry resembles the name, and the application describes a head chef paid wages and tips."
+    },
+    {
+      "customer": "CUST-006",
+      "outcome": "accept",
+      "reason": "No list entry resembles the name, and the application describes a dentist's own practice."
+    },
+    {
+      "customer": "CUST-007",
+      "outcome": "accept",
+      "reason": "No list entry resembles the name, and the application describes a design student in London."
+    },
+    {
+      "customer": "CUST-008",
+      "outcome": "accept",
+      "reason": "No list entry resembles the name, and the application describes a retired teacher's pension and savings."
+    },
+    {
+      "customer": "CUST-009",
+      "outcome": "accept",
+      "reason": "No list entry resembles the name, and the application describes a chartered accountant's salary and bonus."
+    },
+    {
+      "customer": "CUST-010",
+      "outcome": "accept",
+      "reason": "No list entry resembles the name, and the application describes a bicycle repair shop's sales."
+    },
+    {
+      "customer": "CUST-011",
+      "outcome": "accept",
+      "reason": "The applicant says they are the Central Bank Governor of Ostmark."
+    },
+    {
+      "customer": "CUST-012",
+      "outcome": "accept",
+      "reason": "The applicant says they are Minister of Energy, as the list does."
+    },
+    {
+      "customer": "CUST-013",
+      "outcome": "accept",
+      "reason": "The surname differs by one letter and the application says the applicant sits in Parliament."
+    },
+    {
+      "customer": "CUST-014",
+      "outcome": "accept",
+      "reason": "The applicant was Ostmark's Ambassador to the UN, as the list says."
+    },
+    {
+      "customer": "CUST-015",
+      "outcome": "accept",
+      "reason": "The applicant's husband is a senior official in Valdoria and the applicant shares the surname of a listed official."
+    },
+    {
+      "customer": "CUST-016",
+      "outcome": "accept",
+      "reason": "The name is identical to the sanctions entry and so is the date of birth."
+    },
+    {
+      "customer": "CUST-017",
+      "outcome": "accept",
+      "reason": "The surname differs by one letter and the date of birth is the same."
+    },
+    {
+      "customer": "CUST-018",
+      "outcome": "amend",
+      "reason": "The names are identical but the dates of birth are more than ten years apart, so this is another person.",
+      "amendment": "Low risk, approve."
+    },
+    {
+      "customer": "CUST-019",
+      "outcome": "accept",
+      "reason": "The surname differs by one letter and the date of birth is the same."
+    },
+    {
+      "customer": "CUST-020",
+      "outcome": "accept",
+      "reason": "The name is identical to the sanctions entry and so is the date of birth."
+    },
+    {
+      "customer": "CUST-021",
+      "outcome": "amend",
+      "reason": "A plumber in Ohio who is not the Valdorian deputy minister; the first name differs by a letter.",
+      "amendment": "Low risk, approve."
+    },
+    {
+      "customer": "CUST-022",
+      "outcome": "accept",
+      "reason": "No list entry resembles the name, and the application describes the sale of a software company."
+    },
+    {
+      "customer": "CUST-023",
+      "outcome": "accept",
+      "reason": "The first name differs by one letter and the date of birth is the same."
+    },
+    {
+      "customer": "CUST-024",
+      "outcome": "accept",
+      "reason": "No list entry resembles the name, and the application describes a student in Madrid on a scholarship."
+    },
+    {
+      "customer": "CUST-025",
+      "outcome": "accept",
+      "reason": "The name is identical to the sanctions entry and so is the date of birth."
+    }
+  ],
+  "questions": [
+    {
+      "customer": "CUST-002",
+      "place": "pep-1",
+      "answer": "The same person.",
+      "reason": "The application states the post and the country the entry gives."
+    },
+    {
+      "customer": "CUST-003",
+      "place": "sanctions-1",
+      "answer": "The same person.",
+      "reason": "The date of birth is the same and the names differ in two places."
+    },
+    {
+      "customer": "CUST-011",
+      "place": "pep-2",
+      "answer": "The same person.",
+      "reason": "The applicant states the post and the country."
+    },
+    {
+      "customer": "CUST-012",
+      "place": "pep-3",
+      "answer": "The same person.",
+      "reason": "The applicant states the post and the country."
+    },
+    {
+      "customer": "CUST-012",
+      "place": "sanctions-2",
+      "answer": "A different person.",
+      "reason": "Only the first five letters of the surnames are alike."
+    },
+    {
+      "customer": "CUST-013",
+      "place": "pep-4",
+      "answer": "The same person.",
+      "reason": "The applicant says they are a Member of Parliament in Valdoria."
+    },
+    {
+      "customer": "CUST-014",
+      "place": "pep-5",
+      "answer": "The same person.",
+      "reason": "The applicant was the ambassador the list names."
+    },
+    {
+      "customer": "CUST-015",
+      "place": "pep-1",
+      "assumption": "Treat the husband as the listed deputy minister until the bank asks the applicant."
+    },
+    {
+      "customer": "CUST-015",
+      "place": "relation",
+      "assumption": "Ask the applicant for the husband's name before the account opens."
+    },
+    {
+      "customer": "CUST-017",
+      "place": "sanctions-6",
+      "answer": "The same person.",
+      "reason": "The date of birth is the same and the names differ by one letter."
+    },
+    {
+      "customer": "CUST-018",
+      "place": "sanctions-5",
+      "answer": "A different person.",
+      "reason": "The dates of birth are 1996 and 1985."
+    },
+    {
+      "customer": "CUST-019",
+      "place": "sanctions-7",
+      "answer": "The same person.",
+      "reason": "The date of birth is the same and the names differ by one letter."
+    },
+    {
+      "customer": "CUST-021",
+      "place": "pep-1",
+      "answer": "A different person.",
+      "reason": "No post, no country and a different first name and life."
+    },
+    {
+      "customer": "CUST-023",
+      "place": "sanctions-3",
+      "answer": "The same person.",
+      "reason": "The date of birth is the same and the names differ by one letter."
+    }
+  ]
+}

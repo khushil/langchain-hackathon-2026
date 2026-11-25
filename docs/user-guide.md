@@ -141,3 +141,46 @@ Each page opens with one sentence that answers the question the page is for, and
 | "Compliance brief could not be reached." on a topic's page or the home page | The topic's process did not take the request: it never answered since the application started, it could not be started again, or it is frozen. Reload once; if it persists tell the person who runs the server. |
 | "Compliance brief could not be reached. It is running but did not answer." | The topic's process was started again and runs, but has not answered. Wait and reload; if it persists tell the person who runs the server. |
 | "Decisions on this brief were made by" followed by a name | Someone else's decisions are held on this brief. Sign in as that person to sign it, or record your own decisions again. You meet this only after two people have decided on one brief, which the seeded application does not set up, so it does not appear on a first walk. |
+
+## KYC onboarding
+
+This part walks through the second topic of Review desk. You play the compliance reviewer for a batch of the starter's 25 fictional account applications. The workflow has already read each application, set it against every entry of the sanctions list and the list of politically exposed people, and proposed a risk level and a decision. Thirteen proposals are settled by its checks and twelve are for you to settle. The seed makes two batches on first start: one waiting for a reviewer, which you work through, and one already signed by Dana Whitfield, Head of Compliance, a fictional reviewer. Applications are named by their id and the applicant, for example "CUST-018 Ivana Strahov".
+
+### Start and sign in
+
+1. Run this from the repository root, adding `PYTHON=/path/to/python` when you did not use `uv sync`:
+
+   ```bash
+   APP_SEED=kyc-onboarding APP_HOST=127.0.0.1 APP_PORT=4821 make serve
+   ```
+
+   Open the address it prints. The home page sentence reads "1 batch is waiting for a reviewer." and its tile "KYC onboarding" opens the topic's list.
+2. Click "Sign in", type `Dana Whitfield` as the name and `Head of Compliance` as the role, and sign in. Click "KYC onboarding" in the top bar. The sentence reads "2 batches so far: 1 waiting for a reviewer, 1 signed.", and the list shows each batch as "All 25 applications" with its status and who reviewed it. Click the batch whose Status is "Waiting for a reviewer".
+
+### Read the batch
+
+3. The sentence reads "25 applications were screened against 14 list entries: 13 settled by the checks and 12 for a person to settle. 25 proposals and 14 questions still need your decision before it is signed." The tiles read "Applications", "Proposals decided" as "0 of 25" and "Questions settled" as "0 of 14".
+4. The picture shows the applications as rows and the 14 list entries as columns, 8 on the sanctions list and 6 on the PEP list, with a mark in each cell for what became of that pairing. A line under it reads "350 of 350 screenings accounted for: 18 kept as facts and 332 with no likeness", and the key names each mark. Hover over a mark to read its score, or follow it to the application. Under the picture is the table of the applications, each with its proposal, whether the checks settled it, and how many questions it holds.
+5. Click the tab "Screenings". It lists every screening, 350 of them, with its result and what was found; for a pairing with no likeness the score is the reason, for example "No likeness: the names score 0.26 against Dmitry Volkonskiy on the sanctions list, below the floor of 0.60." "Export CSV" downloads the rows.
+
+### Decide a settled application
+
+6. Open "CUST-001 Sarah Mitchell". The page shows the application with each quoted detail marked in it, the table "Details read from the application" with the words quoted and a "Passed" mark for each check, and the proposal "Low risk, approve" with "Settled by the checks" and the reason, which names the highest name score and the entry it was against.
+7. Under "Your decision" choose "Accept", type `No list entry resembles the name.` in "Your reason", and click "Record my decision". The tile "Proposals decided" reads "1 of 25". Choosing "Amend" shows the box "Your risk level and decision, if you amend"; leaving it empty is refused with "Write the amended wording in your own words." There is no way to accept many proposals at once: each is decided in your own words.
+
+### Settle an application with a question
+
+8. Open "CUST-018 Ivana Strahov". The proposal is "High risk, reject", marked for a person to settle, and one screening is kept as a fact: the name score is 1.00 and the dates of birth "Differ". The question reads "Is Ivana Strahov (CUST-018) the same person as Ivana Strahov on the sanctions list (Ostmark asset freeze), or a different person?" Under it, two columns put both readings side by side. "The same person" says the names are identical. "A different person" says "The dates of birth differ: 1996-03-14 on the application, 1985-08-07 on the list." Neither is chosen for you.
+9. In "Your answer" type `A different person.` and in "What your answer rests on" type `The dates of birth are 1996 and 1985.`, then click "Record my answer". The question shows "Answered by you". Under "Your decision" choose "Amend", type `Low risk, approve.` as the wording and `Another person with the same name.` as the reason, and click "Record my decision".
+10. Open "CUST-015 Marta Harlan". It holds two questions. One asks whether the applicant is the listed Viktor Harlan, with the names scoring 0.64 and a shared surname on one side. The other says the application names a husband in public office, "senior government official in Valdoria", gives no name, and asks who the husband is and whether that person is on a list. In the second block type `Ask the applicant for the husband's name before the account opens.` in "Or accept it as an assumption, in your words" and click "Accept as an assumption". The block shows "Accepted by you as an assumption". Nothing in the rules is written for these applications: the three the starter's labels mark as edge cases, CUST-015, CUST-018 and CUST-021, are for you because the checks cannot settle them.
+
+### Finish the batch
+
+11. Click the tab "Applications". Decide every application still marked "Needs a person": for a settled one choose "Accept" with your reason, and for each question answer it or accept it as an assumption. "Next application to decide" opens the next one waiting.
+12. Click the tab "Sign-off". Until every proposal is decided and every question is settled, the message reads, at the start, "The batch cannot be signed yet: 25 proposals without a decision and 14 questions not answered or accepted." The button "Sign the batch" is greyed out. If you reject a proposal, the page says "You rejected 1 proposal. Amend it in your own words, or return the batch so that it can be read again."
+13. When all are settled the sentence reads "Every proposal and question is settled, so it is ready to sign." Click "Sign the batch". The sentence reads "Dana Whitfield, Head of Compliance, signed the batch of 25 applications." with your name and role. The record opens: "Reviewer", "Role", "Date", "Outcome" as Signed, "Digest signed", each assumption you accepted, and the table "Decisions made on the batch" with one row for each decision and its reason. "Export CSV" downloads it. To return a batch instead, type why in "Why you are returning the batch, if you return it" and click "Return the batch".
+14. Open the batch that was already signed when you started. Its record reads the same way, with the fictional reviewer's own words as the reasons, and it shows the 25 proposals decided one by one, 12 answers and 2 assumptions.
+
+### A later batch
+
+15. Click "KYC onboarding" and start a batch from the form "Start a batch" with a few applications ticked, then "Start the batch". On the saved calls it is ready within a few seconds. Decisions about a customer are carried from the batches already signed. In the table, an application whose proposal has not changed shows its earlier decision, for example "Accepted by you, on 24 November 2026, carried from an earlier review", and its page gives who decided, when and why; a question answered before shows "Answered by you" with the answer. An application whose proposal changed since your decision shows "Needs a person", with your earlier decision and "Since then these changed:" naming the part that changed.

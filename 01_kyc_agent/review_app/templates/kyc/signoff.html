@@ -1,0 +1,28 @@
+{% extends "kyc/page.html" %}
+{% import "macros.html" as ui %}
+{% import "kyc/_parts.html" as parts %}
+{% block main %}
+<div class="review-page">
+{{ ui.answer(answer) }}
+{{ parts.tab_bar(tabs_for, "signoff") }}
+<div class="exhibit" data-hook="exhibit">
+  {% if form_error %}{{ parts.form_problem(form_error) }}{% endif %}
+  {% set blocker = model.cannot_sign_because() %}
+  {% if blocker and blocker != form_error %}<p class="problem" data-hook="blocker">{{ ui.badge("needs_person", blocker) }}</p>{% endif %}
+  {% if person %}
+  <form method="post" action="/kyc/runs/{{ thread }}/sign" class="stack form-narrow" data-hook="signoff-form">
+    <input type="hidden" name="brief_digest" value="{{ brief_digest }}">
+    <p>You are acting as {{ person.name }}, {{ person.role }}.</p>
+    <label for="return-reason">Why you are returning the batch, if you return it</label>
+    <textarea id="return-reason" name="reason">{{ form_values.get("reason", "") }}</textarea>
+    <div class="actions">
+      <button class="button" type="submit" name="outcome" value="signed" title="{{ blocker or 'Sign the batch as fit to act on' }}" {% if blocker %}disabled{% endif %}>Sign the batch</button>
+      <button class="button button-quiet" type="submit" name="outcome" value="returned" title="Return the batch with your reason">Return the batch</button>
+    </div>
+  </form>
+  {% else %}
+  <p><a href="{{ sign_in }}" title="Sign in with your name and role to sign or return the batch">Sign in</a> to sign or return the batch.</p>
+  {% endif %}
+</div>
+</div>
+{% endblock %}

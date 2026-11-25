@@ -1,0 +1,9 @@
+{
+  "dependencies": ["."],
+  "graphs": {
+    "kyc_agent": "./agent.py:agent",
+    "kyc_onboarding": "./workflow/graph.py:graph"
+  },
+  "env": "../.env",
+  "python_version": "3.13"
+}

@@ -1,0 +1,22 @@
+[project]
+name = "kyc-workshop"
+version = "0.1.0"
+description = "A KYC onboarding workflow: each application read into cited facts, screened against every list entry, and decided by a named reviewer"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "langgraph>=1.0,<2",
+    "langchain-openai>=1.0,<2",
+    "python-dotenv>=1.0,<2",
+    "langgraph-cli[inmem]>=0.4,<1",
+    "langgraph-api>=0.18",
+    "notebook>=7,<8",
+    "langchain>=1.0,<2",
+    "langchain-anthropic>=1.0,<2",
+    "pydantic>=2,<3",
+    "fsi-common",
+    "langgraph-checkpoint-sqlite>=3.1.3,<4",
+]
+
+[tool.uv.sources]
+fsi-common = { workspace = true }

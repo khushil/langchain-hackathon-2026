@@ -10,7 +10,7 @@ The document is the starter's fictional policy statement PS26/4 and the firm is 
 | --- | --- | --- |
 | `fsi_common/` | The record types (sources, source units, facts, open questions, disagreements, decisions, briefs, sign-offs, unit accounting) with their JSON Schemas, examples and validator; the chat model that calls headless Claude Code and records or replays calls; the evaluation runner; the reviewer's application | Built |
 | `03_document_summary_agent/` | The compliance brief topic: the starter's deep agent and section sub-agent, the context layer, the workflow, the evaluations, the application's plug-in, the saved model calls and the notebook | Built |
-| `01_kyc_agent/` | The starter's KYC onboarding topic | A README only |
+| `01_kyc_agent/` | The KYC onboarding topic: the starter's graph, the context layer that reads each application into cited facts and screens it against every list entry, the workflow, the evaluations on the starter's labels, the application's plug-in, the saved model calls and the notebook | Built |
 | `02_transaction_monitoring_agent/` | The starter's transaction monitoring topic | A README only |
 
 `docs/user-guide.md` walks through the reviewer's application step by step. `agents.py` in topic 03 gathers every agent of the topic by name, as the hackathon's submission rules ask.
@@ -87,6 +87,35 @@ With `MODEL_BACKEND` at its default of `replay`, the application can only start 
 The application is called Review desk. Its pages are the home page, About, sign-in, and for the compliance brief topic the list of briefs with the form that starts one, the review page, the facts table and the page of a signed or returned brief. About says what the data is. `make serve` keeps the runs, decisions, sign-offs and drafts in files under `.app-state` in the repository root, which git ignores, so a restart shows the same briefs; deleting that folder starts afresh. `docs/user-guide.md` follows every step from starting the application with the seed to a second run that carries earlier decisions.
 
 `APP_SECRET` signs the sign-in cookie (a random one is made for each process when it is absent), `APP_COOKIE` names that cookie, and `APP_TOPICS` lists the topic folders to serve; by default every topic folder with a `review_app/plugin.py` is served. One topic is served by the application's own process; two or more are each served by a process of their own, which the application starts and stops, behind the same address and the same sign-in, because the topic folders keep the starter's package names and those cannot share one process. `APP_STATE_DIR` names the folder that keeps that state (with several topics, each keeps its own in a subfolder named for its topic folder); without it the application keeps everything in memory, as the notebook and the tests do. `APP_SEED=compliance-brief` starts the application with a brief waiting for a reviewer and a brief signed by a fictional reviewer, both runs of the whole document made from the saved calls. The signed brief holds the reviewer's decision on the firm profile and on each fact of the document, her answers to three open questions and her assumption for one, all in her own words and all made through the application's own review routes. Without the seed the application starts empty. A state folder holds one server at a time, and a folder seeded from other recordings, or by a start that stopped partway, is refused with the name of the folder to delete.
+
+## KYC onboarding
+
+`01_kyc_agent/` carries the starter's KYC onboarding agent and builds on it. A new customer applies for an account in free text. The starter's graph reads the application, screens the name against a sanctions list and a list of politically exposed people, scores the risk and writes a memo. This topic adds a second workflow beside it. A model reads each application once into the applicant's details, each with a quote, and plain code checks every quote, the name, the date of birth and the amount against the application's own words. Every application is then set against every entry of both lists, 25 applications by 14 entries, 350 screenings, and each screening ends as a fact or on a list of screenings with no likeness, each with its score as the reason. A run stops when those counts do not close.
+
+The checks settle an application in two cases only: a sanctions entry with an exact name and the same date of birth, which is high risk and a rejection, and no likeness to any entry with the name established, which is low risk and an approval. Every other application takes the cautious reading, high risk and reject, which is the starter's own reading of a hit, and goes to a person with the question the checks could not settle and both readings side by side, "the same person" and "a different person", each with what supports it. A named person accepts, amends or rejects each application's proposal in their own words, answers each question and signs the batch or returns it. The workflow cannot decide for them, and a later run carries a decision about a customer only while what the person judged is unchanged.
+
+Names are compared by the starter's score and its threshold of 0.85, with one addition of ours, a floor of 0.60 below which two names are not asked about. On the starter's data the 350 name pairs leave a gap: 15 score 0.909 or more, three lie between the floor and the threshold (0.615, 0.615 and 0.640), and the highest pair under the floor scores 0.593. The floor sits 0.007 above that pair, and raising it to 0.65 would stop the three pairs between 0.60 and 0.65 being asked about, CUST-015's 0.640 among them; tests hold these figures and this sentence to the screening run. No rule names a customer, and a test fails if one does.
+
+### What is measured for KYC onboarding
+
+The starter's `scripts/run_experiments.py` holds 25 labels, one for each application, with a risk level and a reason; the expected decision is a rejection for high risk and an approval for low. The labels are the starter's, carried unchanged into `01_kyc_agent/evals/data/starter_labels.tsv`, and this repository did not make them. Three of them are marked "Edge case": a relation to a listed person, the same name as a sanctioned person with another date of birth, and a name a letter away from a listed one. No rule is written for those three. Each measure is a count over a stated population, and none calls a model; `01_kyc_agent/evals/README.md` defines each one. The notebook prints these figures from the saved calls, and `01_kyc_agent/tests/notebook/test_readme_figures.py` keeps this table to them.
+
+| Measure | This engine | Starter's rule |
+| --- | --- | --- |
+| Risk level agrees with the label | 23 of 25 applications | 22 of 25 applications |
+| Decision agrees with the label | 23 of 25 applications | 22 of 25 applications |
+| Settled by the checks | 13 of 25 applications | not scored |
+| Sent to a person | 12 of 25 applications | not scored |
+| Settled proposals that agree with their label | 13 of 13 applications settled by the checks | not scored |
+| Edge cases sent to a person | 3 of 3 applications the labels mark as edge cases | not scored |
+| Applications accounted for | 25 of 25 applications | not scored |
+| Screenings accounted for | 350 of 350 screenings | not scored |
+
+The engine's two disagreements are CUST-018 and CUST-021, which the labels mark low and the engine proposes as high risk until a person answers. The starter's rule disagrees on those two and on CUST-015, whose relation to a listed person it cannot see. In the saved run the engine read 195 facts and all 195 passed their checks. The 350 screenings ended in two ways: 18 of them are screening facts, and 332 pairings had no likeness, each with its score as the reason. 14 open questions went to the reviewer. One saved run is one draw of the model, so these counts are the ones the notebook printed from it and not a claim about another run.
+
+### Running KYC onboarding
+
+With `MODEL_BACKEND` at its default of `replay`, the saved calls in `01_kyc_agent/recordings/` answer every model call: 78 calls, 52 on Sonnet that read applications and 26 on Opus that write the starter's memo, each at medium effort. `01_kyc_agent/utils/models.py` is the one place a model is chosen, by role: `extract` and `memo`. `make notebook` runs `01_kyc_agent/modules/01_kyc_agent.ipynb` top to bottom on them with no key and no live call. The notebook has 51 cells: the starter's 35, changed only where a model is chosen and where the starter's own sentences were stale, and 16 more that run the workflow, print the counts above, show the three edge cases and stop at the review. `APP_SEED=kyc-onboarding` starts the application with a batch waiting for a reviewer and a batch signed by a fictional reviewer, who decided each of the 25 proposals and answered the questions in her own words through the review routes.
 
 ## Checks
 
@@ -188,6 +217,12 @@ Every data file in the repository is listed here. All of it is fictional, genera
 | `03_document_summary_agent/evals/data/sections.jsonl` | One evaluation example for each of the 10 sections | Built by `evals/build_dataset.py` from the labels and PS26-4 |
 | `03_document_summary_agent/evals/data/documents.jsonl` | One evaluation example for the whole document and firm | Built by `evals/build_dataset.py` from the labels and PS26-4 |
 | `03_document_summary_agent/recordings/` | 26 saved model calls, each holding a request and the answer it received | Made for this build by running the agents on PS26-4 and the firm tables |
+| `01_kyc_agent/data/applications.jsonl` | The 25 account applications, one customer each | The starter's, byte for byte; fictional |
+| `01_kyc_agent/data/sanctions_list.jsonl` | 8 sanctions entries, each with a name, a date of birth and a programme | The starter's, byte for byte; fictional |
+| `01_kyc_agent/data/pep_list.jsonl` | 6 entries of politically exposed people, each with a name, a position and a country | The starter's, byte for byte; fictional |
+| `01_kyc_agent/evals/data/starter_labels.tsv` | The starter's 25 labels, a risk level and a reason for each application | The starter's, carried unchanged from its experiments script, lines 51 to 77 |
+| `01_kyc_agent/evals/data/examples.jsonl` | One evaluation example for each application | Built by `01_kyc_agent/evals/build_dataset.py` from the labels and the applications |
+| `01_kyc_agent/recordings/` | 78 recorded model calls | Made for this build by running the notebook on the applications |
 | `fsi_common/fsi_common/examples/` | 62 example records, valid and planted invalid | Made for this build by `fsi_common.examples.build`; the reviewer in them is invented |
 | `fsi_common/fsi_common/schemas/` | 9 JSON Schemas | Exported from the record types by `fsi_common.export_schemas` |
 | `03_document_summary_agent/data/policies/harbour-mutual-bank/manifest.json` | The manifest of Harbour Mutual Bank's policy set: each document's file, the date written, its SHA-256 digest and its terms | Written for this build; fictional |
@@ -226,6 +261,25 @@ These are the starter's files, adapted:
 - `pyproject.toml` keeps the starter's dependencies and adds `fsi-common`.
 - `langgraph.json` registers a second graph, `compliance_brief`, beside the starter's.
 - `modules/01_document_summary_agent.ipynb` keeps the starter's 23 cells, changed where a model is chosen, and adds 14.
+
+In topic 01, these files are the starter's, byte for byte:
+
+- `01_kyc_agent/agent.py`
+- `01_kyc_agent/tools/__init__.py`, `01_kyc_agent/tools/applications.py` and `01_kyc_agent/tools/screening.py`
+- `01_kyc_agent/utils/__init__.py`, `01_kyc_agent/utils/db.py` and `01_kyc_agent/utils/state.py`
+- `01_kyc_agent/scripts/__init__.py`
+- `01_kyc_agent/data/applications.jsonl`, `01_kyc_agent/data/sanctions_list.jsonl` and `01_kyc_agent/data/pep_list.jsonl`
+
+These are the starter's files for topic 01, adapted:
+
+- `01_kyc_agent/utils/nodes.py` asks for its models through `get_model("extract")` and `get_model("memo")` where the starter built them with `init_chat_model`.
+- `01_kyc_agent/utils/models.py` is replaced by `get_model(role)` and keeps the starter's exported `model` name.
+- `01_kyc_agent/langgraph.json` registers a second graph, `kyc_onboarding`, beside the starter's.
+- `01_kyc_agent/pyproject.toml` keeps the starter's dependencies and adds `fsi-common`, `pydantic` and `langgraph-checkpoint-sqlite`.
+- `01_kyc_agent/scripts/run_experiments.py` reads its labels from the data file and is otherwise the starter's script.
+- `01_kyc_agent/modules/01_kyc_agent.ipynb` keeps the starter's 35 cells, changed where a model is chosen and where a sentence of the starter's was stale, and adds 16.
+
+This topic's own README replaces the starter's `01_kyc_agent/README.md`.
 
 The repository's own work, the contract, adapter, context layer, workflow, evaluations and application, is by Khushil Dep.
 

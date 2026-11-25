@@ -1,0 +1,28 @@
+# The name and the date of birth each application states, as the applications write them.
+# The planted faults start from these, so the starter's own rule can be scored without a model.
+customer_id	full_name	date_of_birth
+CUST-001	Sarah Mitchell	1990-03-14
+CUST-002	Viktor Harlan	1968-07-02
+CUST-003	Dmitri Volkonsky	1975-09-11
+CUST-004	Priya Raman	1988-11-03
+CUST-005	Marcus Delacroix	1979-02-27
+CUST-006	Omar Haddad	1983-08-15
+CUST-007	Chloe Nakamura	1999-06-09
+CUST-008	Thomas O'Brien	1956-01-21
+CUST-009	Grace Okafor	1985-04-30
+CUST-010	Lars Eriksson	1971-12-12
+CUST-011	Amara Quillon	1966-10-06
+CUST-012	Helga Brandt	1972-05-18
+CUST-013	Tomas Verretti	1980-02-04
+CUST-014	Oskar Lindqvist	1958-07-25
+CUST-015	Marta Harlan	1971-03-17
+CUST-016	Rurik Zelenko	1971-04-19
+CUST-017	Malik Dovrany	1969-12-02
+CUST-018	Ivana Strahov	1996-03-14
+CUST-019	Anselm Rygaard	1977-06-25
+CUST-020	Nadia Karimova	1973-09-09
+CUST-021	Victor Harlan	1984-10-08
+CUST-022	Isabelle Fontaine	1968-07-11
+CUST-023	Teodore Ilkanen	1960-05-30
+CUST-024	Sofia Marchetti	1992-09-22
+CUST-025	Lena Brandvold	1982-01-23

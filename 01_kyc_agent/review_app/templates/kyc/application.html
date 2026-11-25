@@ -1,0 +1,160 @@
+{% extends "kyc/page.html" %}
+{% import "macros.html" as ui %}
+{% import "kyc/_parts.html" as parts %}
+{% block main %}
+<div class="review-page">
+{{ ui.answer(answer) }}
+{{ parts.tab_bar(tabs_for, "applications" if awaiting else "signed") }}
+<div class="exhibit review-grid" data-hook="exhibit">
+  <section class="pane application" aria-label="The application and what was read from it" data-hook="application">
+    <p class="back"><a href="{{ batch_href }}" title="Go back to the batch and its picture">All applications</a></p>
+    <h2 class="source-title">{{ view.heading }}</h2>
+    <p class="paragraph" data-hook="application-text">{% for seg in view.segments %}{% if seg.marked %}<mark>{{ seg.text }}</mark>{% else %}{{ seg.text }}{% endif %}{% endfor %}</p>
+    <table class="data details" data-hook="details">
+      <caption class="table-caption">Details read from the application</caption>
+      <thead><tr><th scope="col">Detail</th><th scope="col">Read as</th><th scope="col">Words quoted</th><th scope="col">Checks</th></tr></thead>
+      <tbody>
+        {% for row in view.details %}
+        <tr>
+          <th scope="row">{{ row.label }}</th>
+          <td>{{ row.value }}</td>
+          <td>{{ row.quote }}</td>
+          <td>{% if row.passed %}<span class="badge">Passed</span>{% else %}{{ ui.badge("failed", "Failed") }}{% for words in row.failures %}<br><span class="meta">{{ words|capitalize_first }}</span>{% endfor %}{% endif %}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <h3 class="part-heading">Screenings kept as facts</h3>
+    {% if view.screenings %}
+    <table class="data screenings" data-hook="screenings">
+      <thead><tr><th scope="col">Entry</th><th scope="col">List</th><th scope="col">Name score</th><th scope="col">Dates of birth</th><th scope="col">Result</th></tr></thead>
+      <tbody>
+        {% for s in view.screenings %}
+        <tr>
+          <td>{{ s.entry }}<span class="meta"> {{ s.detail }}</span></td>
+          <td>{{ s.list_label }}</td>
+          <td>{{ s.score }}</td>
+          <td>{{ s.dates }}</td>
+          <td>{% if s.how == "Needs a person" %}{{ ui.badge("needs_person", s.how) }}{% else %}<span class="badge">{{ s.how }}</span>{% endif %}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p class="empty">No list entry has a likeness to this application.</p>
+    {% endif %}
+    <p class="meta" data-hook="no-likeness">{{ view.no_likeness }} of the {{ view.screenings_total }} screenings have no likeness; their scores are in the Screenings tab.{% if view.not_screened %} Not screened: {{ view.not_screened }} were not run because the name could not be checked.{% endif %}</p>
+  </section>
+  <aside class="pane proposal" aria-label="The proposal and the questions" data-hook="proposal">
+    <h2 class="source-title">Proposal</h2>
+    <p class="proposal-line" data-hook="proposal-line">{{ proposal_words }} {% if view.proposal.attributes.settled %}<span class="badge">Settled by the checks</span>{% else %}{{ ui.badge("needs_person", "For a person to settle") }}{% endif %}</p>
+    <p>{{ view.proposal.attributes.basis }}</p>
+    {% if state and state.kind == "needs" and cited.carry.outcome == "ask_again" %}
+    <div class="note" data-hook="ask-again">
+      <p>{{ decision_line(cited.carry.decision, person) }}. Reason given: {{ cited.carry.decision.reason }}</p>
+      <p>Since then these changed: {{ cited.carry.differences|map("difference_label")|join(", ") }}.</p>
+    </div>
+    {% elif state and state.kind == "carried" %}
+    <p class="note" data-hook="carried">{{ decision_line(state.decision, person) }}. Reason given: {{ state.decision.reason }}</p>
+    {% endif %}
+    {% if state and state.kind == "yours" %}
+    <p class="note" data-hook="your-decision">Your decision: {{ decision_line(state.decision, person) }}. {% if state.decision.amendment %}Your wording: {{ sentence_end(state.decision.amendment) }} {% endif %}Your reason: {{ state.decision.reason }}</p>
+    {% elif signed_decision %}
+    <p class="note" data-hook="decision-record">{{ decision_line(signed_decision, person) }}.{% if signed_decision.amendment %} Wording: {{ sentence_end(signed_decision.amendment) }}{% endif %} Reason given: {{ signed_decision.reason }}</p>
+    {% endif %}
+    {% for qv in view.questions %}
+    {% set q = qv.question %}
+    {% set qs = model.question_state(q.id) if model else none %}
+    <article class="question" data-hook="question">
+      <h3 class="question-text">{{ q.question }}</h3>
+      <p class="meta">
+        {% if qs and qs.kind == "open" %}{{ ui.badge("needs_person") }}
+        {% elif qs and qs.kind == "answered" %}<span class="badge">{{ decision_by(qs.decision, person) }}</span>
+        {% elif qs and qs.kind == "assumed" %}<span class="badge">Accepted by you as an assumption</span>
+        {% elif qs %}<span class="badge">{% if qs.decision %}{{ decision_by(qs.decision, person) }}{% else %}Answered in an earlier review{% endif %}</span>
+        {% else %}<span class="badge">{% if answers[q.id] %}{{ decision_by(answers[q.id], person) }}{% else %}Accepted as an assumption{% endif %}</span>{% endif %}
+        Ask: {{ q.ask_role }}. Priority: {{ q.priority }}.
+      </p>
+      {% if qv.readings %}
+      <div class="readings" data-hook="readings">
+        <section class="reading" data-hook="reading-same" aria-label="{{ qv.readings.same_label }}">
+          <h4>{{ qv.readings.same_label }}</h4>
+          <ul>{% for line in qv.readings.same %}<li>{{ line }}</li>{% endfor %}</ul>
+        </section>
+        <section class="reading" data-hook="reading-different" aria-label="{{ qv.readings.different_label }}">
+          <h4>{{ qv.readings.different_label }}</h4>
+          <ul>{% for line in qv.readings.different %}<li>{{ line }}</li>{% endfor %}</ul>
+        </section>
+      </div>
+      {% endif %}
+      <dl class="record">
+        <dt>Why it is not known</dt><dd>{{ q.why_unknown }}</dd>
+        <dt>What changes with the answer</dt><dd>{{ q.impact }}</dd>
+        {% set given = qs.decision if qs else answers[q.id] %}
+        {% if given %}
+        <dt>Answer</dt><dd>{{ given.answer }}</dd>
+        <dt>Recorded</dt><dd>{{ decision_line(given, person) }}</dd>
+        <dt>What it rests on</dt><dd>{{ given.reason }}</dd>
+        {% endif %}
+        {% if qs and qs.assumption %}<dt>Your assumption</dt><dd>{{ qs.assumption }}</dd>{% endif %}
+      </dl>
+      {% if awaiting %}
+      {% if person %}
+      {% set typed = form_values if error_target == q.id else {} %}
+      {% if form_error and error_target == q.id %}{{ parts.form_problem(form_error) }}{% endif %}
+      <div class="question-forms">
+        <form method="post" action="/kyc/runs/{{ thread }}/answer" data-hook="answer-form">
+          <input type="hidden" name="brief_digest" value="{{ brief_digest }}">
+          <input type="hidden" name="question_id" value="{{ q.id }}">
+          <input type="hidden" name="customer" value="{{ view.customer_id }}">
+          <label for="answer-{{ loop.index }}">Your answer</label>
+          <textarea id="answer-{{ loop.index }}" name="answer" required>{{ typed.get("answer", "") }}</textarea>
+          <label for="basis-{{ loop.index }}">What your answer rests on</label>
+          <textarea id="basis-{{ loop.index }}" name="reason" required>{{ typed.get("reason", "") }}</textarea>
+          <button class="button" type="submit" title="Record your answer to this question">Record my answer</button>
+        </form>
+        <form method="post" action="/kyc/runs/{{ thread }}/assume" data-hook="assume-form">
+          <input type="hidden" name="brief_digest" value="{{ brief_digest }}">
+          <input type="hidden" name="question_id" value="{{ q.id }}">
+          <input type="hidden" name="customer" value="{{ view.customer_id }}">
+          <label for="words-{{ loop.index }}">Or accept it as an assumption, in your words</label>
+          <textarea id="words-{{ loop.index }}" name="words" required>{{ typed.get("words", "") }}</textarea>
+          <button class="button button-quiet" type="submit" title="Accept this question as an assumption in your words">Accept as an assumption</button>
+        </form>
+      </div>
+      {% else %}
+      <p><a href="{{ sign_in }}" title="Sign in with your name and role to answer">Sign in</a> to answer this question.</p>
+      {% endif %}
+      {% endif %}
+    </article>
+    {% endfor %}
+    {% if awaiting %}
+    {% if person %}
+    <form method="post" action="/kyc/runs/{{ thread }}/decide" class="decision-form" data-hook="decision-form">
+      <input type="hidden" name="brief_digest" value="{{ brief_digest }}">
+      <input type="hidden" name="fact_id" value="{{ view.proposal.id }}">
+      <input type="hidden" name="customer" value="{{ view.customer_id }}">
+      {% if form_error and error_target == view.proposal.id %}{{ parts.form_problem(form_error) }}{% endif %}
+      <fieldset>
+        <legend>{{ "Change your decision" if state.kind == "yours" else "Your decision" }}</legend>
+        {% for value, label in [("accept", "Accept"), ("amend", "Amend"), ("reject", "Reject")] %}
+        <label class="choice" title="{{ label }} this proposal"><input type="radio" name="outcome" value="{{ value }}" {% if form_values.get("outcome") == value %}checked{% endif %} required>{{ label }}</label>
+        {% endfor %}
+      </fieldset>
+      <div class="amend-field">
+        <label for="amendment">Your risk level and decision, if you amend</label>
+        <textarea id="amendment" name="amendment">{{ form_values.get("amendment", "") }}</textarea>
+      </div>
+      <label for="reason">Your reason</label>
+      <textarea id="reason" name="reason" required>{{ form_values.get("reason", "") }}</textarea>
+      <button class="button" type="submit" title="Record your decision on this proposal">Record my decision</button>
+      {% if next_href %}<a class="button button-quiet" href="{{ next_href }}" title="Open the next application that needs a decision">Next application to decide</a>{% endif %}
+    </form>
+    {% else %}
+    <p><a href="{{ sign_in }}" title="Sign in with your name and role to decide">Sign in</a> to decide on this proposal.</p>
+    {% endif %}
+    {% endif %}
+  </aside>
+</div>
+</div>
+{% endblock %}

@@ -1,0 +1,22 @@
+{% import "macros.html" as ui %}
+{% macro tab_bar(tabs, current) %}
+<nav class="tabs" aria-label="Parts of the review">
+  {% for key, label, href in tabs %}
+  <a href="{{ href }}" title="Open {{ label|lower }}" {% if key == current %}aria-current="page"{% endif %}>{{ label }}</a>
+  {% endfor %}
+</nav>
+{% endmacro %}
+
+{% macro proposal_state(state, person) %}
+{% if state.kind == "needs" %}
+{{ ui.badge("needs_person") }}
+{% elif state.kind == "yours" %}
+<span class="badge" data-state="yours">{{ decision_by(state.decision, person) }}</span>
+{% else %}
+<span class="badge" data-state="carried" title="{{ decision_line(state.decision, person) }}. Nothing judged has changed since.">Carried: {{ {"accept": "accepted", "amend": "amended", "reject": "rejected"}[state.decision.outcome] }} {{ state.decision.date|long_date }}</span>
+{% endif %}
+{% endmacro %}
+
+{% macro form_problem(message) %}
+<p class="problem" role="alert" data-hook="form-problem">{{ ui.badge("failed", message) }}</p>
+{% endmacro %}

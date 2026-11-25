@@ -1,0 +1,18 @@
+{% extends "kyc/page.html" %}
+{% import "macros.html" as ui %}
+{% import "kyc/_parts.html" as parts %}
+{% import "kyc/_picture.html" as pic %}
+{% block main %}
+<div class="review-page">
+{{ ui.answer(answer) }}
+{{ parts.tab_bar(tabs_for, tab) }}
+{% if form_error %}{{ parts.form_problem(form_error) }}{% endif %}
+<div class="exhibit batch-exhibit" data-hook="exhibit">
+  {{ pic.draw(picture) }}
+  {% if not person %}
+  <p><a href="{{ sign_in }}" title="Sign in with your name and role to decide">Sign in</a> to decide on the proposals.</p>
+  {% endif %}
+  {{ ui.table(table) }}
+</div>
+</div>
+{% endblock %}

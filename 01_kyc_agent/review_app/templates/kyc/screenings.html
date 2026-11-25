@@ -1,0 +1,10 @@
+{% extends "kyc/page.html" %}
+{% import "macros.html" as ui %}
+{% import "kyc/_parts.html" as parts %}
+{% block main %}
+{{ ui.answer(answer) }}
+{{ parts.tab_bar(tabs_for, "screenings") }}
+<div class="exhibit" data-hook="exhibit">
+  {{ ui.table(table) }}
+</div>
+{% endblock %}

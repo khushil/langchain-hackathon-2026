@@ -1,0 +1,32 @@
+# These are the starter's labels, not ours. They are the 25 entries of LABELS in the starter's
+# 01_kyc_agent/scripts/run_experiments.py, lines 51 to 77, at commit 12acee0 of
+# github.com/langchain-samples/fsi-hackathon-london-2026, carried unchanged: the customer, the risk level and the
+# reason, each as the starter wrote it. This repository did not make them and does not vouch for them.
+# The expected decision is derived as the starter derives it: reject for high, approve for low.
+# A reason that begins "Edge case" marks the three customers the starter flags as edge cases.
+customer_id	risk_level	reason
+CUST-001	low	Clean customer
+CUST-002	high	PEP: Deputy Minister of Finance, exact name match
+CUST-003	high	Sanctioned: name spelled differently from the list, same date of birth
+CUST-004	low	Clean customer
+CUST-005	low	Clean customer
+CUST-006	low	Clean customer
+CUST-007	low	Clean customer
+CUST-008	low	Clean customer
+CUST-009	low	Clean customer
+CUST-010	low	Clean customer
+CUST-011	high	PEP: Central Bank Governor, exact name match
+CUST-012	high	PEP: Minister of Energy, exact name match
+CUST-013	high	PEP: Member of Parliament, name spelled differently from the list
+CUST-014	high	PEP: former ambassador, exact name match
+CUST-015	high	Edge case: spouse of a senior official (PEP relative), not on any list
+CUST-016	high	Sanctioned: exact name and date of birth match
+CUST-017	high	Sanctioned: name spelled differently from the list, same date of birth
+CUST-018	low	Edge case: same name as a sanctioned person but a different date of birth
+CUST-019	high	Sanctioned: name spelled differently from the list, same date of birth
+CUST-020	high	Sanctioned and PEP: exact name match on both lists
+CUST-021	low	Edge case: near-identical name to a PEP (Victor vs Viktor), different person and date of birth
+CUST-022	low	Clean customer
+CUST-023	high	Sanctioned: name spelled differently from the list, same date of birth
+CUST-024	low	Clean customer
+CUST-025	high	Sanctioned: exact name and date of birth match

@@ -1,0 +1,52 @@
+{% macro glyph(kind) %}
+{% if kind == "needs" %}<svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M8 1.5 15 14H1z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8 6v4M8 11.6v.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+{% elif kind == "near" %}<svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M8 1.8 14.2 8 8 14.2 1.8 8z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8 5.6v3M8 10.2v.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+{% elif kind == "not_screened" %}<svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="m5.6 5.6 4.8 4.8m0-4.8-4.8 4.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+{% elif kind == "settled" or kind == "answered" %}<svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="m5 8.2 2.2 2.2L11 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+{% elif kind == "kept" %}<svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><rect x="3.5" y="3.5" width="9" height="9" fill="currentColor"/></svg>
+{% else %}<svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M5 8h6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+{% endif %}
+{% endmacro %}
+
+{% macro draw(picture) %}
+<section class="picture" aria-label="Each application against each list entry" data-hook="picture">
+  <div class="picture-main">
+    <table class="matrix">
+      <thead>
+        <tr>
+          <th scope="col" class="matrix-corner" aria-label="Application"></th>
+          <th scope="colgroup" colspan="8" class="matrix-group">Sanctions list</th>
+          <th scope="colgroup" colspan="6" class="matrix-group">PEP list</th>
+        </tr>
+        <tr>
+          <th scope="col" class="matrix-corner"></th>
+          {% for entry in picture.entries %}<th scope="col" class="matrix-number" title="{{ entry.name }}, {{ entry.list_label|lower }}, {{ entry.detail }}">{{ entry.number }}</th>{% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in picture.rows %}
+        <tr data-hook="picture-row">
+          <th scope="row" class="matrix-row"><a href="{{ row.href }}" title="Open the application {{ row.customer_id }}{% if row.name %}, {{ row.name }}{% endif %}">{{ row.customer_id }}</a>{% if row.name %}<span class="matrix-name">{{ row.name }}</span>{% endif %}</th>
+          {% for cell in row.cells %}
+          <td>{% if cell.state == "none" %}<span class="cell cell-none" role="img" data-hook="picture-cell" data-state="none" title="{{ cell.detail }}" aria-label="{{ row.customer_id }}, entry {{ loop.index }}: {{ cell.word|lower }}">{{ glyph("none") }}</span>{% else %}<a class="cell cell-{{ cell.state }}" href="{{ row.href }}" data-hook="picture-cell" data-state="{{ cell.state }}" title="{{ cell.detail }}" aria-label="{{ row.customer_id }}, entry {{ loop.index }}: {{ cell.word }}. {{ cell.detail }}">{{ glyph(cell.state) }}</a>{% endif %}</td>
+          {% endfor %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="picture-side">
+  <div class="picture-head">
+    <p class="picture-count" data-hook="picture-count">{{ picture.count }}</p>
+    <ul class="picture-key" aria-label="What each mark stands for">
+      {% for kind, word in picture.key %}<li class="key-{{ kind }}">{{ glyph(kind) }}{{ word }}</li>{% endfor %}
+    </ul>
+  </div>
+  <ol class="entry-key" aria-label="The list entries" data-hook="entry-key">
+    {% for entry in picture.entries %}
+    <li value="{{ entry.number }}"><span class="entry-number">{{ entry.number }}</span> <span class="entry-name">{{ entry.name }}</span> <span class="entry-detail">{{ entry.list_label }}, {{ entry.detail }}</span></li>
+    {% endfor %}
+  </ol>
+  </div>
+</section>
+{% endmacro %}

@@ -1,0 +1,27 @@
+{% extends "kyc/page.html" %}
+{% import "macros.html" as ui %}
+{% block main %}
+{{ ui.answer(answer) }}
+<div class="start-grid">
+<div class="exhibit" data-hook="exhibit">
+  {{ ui.table(table) }}
+</div>
+{% if person %}<form method="post" action="/kyc/runs" class="panel start-form" aria-labelledby="start-heading">{% else %}<section class="panel start-form" aria-labelledby="start-heading">{% endif %}
+  <h2 id="start-heading">Start a batch</h2>
+  {% if problem %}<p class="problem" role="alert" data-hook="form-problem">{{ ui.badge("failed", problem) }}</p>{% endif %}
+  <fieldset>
+    <legend>Applications to read</legend>
+    <div class="customer-grid">
+      {% for customer_id in customers %}
+      <label class="choice" title="Include the application {{ customer_id }}"><input type="checkbox" name="customers" value="{{ customer_id }}"{% if ticked is none or customer_id in ticked %} checked{% endif %}>{{ customer_id }}</label>
+      {% endfor %}
+    </div>
+  </fieldset>
+  {% if person %}
+  <button class="button" type="submit" title="Read the chosen applications and screen them against both lists">Start the batch</button>
+  {% else %}
+  <p><a href="{{ sign_in }}" title="Sign in with your name and role to start a batch">Sign in with your name and role to start a batch.</a></p>
+  {% endif %}
+{% if person %}</form>{% else %}</section>{% endif %}
+</div>
+{% endblock %}

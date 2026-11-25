@@ -1,0 +1,233 @@
+"""The run service the application calls: start, status, review, submit and errors."""
+
+import threading
+import time
+
+import pytest
+from engine_fakes import respond
+from kyc_fakes import ScriptedReader
+from langgraph.store.memory import InMemoryStore
+
+from context.errors import ApplicationNotFoundError
+from fsi_common.ids import digest_bytes
+from utils.db import DATA_DIR
+from utils.kyc_state import ReviewMismatchError, ReviewRequest
+from workflow.errors import InvalidRequestError
+from workflow.runs import KycRuns, NotAwaitingReviewError, RunInProgressError, RunNotFoundError
+
+REQUEST = {"request": "Review the proposed decisions", "customer_ids": ["CUST-003", "CUST-001"]}
+
+
+def wait_until(runs, thread_id, wanted, timeout=20.0):
+    """Poll a run until its status is one of ``wanted``."""
+    end = time.monotonic() + timeout
+    while time.monotonic() < end:
+        status = runs.status(thread_id)
+        if status in wanted:
+            return status
+        time.sleep(0.01)
+    raise AssertionError(f"run {thread_id} is {runs.status(thread_id)}, not {wanted}")
+
+
+def test_start_returns_at_once_and_the_run_reaches_the_review():
+    gate = threading.Event()
+    runs = KycRuns(models=ScriptedReader(gate=gate))
+    thread_id = runs.start(REQUEST)
+    assert runs.status(thread_id) == "running"
+    with pytest.raises(NotAwaitingReviewError):
+        runs.review_request(thread_id)
+    gate.set()
+    assert wait_until(runs, thread_id, {"awaiting_review"}) == "awaiting_review"
+    assert isinstance(runs.review_request(thread_id), ReviewRequest)
+    assert runs.error(thread_id) is None
+
+
+def test_submit_a_signed_review_resumes_the_graph_to_its_end():
+    runs = KycRuns(models=ScriptedReader())
+    thread_id = runs.start(REQUEST)
+    wait_until(runs, thread_id, {"awaiting_review"})
+    request = runs.review_request(thread_id)
+    assert runs.submit(thread_id, respond(request)) == "signed"
+    assert runs.result(thread_id)["sign_off"]["outcome"] == "signed"
+    with pytest.raises(NotAwaitingReviewError):
+        runs.review_request(thread_id)
+    with pytest.raises(NotAwaitingReviewError):
+        runs.submit(thread_id, respond(request))
+
+
+def test_submit_a_returned_review_ends_the_run_as_returned():
+    runs = KycRuns(models=ScriptedReader())
+    thread_id = runs.start(REQUEST)
+    wait_until(runs, thread_id, {"awaiting_review"})
+    request = runs.review_request(thread_id)
+    response = respond(request, outcome="returned", decide="reject")
+    assert runs.submit(thread_id, response) == "returned"
+
+
+def test_submit_decisions_without_a_sign_off_leaves_the_run_awaiting_review():
+    runs = KycRuns(models=ScriptedReader())
+    thread_id = runs.start(REQUEST)
+    wait_until(runs, thread_id, {"awaiting_review"})
+    partial = respond(runs.review_request(thread_id)).model_copy(update={"sign_off": None})
+    assert runs.submit(thread_id, partial) == "awaiting_review"
+    assert len(runs.result(thread_id)["decisions"]) >= 2
+
+
+def test_submit_a_response_for_another_batch_is_refused_and_the_run_still_waits():
+    runs = KycRuns(models=ScriptedReader())
+    thread_id = runs.start(REQUEST)
+    wait_until(runs, thread_id, {"awaiting_review"})
+    request = runs.review_request(thread_id)
+    other = request.model_copy(update={"brief_digest": "sha256:" + "0" * 64})
+    with pytest.raises(ReviewMismatchError):
+        runs.submit(thread_id, respond(other))
+    assert runs.status(thread_id) == "awaiting_review"
+    assert runs.submit(thread_id, respond(request)) == "signed"
+
+
+def test_a_failing_model_call_gives_a_failed_run_with_the_failure_in_words():
+    runs = KycRuns(models=ScriptedReader(fail_for=("CUST-003",)))
+    thread_id = runs.start(REQUEST)
+    assert wait_until(runs, thread_id, {"failed"}) == "failed"
+    assert "the model call for CUST-003 failed" in runs.error(thread_id)
+    with pytest.raises(NotAwaitingReviewError):
+        runs.review_request(thread_id)
+
+
+def test_start_refuses_a_second_run_while_one_is_running_and_allows_one_after():
+    gate = threading.Event()
+    runs = KycRuns(models=ScriptedReader(gate=gate))
+    first = runs.start(REQUEST)
+    with pytest.raises(RunInProgressError):
+        runs.start(REQUEST)
+    gate.set()
+    wait_until(runs, first, {"awaiting_review"})
+    second = runs.start(REQUEST)
+    wait_until(runs, second, {"awaiting_review"})
+    assert runs.list_runs() == [second, first]
+
+
+def test_every_unknown_thread_id_raises_run_not_found():
+    runs = KycRuns(models=ScriptedReader())
+    for call in (
+        runs.status,
+        runs.review_request,
+        runs.result,
+        runs.error,
+        lambda t: runs.submit(t, None),
+    ):
+        with pytest.raises(RunNotFoundError, match="nope"):
+            call("nope")
+
+
+def test_start_refuses_a_missing_field_an_empty_list_and_an_unknown_customer():
+    runs = KycRuns(models=ScriptedReader())
+    with pytest.raises(ApplicationNotFoundError, match="CUST-999"):
+        runs.start({**REQUEST, "customer_ids": ["CUST-001", "CUST-999"]})
+    with pytest.raises(InvalidRequestError, match="request"):
+        runs.start({"customer_ids": ["CUST-001"]})
+    with pytest.raises(InvalidRequestError, match="empty list of customers"):
+        runs.start({**REQUEST, "customer_ids": []})
+    assert runs.list_runs() == []
+
+
+def test_a_request_without_a_customer_list_reads_every_application():
+    runs = KycRuns(models=ScriptedReader())
+    thread_id = runs.start({"request": "Review everything"})
+    wait_until(runs, thread_id, {"awaiting_review"})
+    assert len(runs.result(thread_id)["applicants"]) == 25
+
+
+def test_a_rerun_through_the_service_carries_the_earlier_decisions():
+    runs = KycRuns(models=ScriptedReader())
+    first = runs.start(REQUEST)
+    wait_until(runs, first, {"awaiting_review"})
+    runs.submit(first, respond(runs.review_request(first)))
+    second = runs.start(REQUEST)
+    wait_until(runs, second, {"awaiting_review"})
+    request = runs.review_request(second)
+    kinds = {
+        c.carry.outcome for s in request.statements for c in s.facts if c.fact.kind == "proposal"
+    }
+    assert kinds == {"carried"}
+
+
+def test_the_run_configuration_names_the_run_and_carries_the_applications_and_no_secret():
+    runs = KycRuns(models=ScriptedReader())
+    seen = []
+    real = runs._graph
+
+    class Recording:
+        def invoke(self, payload, config):
+            seen.append(config)
+            return real.invoke(payload, config)
+
+        def __getattr__(self, name):
+            return getattr(real, name)
+
+    runs._graph = Recording()
+    thread_id = runs.start(REQUEST)
+    wait_until(runs, thread_id, {"awaiting_review"})
+    runs.submit(thread_id, respond(runs.review_request(thread_id)))
+    start_config, resume_config = seen
+    table = DATA_DIR / "applications.jsonl"
+    assert start_config["run_name"] == "kyc-onboarding"
+    assert start_config["max_concurrency"] == 4
+    assert start_config["configurable"] == {"thread_id": thread_id}
+    assert start_config["metadata"] == {
+        "customers": 2,
+        "applications_digest": digest_bytes(table.read_bytes()),
+    }
+    assert resume_config["metadata"] == {**start_config["metadata"], "reviewer": "Dana Whitfield"}
+    text = repr(seen).lower()
+    assert "key" not in text and "token" not in text and "secret" not in text
+
+
+def test_thread_ids_are_random_uuids():
+    import uuid
+
+    first, second = KycRuns(models=ScriptedReader()), KycRuns(models=ScriptedReader())
+    ids = [first.start(REQUEST), second.start(REQUEST)]
+    assert len(set(ids)) == 2
+    for thread_id in ids:
+        assert uuid.UUID(thread_id).version == 4
+    wait_until(first, ids[0], {"awaiting_review"})
+    wait_until(second, ids[1], {"awaiting_review"})
+
+
+class FlakyStore(InMemoryStore):
+    """A store whose first write fails, as a store can when the disk or the network does."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.failures = 1
+
+    def put(self, namespace, key, value, *args, **kwargs):
+        if self.failures:
+            self.failures -= 1
+            raise RuntimeError("the store was unavailable")
+        return super().put(namespace, key, value, *args, **kwargs)
+
+
+def test_a_resume_that_fails_inside_the_graph_returns_the_run_to_the_review_and_records_why():
+    runs = KycRuns(models=ScriptedReader(), store=FlakyStore())
+    thread_id = runs.start(REQUEST)
+    wait_until(runs, thread_id, {"awaiting_review"})
+    response = respond(runs.review_request(thread_id))
+    assert runs.submit(thread_id, response) == "awaiting_review"
+    assert "the store was unavailable" in runs.error(thread_id)
+    assert runs.review_request(thread_id).brief_id == response.sign_off.brief_id
+    assert runs.submit(thread_id, response) == "signed"
+    assert runs.error(thread_id) is None
+
+
+def test_result_holds_the_request_before_the_graph_writes_its_first_checkpoint(monkeypatch):
+    held = threading.Event()
+    monkeypatch.setattr(KycRuns, "_execute", lambda self, run, graph_input: held.wait(10))
+    runs = KycRuns(models=ScriptedReader())
+    thread_id = runs.start(REQUEST)
+    try:
+        state = runs.result(thread_id)
+        assert state["request"]["customer_ids"] == ["CUST-003", "CUST-001"]
+    finally:
+        held.set()

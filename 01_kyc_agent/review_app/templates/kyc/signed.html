@@ -1,0 +1,26 @@
+{% extends "kyc/page.html" %}
+{% import "macros.html" as ui %}
+{% import "kyc/_parts.html" as parts %}
+{% import "kyc/_picture.html" as pic %}
+{% block main %}
+{{ ui.answer(answer) }}
+{{ parts.tab_bar(tabs_for, "signed") }}
+<div class="exhibit" data-hook="exhibit">
+  {{ pic.draw(picture) }}
+  <section class="panel" aria-label="The sign-off record">
+    <dl class="record" data-hook="sign-off-record">
+      <dt>Reviewer</dt><dd>{{ sign_off.reviewer.name }}</dd>
+      <dt>Role</dt><dd>{{ sign_off.reviewer.role }}</dd>
+      <dt>Date</dt><dd>{{ sign_off.date|long_date }}</dd>
+      <dt>Outcome</dt><dd>{{ "Signed" if sign_off.outcome == "signed" else "Returned" }}</dd>
+      <dt>{{ "Digest signed" if sign_off.outcome == "signed" else "Digest returned" }}</dt>
+      <dd><details class="digest-details"><summary class="digest" title="{{ sign_off.brief_digest }}">{{ sign_off.brief_digest[:15] }}…</summary><code class="digest">{{ sign_off.brief_digest }}</code></details></dd>
+      {% if sign_off.reason %}<dt>Reason for returning</dt><dd>{{ sign_off.reason }}</dd>{% endif %}
+      {% for assumption in sign_off.assumptions %}
+      <dt>Accepted as an assumption</dt><dd>{{ assumption.words }}</dd>
+      {% endfor %}
+    </dl>
+  </section>
+  {{ ui.table(table) }}
+</div>
+{% endblock %}

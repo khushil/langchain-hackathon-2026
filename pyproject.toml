@@ -18,11 +18,11 @@ dev = [
 ]
 
 [tool.uv.workspace]
-members = ["fsi_common", "03_document_summary_agent"]
+members = ["fsi_common", "01_kyc_agent", "03_document_summary_agent"]
 
 [tool.pytest.ini_options]
-testpaths = ["fsi_common/tests", "03_document_summary_agent/tests"]
-pythonpath = ["fsi_common", "03_document_summary_agent"]
+testpaths = ["fsi_common/tests", "01_kyc_agent/tests", "03_document_summary_agent/tests"]
+pythonpath = ["fsi_common", "01_kyc_agent", "03_document_summary_agent"]
 
 [tool.ruff]
 line-length = 100
@@ -32,6 +32,13 @@ extend-exclude = ["*.ipynb"]
 [tool.ruff.format]
 # Files carried from the starter keep the starter's layout, so a reader can set them beside it.
 exclude = [
+    "01_kyc_agent/agent.py",
+    "01_kyc_agent/tools/*.py",
+    "01_kyc_agent/utils/__init__.py",
+    "01_kyc_agent/utils/db.py",
+    "01_kyc_agent/utils/state.py",
+    "01_kyc_agent/utils/nodes.py",
+    "01_kyc_agent/scripts/*.py",
     "03_document_summary_agent/agent.py",
     "03_document_summary_agent/sub_agent.py",
     "03_document_summary_agent/tools/*.py",
@@ -43,6 +50,12 @@ exclude = [
 select = ["E", "F", "I", "N", "W", "UP"]
 
 [tool.ruff.lint.per-file-ignores]
+"01_kyc_agent/agent.py" = ["E501", "I001"]
+"01_kyc_agent/tools/*.py" = ["E501", "I001", "W293"]
+"01_kyc_agent/utils/db.py" = ["E501"]
+"01_kyc_agent/utils/state.py" = ["E501", "I001", "W293", "UP"]
+"01_kyc_agent/utils/nodes.py" = ["E501", "I001", "W293", "UP"]
+"01_kyc_agent/scripts/*.py" = ["E501", "I001", "W293", "UP"]
 "03_document_summary_agent/agent.py" = ["E501", "I001"]
 "03_document_summary_agent/sub_agent.py" = ["E501", "I001"]
 "03_document_summary_agent/tools/*.py" = ["E501", "I001", "W293"]

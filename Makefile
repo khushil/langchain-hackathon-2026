@@ -24,6 +24,7 @@ lint:
 # share a name (each topic has a `utils`) never meet on one path. A new topic is one more line.
 test: regulations-check
 	$(PYTHON) -m pytest -q -n $(PYTEST_WORKERS) -o "pythonpath=fsi_common" fsi_common/tests
+	$(PYTHON) -m pytest -q -n $(PYTEST_WORKERS) -o "pythonpath=fsi_common 01_kyc_agent" 01_kyc_agent/tests
 	$(PYTHON) -m pytest -q -n $(PYTEST_WORKERS) -o "pythonpath=fsi_common 03_document_summary_agent" 03_document_summary_agent/tests
 
 # The record schemas must match what the record types export, byte for byte.
@@ -40,14 +41,17 @@ selftest:
 
 # The evaluators must catch every planted fault, each lowering only the measures declared for it.
 planted-faults:
+	cd 01_kyc_agent && PYTHONPATH=../fsi_common $(abspath $(PYTHON)) -m evals.planted_faults
 	cd 03_document_summary_agent && PYTHONPATH=../fsi_common $(abspath $(PYTHON)) -m evals.planted_faults
 
 # The evaluation dataset must be what the reference labels and the document build, byte for byte.
 dataset-check:
+	cd 01_kyc_agent && PYTHONPATH=../fsi_common $(abspath $(PYTHON)) -m evals.build_dataset --check
 	cd 03_document_summary_agent && PYTHONPATH=../fsi_common $(abspath $(PYTHON)) -m evals.build_dataset --check
 
 # The notebook must run top to bottom on the recorded model calls, with no key and no live call.
 notebook:
+	NOTEBOOK_RUN=1 MODEL_BACKEND=replay $(PYTHON) -m pytest -q -o "pythonpath=fsi_common 01_kyc_agent" 01_kyc_agent/tests/notebook
 	NOTEBOOK_RUN=1 MODEL_BACKEND=replay $(PYTHON) -m pytest -q -o "pythonpath=fsi_common 03_document_summary_agent" 03_document_summary_agent/tests/notebook
 
 # The reviewer's application, on APP_HOST and APP_PORT (default 0.0.0.0:4803). Its runs, decisions
