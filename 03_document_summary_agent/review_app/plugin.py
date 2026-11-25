@@ -9,9 +9,10 @@ from starlette.routing import Mount, Route
 from fsi_common.app import TopicPlugin
 from review_app import routes_facts, routes_review, routes_start
 from review_app.context import PREFIX, Services
+from review_app.drafts import DraftStore
 from review_app.naming import Naming
-from review_app.seed import seed_compliance_brief
-from review_app.service import EngineMissingError
+from review_app.seed import SEED_NAME, seed_compliance_brief
+from review_app.service import BriefRuns, EngineMissingError
 from review_app.source_view import check_label, decision_by, decision_line, difference_label
 
 HERE = Path(__file__).parent
@@ -44,6 +45,28 @@ def count_waiting(services: Services) -> int | None:
     return sum(runs.status(thread) == "awaiting_review" for thread in runs.list_runs())
 
 
+def keep_state_in(services: Services, folder: Path) -> None:
+    """Make the run service and the drafts of a set of services keep their state in a folder.
+
+    Args:
+        services: The services of the topic being served; they are changed in place.
+        folder: The folder that keeps the runs, their checkpoints, the decisions and the drafts.
+
+    Raises:
+        EngineMissingError: If the engine's run service is not part of this build.
+        StateFolderError: If the folder cannot be made or a file in it cannot be read.
+        DraftFileError: If the file that keeps the drafts cannot be read.
+    """
+    if BriefRuns is None:
+        raise EngineMissingError(
+            "The engine that writes briefs is not part of this build, so it has no state to keep."
+        )
+    runs = BriefRuns(state_dir=folder)
+    services.runs = lambda: runs
+    services.drafts = DraftStore(folder / "drafts.sqlite")
+    services.state_dir = folder
+
+
 def build_plugin(services: Services | None = None) -> TopicPlugin:
     """Build the plug-in over a set of services.
 
@@ -63,7 +86,7 @@ def build_plugin(services: Services | None = None) -> TopicPlugin:
         *routes_facts.routes(services),
     ]
     return TopicPlugin(
-        name="compliance-brief",
+        name=SEED_NAME,
         title="Compliance brief",
         summary=(
             "Read a regulatory document into cited facts and review the brief written from them."
@@ -85,6 +108,7 @@ def build_plugin(services: Services | None = None) -> TopicPlugin:
         waiting=lambda: count_waiting(services),
         waiting_noun="brief",
         seed=lambda: seed_compliance_brief(services),
+        use_state_dir=lambda folder: keep_state_in(services, folder),
     )
 
 

@@ -2,18 +2,26 @@
 
 from __future__ import annotations
 
+import logging
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
+from pathlib import Path
 from urllib.parse import urlencode
 
 from starlette.exceptions import HTTPException
 
-from review_app.drafts import DraftStore
+from review_app.drafts import DraftFileError, DraftStore
 from review_app.library import Library, read_library
 from review_app.naming import Naming
 from review_app.paragraph_map import DocumentMap, build_map
 from review_app.review_route import today
-from review_app.service import EngineMissingError, RunNotFoundError, RunsService, get_runs
+from review_app.service import (
+    EngineMissingError,
+    RunNotFoundError,
+    RunsService,
+    StateFolderError,
+    get_runs,
+)
 from utils.state import BriefState
 
 PREFIX = "/compliance-brief"
@@ -34,6 +42,8 @@ class Services:
     library: Callable[[], Library] = read_library
     drafts: DraftStore = field(default_factory=DraftStore)
     today: Callable[[], str] = today
+    state_dir: Path | None = None
+    """The folder that keeps the state, when the application is durable."""
 
 
 @dataclass(frozen=True)
@@ -54,6 +64,29 @@ class RunInfo:
         """The run in words, for a link."""
         part = f", section {', '.join(self.sections)}" if self.sections else ""
         return f"{self.document_id} for {self.firm_name}{part}"
+
+
+STATE_ERRORS = (StateFolderError, DraftFileError)
+LOG = logging.getLogger("review_app.context")
+STATE_ACTION = "The server could not save your work. Tell the person who runs this server."
+
+
+def state_unavailable(exc: Exception, what: str) -> HTTPException:
+    """Make the answer for a state folder that could not be written.
+
+    The file's path and the database's own words go to the log with the traceback; the person
+    reads what was not done and whom to tell.
+
+    Args:
+        exc: The failure.
+        what: What was not done, as a sentence without its full stop, such as "Nothing was
+            recorded".
+
+    Returns:
+        A 503 whose reason says what was not done and what to do.
+    """
+    LOG.error("The state folder could not be written: %s", exc, exc_info=exc)
+    return HTTPException(503, f"{what}. {STATE_ACTION}")
 
 
 def run_url(thread_id: str, *parts: str, **query: str) -> str:

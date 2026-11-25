@@ -149,6 +149,10 @@ def create_app(
     app.state.sessions = SessionCodec(config.secret)
     app.state.cookie_name = config.cookie_name
     app.state.templates = make_environment(plugins)
+    if config.state_dir is not None:
+        for plugin in plugins:
+            if plugin.use_state_dir is not None:
+                plugin.use_state_dir(config.state_dir)
     if config.seed:
         make_starting_work(plugins, config.seed)
     return app

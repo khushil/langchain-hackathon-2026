@@ -9,18 +9,23 @@ fact of the document) and nowhere else. Nothing here decides for anyone.
 
 from __future__ import annotations
 
+import json
 import logging
+import os
 import re
 import time
-from dataclasses import dataclass, replace
+from dataclasses import asdict, dataclass, replace
+from pathlib import Path
 
 from starlette.testclient import TestClient
 
 from fsi_common.app import AppConfig, SeedError, create_app
 from fsi_common.app.offline import replay_only
 from fsi_common.app.session import SessionCodec
+from fsi_common.ids import digest_bytes, digest_json
 from fsi_common.records import Person
 from review_app.context import PREFIX, Services, runs_of
+from utils.models import recordings_dir
 
 DOCUMENT_ID = "PS26-4"
 FIRM_ID = "FIRM-001"
@@ -29,6 +34,10 @@ REVIEWER = Person(name="Dana Whitfield", role="Head of Compliance")
 SEED_DATE = "2026-11-24"
 """The date on every seeded decision, fixed so that starting twice gives the same records."""
 SECRET = b"starting-work"
+SEED_NAME = "compliance-brief"
+MARKER_FILE = "seeded.json"
+"""The file a finished seed leaves in a state folder: the seed's name and what it was made from."""
+
 WAIT_SECONDS = 180.0
 POLL_SECONDS = 0.1
 
@@ -151,12 +160,17 @@ class _FailureCatcher(logging.Handler):
 def seed_compliance_brief(services: Services) -> None:
     """Make a brief that waits for a reviewer and a brief that is signed.
 
+    When the services keep their state in a folder, a finished seed leaves a marker there, and a
+    later start that finds the marker matching leaves the briefs as they are, so a restart adds no
+    second copy. A folder that holds briefs with no marker, or a marker made from other recordings
+    or another fixture, is refused: serving it would show a seed that failed partway or one made
+    from an older recording.
+
     The runs are made from the recorded model calls whatever the model settings are, and the
     settings are put back afterwards, so a brief a user starts later runs as configured. The
     waiting brief is made first: the engine carries a signed brief's decisions into later runs of
     the same firm and document, so a brief made after the signed one would arrive already decided
-    and leave the reviewer nothing to do. The run service in ``services`` must be empty; each call
-    adds two runs to it.
+    and leave the reviewer nothing to do.
 
     Args:
         services: The run service, library and held decisions of the topic being served.
@@ -164,10 +178,14 @@ def seed_compliance_brief(services: Services) -> None:
     Raises:
         ReplayMissError: If a model call of the run has no recording; its message names the hash.
         SeedError: If a run stops for another reason, the fixture does not match the facts the
-            brief cites, or the review route refuses a decision or the sign-off.
+            brief cites, the review route refuses a decision or the sign-off, the state folder
+            holds briefs this seed did not make from these recordings, or the marker cannot be
+            written.
     """
     from review_app.plugin import build_plugin  # the plug-in imports this module for its seed
 
+    if _already_seeded(services):
+        return
     shadow = replace(services, today=lambda: SEED_DATE)
     app = create_app(AppConfig(secret=SECRET, topic_folders=()), topics=[build_plugin(shadow)])
     client = TestClient(app, follow_redirects=False)
@@ -182,6 +200,61 @@ def seed_compliance_brief(services: Services) -> None:
             _review_and_sign(client, services, signed)
     finally:
         log.removeHandler(catcher)
+    _write_marker(services)
+
+
+def seed_identity() -> str:
+    """Return what the seed is made from: its fixture and every recorded model call.
+
+    Returns:
+        A digest that changes when a decision, the profile, the document, the firm, the sections
+        or any file of the recordings folder changes.
+    """
+    folder = recordings_dir(os.environ)
+    recordings = {p.name: digest_bytes(p.read_bytes()) for p in sorted(folder.glob("*.json"))}
+    return digest_json(
+        {
+            "fixture": [DOCUMENT_ID, FIRM_ID, list(SECTIONS), SEED_DATE],
+            "profile": asdict(PROFILE),
+            "decisions": [asdict(d) for d in DECISIONS],
+            "recordings": recordings,
+        }
+    )
+
+
+def _already_seeded(services: Services) -> bool:
+    """Say whether this state folder was seeded from these recordings; refuse one that was not."""
+    folder = services.state_dir
+    if folder is None:
+        return False
+    marker = folder / MARKER_FILE
+    if not marker.exists() and not runs_of(services).list_runs():
+        return False
+    try:
+        held = json.loads(marker.read_text())
+    except (OSError, ValueError):
+        held = None
+    if held == {"seed": SEED_NAME, "digest": seed_identity()}:
+        return True
+    raise SeedError(
+        f"The state folder {folder} holds briefs that this start did not make from these "
+        f"recordings, or a seed that stopped partway; delete the folder {folder} to start afresh."
+    )
+
+
+def _write_marker(services: Services) -> None:
+    folder = services.state_dir
+    if folder is None:
+        return
+    held = json.dumps({"seed": SEED_NAME, "digest": seed_identity()})
+    staging = Path(folder) / f"{MARKER_FILE}.part"
+    try:
+        staging.write_text(held)
+        os.replace(staging, Path(folder) / MARKER_FILE)
+    except OSError as exc:
+        raise SeedError(
+            f"The starting work was made, but its marker could not be written in {folder}: {exc}"
+        ) from exc
 
 
 def _start_and_wait(client: TestClient, services: Services, catcher: _FailureCatcher) -> str:

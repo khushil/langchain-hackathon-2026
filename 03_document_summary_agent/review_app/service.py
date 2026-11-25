@@ -14,6 +14,7 @@ try:
         NotAwaitingReviewError,
         RunInProgressError,
         RunNotFoundError,
+        StateFolderError,
     )
 except ModuleNotFoundError as exc:
     if exc.name not in {
@@ -34,6 +35,9 @@ except ModuleNotFoundError as exc:
 
     class RunInProgressError(RuntimeError):  # type: ignore[no-redef]
         """A run is still being written, and only one runs at a time."""
+
+    class StateFolderError(RuntimeError):  # type: ignore[no-redef]
+        """The folder that keeps the runs cannot be used."""
 
     class InvalidRequestError(ValueError):  # type: ignore[no-redef]
         """The request lacks a field a run needs."""

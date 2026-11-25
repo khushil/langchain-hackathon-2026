@@ -11,7 +11,17 @@ from starlette.routing import Route
 
 from fsi_common.app import Answer, Cell, Column, Tile, current_person, render, sign_in_address
 from fsi_common.app.pages import build_table, table_csv
-from review_app.context import PREFIX, STATUS_WORDS, RunInfo, Services, read_run, run_url, runs_of
+from review_app.context import (
+    PREFIX,
+    STATE_ERRORS,
+    STATUS_WORDS,
+    RunInfo,
+    Services,
+    read_run,
+    run_url,
+    runs_of,
+    state_unavailable,
+)
 from review_app.service import (
     DocumentNotFoundError,
     FirmNotFoundError,
@@ -176,6 +186,8 @@ def routes(services: Services) -> list[Route]:
                 status=422,
                 ticked=chosen,
             )
+        except STATE_ERRORS as exc:
+            raise state_unavailable(exc, "No brief was started") from exc
         return RedirectResponse(run_url(thread), status_code=303)
 
     async def start_post(request: Request) -> Response:

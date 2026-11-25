@@ -48,9 +48,11 @@ dataset-check:
 notebook:
 	NOTEBOOK_RUN=1 MODEL_BACKEND=replay $(PYTHON) -m pytest -q -o "pythonpath=fsi_common 03_document_summary_agent" 03_document_summary_agent/tests/notebook
 
-# The reviewer's application, on APP_HOST and APP_PORT (default 0.0.0.0:4803).
+# The reviewer's application, on APP_HOST and APP_PORT (default 0.0.0.0:4803). Its runs, decisions
+# and drafts are kept in files under APP_STATE_DIR, a folder of the repository that git ignores.
+APP_STATE_DIR ?= $(CURDIR)/.app-state
 serve:
-	PYTHONPATH=fsi_common:03_document_summary_agent $(PYTHON) -m fsi_common.app
+	APP_STATE_DIR=$(APP_STATE_DIR) PYTHONPATH=fsi_common:03_document_summary_agent $(PYTHON) -m fsi_common.app
 
 # The offline edition: the application's pages for the recorded run, in one HTML file.
 OFFLINE_OUT ?= build/compliance-brief-offline.html

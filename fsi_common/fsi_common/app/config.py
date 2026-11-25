@@ -30,6 +30,7 @@ class AppConfig:
     topic_folders: tuple[Path, ...] = ()
     cookie: str = ""
     seed: str = ""
+    state_dir: Path | None = None
 
     @property
     def cookie_name(self) -> str:
@@ -49,7 +50,9 @@ class AppConfig:
         (``reviewer-`` and the port when it is absent), and ``APP_TOPICS`` lists topic folders
         separated as a path is. Without it every topic folder of the repository that holds a
         ``review_app/plugin.py`` is served. ``APP_SEED`` names a topic whose starting work is made
-        when the application starts; without it the application starts empty.
+        when the application starts; without it the application starts empty. ``APP_STATE_DIR``
+        names a folder in which each topic keeps its runs, decisions and drafts in files, so a
+        restart finds them; without it everything is kept in memory.
 
         Args:
             environ: The environment to read; the process's own when absent.
@@ -75,6 +78,7 @@ class AppConfig:
                 "APP_COOKIE must be 1 to 64 letters, digits, hyphens or underscores; "
                 f"it is '{cookie}'."
             )
+        state = env.get("APP_STATE_DIR", "").strip()
         secret = env.get("APP_SECRET")
         listed = env.get("APP_TOPICS")
         folders = (
@@ -89,6 +93,7 @@ class AppConfig:
             topic_folders=folders,
             cookie=cookie,
             seed=env.get("APP_SEED", "").strip(),
+            state_dir=Path(state) if state else None,
         )
 
 

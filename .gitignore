@@ -198,3 +198,6 @@ cython_debug/
 # Added for this repository
 # Raw source material is kept outside version control
 /raw/
+
+# The reviewer's application keeps its runs, decisions and drafts here (make serve)
+/.app-state/

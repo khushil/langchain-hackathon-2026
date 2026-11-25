@@ -2,7 +2,7 @@
 
 This guide takes you through the reviewer's application, Review desk, from signing in to a second brief that carries earlier decisions. You play a compliance reviewer. Every step says what to do and what the page then shows, in the words the page uses, so you can check each one as you go.
 
-The server at the accepted gate starts with two briefs already made, both runs of section 7 of the fictional policy statement PS26/4 for the fictional Harbour Mutual Bank: one waiting for a reviewer, which you work through, and one already signed by Dana Whitfield, Head of Compliance. Any brief you start yourself later is written afresh through live model calls with headless Claude Code, so another run returns a different number of statements and facts, words the statements differently and groups them under other headings. Where this guide names a count, the page shows its own; where it names a fact, pick it by the paragraph it cites, such as "Paragraph 7.1, obligation". Facts about the firm and its providers are named in words, for example "Harbour Mutual Bank, firm profile: total assets".
+The application keeps its briefs, decisions, sign-offs and drafts in the folder `.app-state` of the repository when it is started with `make serve`, so a restart shows them again, and deleting the folder starts afresh. The server at the accepted gate starts with two briefs already made, both runs of section 7 of the fictional policy statement PS26/4 for the fictional Harbour Mutual Bank: one waiting for a reviewer, which you work through, and one already signed by Dana Whitfield, Head of Compliance. Any brief you start yourself later is written afresh through live model calls with headless Claude Code, so another run returns a different number of statements and facts, words the statements differently and groups them under other headings. Where this guide names a count, the page shows its own; where it names a fact, pick it by the paragraph it cites, such as "Paragraph 7.1, obligation". Facts about the firm and its providers are named in words, for example "Harbour Mutual Bank, firm profile: total assets".
 
 ## Open the application
 
@@ -112,7 +112,7 @@ Each page opens with one sentence that answers the question the page is for, and
 | --- | --- |
 | The page does not load | Check the address and the port, 4802, against the hand-in page. |
 | "There is nothing at this address." | The address has no page. Click "Go to the home page". |
-| "There is no run" followed by a number | The application was restarted and forgot its runs and decisions, which it holds in memory. Start the brief again. |
+| "There is no run" followed by a number | The state folder was deleted, or the application was started without `APP_STATE_DIR`, which keeps everything in memory and forgets it at a restart. Start the brief again. |
 | "Sign in with your name and role to start a brief." | You are not signed in. Click "Sign in". |
 | "Choose at least one section." | Tick a section in the start form. |
 | "A brief is still being written. Start another when it has finished." | One run is written at a time. Wait for the review page to open for the first, then start the next. |

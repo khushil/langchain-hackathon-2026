@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
 
 from pydantic import ValidationError
@@ -15,6 +16,7 @@ from fsi_common.app import current_person, render, sign_in_address
 from fsi_common.records import Person, Source
 from review_app import review_route
 from review_app.context import (
+    STATE_ERRORS,
     RunInfo,
     Services,
     document_map,
@@ -23,7 +25,9 @@ from review_app.context import (
     run_tabs,
     run_url,
     runs_of,
+    state_unavailable,
 )
+from review_app.drafts import DraftFileError
 from review_app.naming import Naming, RowField
 from review_app.paragraph_map import paragraph_panel
 from review_app.profile_view import profile_groups
@@ -33,6 +37,7 @@ from review_app.service import NotAwaitingReviewError, RunNotFoundError
 from review_app.source_view import mark_quote
 from utils.state import CitedFact, ReviewMismatchError, ReviewRequest
 
+LOG = logging.getLogger("review_app.routes_review")
 TABS = ("brief", "profile", "questions", "signoff")
 STALE = (
     "The brief changed after you opened it, so nothing was recorded. Read it again; decisions you "
@@ -301,6 +306,8 @@ def routes(services: Services) -> list[Route]:
             return RedirectResponse(run_url(thread), status_code=303)
         except RunNotFoundError as exc:
             raise no_such_run(thread) from exc
+        except STATE_ERRORS as exc:
+            raise state_unavailable(exc, "Nothing was recorded") from exc
 
     def recording(action, tab: str):
         """Make the route that reads a posted form and runs an action for the person."""
@@ -374,7 +381,12 @@ def routes(services: Services) -> list[Route]:
             on=services.today(),
         )
         runs_of(services).submit(info.thread_id, response)
-        services.drafts.clear(info.thread_id)
+        try:
+            services.drafts.clear(info.thread_id)
+        except DraftFileError:  # the brief is signed; drafts left on a signed run are never shown
+            LOG.exception(
+                "Run %s is signed but its pending work could not be cleared", info.thread_id
+            )
         return RedirectResponse(run_url(info.thread_id, "signed"), status_code=303)
 
     return [

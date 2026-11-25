@@ -41,7 +41,9 @@ class TopicPlugin:
     cannot say; ``waiting_noun`` names one such item ("brief"), and the home page adds an "s" for
     several. The topic's list page is at ``list_href``. ``seed`` makes the topic's starting work,
     a brief waiting and a brief signed for the compliance brief, when ``APP_SEED`` names the
-    topic; it raises ``SeedError`` when it cannot.
+    topic; it raises ``SeedError`` when it cannot. ``use_state_dir`` is given the folder
+    ``APP_STATE_DIR`` names, before the seed is made, so the topic keeps what it holds between
+    requests in files there; a topic with none keeps it in memory.
 
     Templates sit in a folder named for the topic inside ``templates_dir``, so topics' file names
     never meet. A topic's pages extend ``base.html`` and are rendered with ``render``.
@@ -60,6 +62,7 @@ class TopicPlugin:
     waiting: Callable[[], int | None] = nothing_waiting
     waiting_noun: str = "item"
     seed: Callable[[], None] | None = None
+    use_state_dir: Callable[[Path], None] | None = None
 
     @property
     def list_href(self) -> str:

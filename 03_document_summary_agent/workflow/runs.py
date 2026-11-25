@@ -6,8 +6,8 @@ import logging
 import threading
 import uuid
 from collections.abc import Mapping
-from dataclasses import dataclass, field
-from typing import Any, Literal
+from pathlib import Path
+from typing import Any
 
 from langgraph.checkpoint.base import BaseCheckpointSaver
 from langgraph.checkpoint.memory import InMemorySaver
@@ -17,18 +17,25 @@ from langgraph.types import Command
 
 from context.reader import read_document
 from context.tables import read_tables
-from utils.models import MAX_CONCURRENCY
 from utils.records import FACT_CONTEXT
 from utils.state import BriefRequest, BriefState, ReviewRequest, ReviewResponse
 from workflow.errors import InvalidRequestError
-from workflow.graph import GRAPH_NAME, build_graph
+from workflow.graph import build_graph
 from workflow.requests import selected_sections
 from workflow.review import validate_response
+from workflow.run_registry import (
+    Run,
+    RunStatus,
+    StateFolder,
+    StateFolderError,
+    config_of,
+    open_state_folder,
+)
 from workflow.sections import ModelSource
 
 LOG = logging.getLogger("workflow.runs")
-RunStatus = Literal["running", "awaiting_review", "signed", "returned", "failed"]
 REQUIRED = ("document_id", "firm_id", "request")
+STOPPED_WORDS = "The server stopped before the brief reached its review; start the brief again."
 
 
 class RunNotFoundError(Exception):
@@ -41,16 +48,6 @@ class NotAwaitingReviewError(Exception):
 
 class RunInProgressError(Exception):
     """A run is still running, and one run is up to thirteen headless processes."""
-
-
-@dataclass
-class _Run:
-    thread_id: str
-    config: dict[str, Any]
-    request: dict[str, Any] = field(default_factory=dict)
-    status: RunStatus = "running"
-    error: str | None = None
-    worker: threading.Thread | None = field(default=None, repr=False)
 
 
 class BriefRuns:
@@ -67,6 +64,7 @@ class BriefRuns:
         models: ModelSource | None = None,
         checkpointer: BaseCheckpointSaver | None = None,
         store: BaseStore | None = None,
+        state_dir: Path | str | None = None,
     ) -> None:
         """Compile the graph with a checkpointer and a store.
 
@@ -74,7 +72,24 @@ class BriefRuns:
             models: Gives the chat model for a role; ``get_model`` when omitted.
             checkpointer: Defaults to an in-memory saver.
             store: Defaults to an in-memory store.
+            state_dir: A folder that keeps the runs, their checkpoints and the decisions in files,
+                so a service opened on the same folder later finds them. Without it everything is
+                kept in memory. A run a stopped server left running is settled from its
+                checkpoint: waiting for its reviewer, signed or returned, or failed.
+
+        Raises:
+            StateFolderError: If ``state_dir`` is given with a ``checkpointer`` or a ``store``,
+                the folder cannot be made, or a file in it is not a database this service wrote.
         """
+        self._folder: StateFolder | None = None
+        if state_dir is not None:
+            if checkpointer is not None or store is not None:
+                raise StateFolderError(
+                    "A state folder keeps its own checkpointer and store; "
+                    "do not give a checkpointer or a store with it."
+                )
+            self._folder = open_state_folder(Path(state_dir))
+            checkpointer, store = self._folder.checkpointer, self._folder.store
         options: dict[str, Any] = {
             "checkpointer": checkpointer or InMemorySaver(),
             "store": store or InMemoryStore(),
@@ -82,9 +97,48 @@ class BriefRuns:
         if models is not None:
             options["models"] = models
         self._graph = build_graph(**options)
-        self._runs: dict[str, _Run] = {}
+        self._runs: dict[str, Run] = {}
         self._order: list[str] = []
         self._lock = threading.RLock()
+        if self._folder is not None:
+            for run in self._folder.registry.load():
+                self._settle_after_restart(run)
+                self._runs[run.thread_id] = run
+                self._order.append(run.thread_id)
+
+    def _settle_after_restart(self, run: Run) -> None:
+        """Say where a run left ``running`` by a stopped server really stands, and keep it."""
+        if run.status != "running":
+            return
+        run.status, run.error = self._standing(run)
+        self._keep(run)
+
+    def _standing(self, run: Run) -> tuple[RunStatus, str | None]:
+        try:
+            state = self._graph.get_state(run.config)
+        except Exception:  # an unreadable checkpoint must fail this run, not stop the service
+            LOG.exception("Run %s: the checkpoint could not be read at start", run.thread_id)
+            return "failed", STOPPED_WORDS
+        if state.next and any(task.interrupts for task in state.tasks):
+            return "awaiting_review", None
+        sign_off = state.values.get("sign_off")
+        if not state.next and sign_off:
+            return ("signed" if sign_off["outcome"] == "signed" else "returned"), None
+        return "failed", STOPPED_WORDS
+
+    def _keep(self, run: Run) -> None:
+        """Write a run's status to the file, if there is one; the lock is held by the caller."""
+        if self._folder is not None:
+            self._folder.registry.update(run)
+
+    def close(self) -> None:
+        """Close the files of a state folder; do nothing for a service kept in memory.
+
+        Call it only when no run is running: a run still proceeding would fail on its next write.
+        """
+        with self._lock:
+            if self._folder is not None:
+                self._folder.close()
 
     def start(self, request: BriefRequest) -> str:
         """Start a run in a background thread and return its thread id at once.
@@ -112,11 +166,13 @@ class BriefRuns:
             if any(run.status == "running" for run in self._runs.values()):
                 raise RunInProgressError("A run is still running; wait for it to reach the review.")
             thread_id = str(uuid.uuid4())
-            run = _Run(
+            run = Run(
                 thread_id=thread_id,
                 config=self._config(thread_id, request, document),
                 request=dict(request),
             )
+            if self._folder is not None:
+                self._folder.registry.add(run)
             self._runs[thread_id] = run
             self._order.append(thread_id)
             run.worker = threading.Thread(
@@ -127,25 +183,23 @@ class BriefRuns:
 
     @staticmethod
     def _config(thread_id: str, request: Mapping[str, Any], document: Any) -> dict[str, Any]:
-        return {
-            "configurable": {"thread_id": thread_id},
-            "run_name": GRAPH_NAME,
-            "max_concurrency": MAX_CONCURRENCY,
-            "metadata": {
+        return config_of(
+            thread_id,
+            {
                 "document_id": request["document_id"],
                 "firm_id": request["firm_id"],
                 "document_digest": document.source.digest,
             },
-        }
+        )
 
-    def _get(self, thread_id: str) -> _Run:
+    def _get(self, thread_id: str) -> Run:
         with self._lock:
             run = self._runs.get(thread_id)
         if run is None:
             raise RunNotFoundError(f"There is no run {thread_id}.")
         return run
 
-    def _execute(self, run: _Run, payload: Any, config: dict[str, Any] | None = None) -> None:
+    def _execute(self, run: Run, payload: Any, config: dict[str, Any] | None = None) -> None:
         try:
             self._graph.invoke(payload, config or run.config)
             status, error = self._settled(run), None
@@ -154,8 +208,14 @@ class BriefRuns:
             status, error = self._after_failure(run), str(exc) or type(exc).__name__
         with self._lock:
             run.status, run.error = status, error
+            try:
+                self._keep(run)
+            except StateFolderError:  # the next start settles the run again from its checkpoint
+                LOG.exception(
+                    "Run %s: its status %s could not be kept in the file", run.thread_id, status
+                )
 
-    def _after_failure(self, run: _Run) -> RunStatus:
+    def _after_failure(self, run: Run) -> RunStatus:
         """Say where a run stands after the graph raised: still at the review, or failed.
 
         A resume that raises leaves the checkpoint at the review interrupt, so the reviewer's
@@ -169,7 +229,7 @@ class BriefRuns:
         waiting = bool(state.next) and any(task.interrupts for task in state.tasks)
         return "awaiting_review" if waiting else "failed"
 
-    def _settled(self, run: _Run) -> RunStatus:
+    def _settled(self, run: Run) -> RunStatus:
         state = self._graph.get_state(run.config)
         if state.next:
             return "awaiting_review"
@@ -240,6 +300,11 @@ class BriefRuns:
             if run.status != "awaiting_review":
                 raise NotAwaitingReviewError(f"Run {thread_id} is {run.status}.")
             run.status = "running"
+            try:
+                self._keep(run)
+            except StateFolderError:
+                run.status = "awaiting_review"
+                raise
         config = {
             **run.config,
             "metadata": {**run.config["metadata"], "reviewer": response.reviewer.name},
