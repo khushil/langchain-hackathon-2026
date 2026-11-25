@@ -1,0 +1,42 @@
+{
+ "meta": {
+  "duration_s": 2.313,
+  "init": {
+   "agents": [],
+   "apiKeySource": "none",
+   "claude_code_version": "2.1.302",
+   "mcp_servers": [],
+   "model": "claude-sonnet-5-5",
+   "plugins": [],
+   "skills": [],
+   "slash_commands": [],
+   "tools": []
+  },
+  "recorded_at": "2026-11-25T11:00:08.588283+00:00"
+ },
+ "request": {
+  "effort": "medium",
+  "format": 2,
+  "messages": [
+   {
+    "content": "Say hello to the transaction-monitoring hackathon in one sentence.",
+    "role": "user"
+   }
+  ],
+  "model": "claude-sonnet-5-5",
+  "schema": null,
+  "system": ""
+ },
+ "request_sha256": "7af2dfcf8dd3ec850ef372ad5d83a8884777e64b24a6827f221670bf819d0669",
+ "response": {
+  "content": "Hello, transaction-monitoring hackathon. Here's to sharp detection rules, fewer false positives, and catching the suspicious patterns before they slip through! 🚀",
+  "model_reported": "claude-sonnet-5-5",
+  "tool_calls": [],
+  "usage": {
+   "cache_creation_input_tokens": 556,
+   "cache_read_input_tokens": 0,
+   "input_tokens": 2,
+   "output_tokens": 59
+  }
+ }
+}

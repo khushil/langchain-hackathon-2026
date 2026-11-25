@@ -1,0 +1,104 @@
+{
+ "meta": {
+  "duration_s": 11.553,
+  "init": {
+   "agents": [],
+   "apiKeySource": "none",
+   "claude_code_version": "2.1.302",
+   "mcp_servers": [],
+   "model": "claude-opus-5-5",
+   "plugins": [],
+   "skills": [],
+   "slash_commands": [],
+   "tools": [
+    "StructuredOutput"
+   ]
+  },
+  "recorded_at": "2026-11-25T11:07:26.012334+00:00"
+ },
+ "request": {
+  "effort": "medium",
+  "format": 2,
+  "messages": [
+   {
+    "content": "You check a fraud agent's reasoning about card transactions.\n\nThis is how our human reviewers judged some of the agent's past decisions:\n\n\nJudge this decision the same way.\nTransaction: {'transaction_id': 'TX-1009', 'user_id': 'USR-001', 'timestamp': '2026-10-20T23:40', 'merchant': 'LuxWatch Online', 'category': 'luxury_goods', 'amount': 1250.0, 'currency': 'GBP', 'country': 'GB', 'channel': 'online'}\nAgent's score: 75\nAgent's reason: £1,250 online luxury goods purchase at 23:40 is about 8x the top of the usual range (10-150) and in a category the customer has never used. Location is the home country (GB) and there are no reviewer notes, so it could be legitimate, but the amount and merchant type make it high risk.",
+    "role": "user"
+   }
+  ],
+  "model": "claude-opus-5-5",
+  "schema": {
+   "additionalProperties": false,
+   "properties": {
+    "content": {
+     "description": "Text of the reply; may be empty.",
+     "type": "string"
+    },
+    "tool_calls": {
+     "items": {
+      "anyOf": [
+       {
+        "additionalProperties": false,
+        "description": "",
+        "properties": {
+         "args": {
+          "properties": {
+           "explanation": {
+            "description": "One sentence explaining the verdict",
+            "type": "string"
+           },
+           "sound": {
+            "description": "True if the reasoning is sound and the score is in the right range",
+            "type": "boolean"
+           }
+          },
+          "required": [
+           "sound",
+           "explanation"
+          ],
+          "type": "object"
+         },
+         "name": {
+          "const": "Verdict"
+         }
+        },
+        "required": [
+         "name",
+         "args"
+        ],
+        "type": "object"
+       }
+      ]
+     },
+     "minItems": 1,
+     "type": "array"
+    }
+   },
+   "required": [
+    "content",
+    "tool_calls"
+   ],
+   "type": "object"
+  },
+  "system": ""
+ },
+ "request_sha256": "1f26234a4738925236d723fa429e9d9a4983042eefb2ec4cf31982078ad054a6",
+ "response": {
+  "content": "The reasoning holds up and a score of 75 fits. One caveat: the reviewer examples you mentioned didn't come through, so I judged this on general fraud-review standards, not your reviewers' calibration.\n\n- **Amount:** £1,250 is about 8 times the top of the customer's usual £10–150 range. That's a strong anomaly.\n- **Category:** The customer has never bought luxury goods before. A high-value luxury purchase online is a common pattern for stolen card details, partly because the goods are easy to resell.\n- **Timing and channel:** The purchase was online at 23:40, with no card present. These add some risk but aren't conclusive on their own.\n- **Counterweights:** The agent correctly noted that the purchase is in the customer's home country (GB) and that there are no reviewer notes. That's why the score stays out of the 85+ range that would mean near-certain fraud.\n\n75 is the right level to trigger a hold or customer verification without assuming fraud. If you send the reviewer examples, I can check this against their thresholds.",
+  "model_reported": "claude-opus-5-5",
+  "tool_calls": [
+   {
+    "args": {
+     "explanation": "The agent correctly weighs an amount about 8 times the usual maximum and a never-used luxury category, bought online late at night, against the home-country location, and 75 is a sensible high-risk score that stops short of near-certain fraud.",
+     "sound": true
+    },
+    "name": "Verdict"
+   }
+  ],
+  "usage": {
+   "cache_creation_input_tokens": 1705,
+   "cache_read_input_tokens": 0,
+   "input_tokens": 2,
+   "output_tokens": 916
+  }
+ }
+}

@@ -20,12 +20,14 @@ from fsi_common.records import (
 )
 from utils.records import FACT_CONTEXT
 from utils.review import (
+    NOT_ANSWERED,
     CitedFact,
     Customer,
     ReviewMismatchError,
     ReviewRequest,
     ReviewResponse,
     ReviewStatement,
+    final_of,
 )
 from workflow.decisions import latest_by_subject, load_decisions, save_decisions, save_sign_off
 from workflow.errors import UnitNotHeldError
@@ -154,18 +156,21 @@ def _check_sign_off_against_questions(response: ReviewResponse, request: ReviewR
         )
     if sign_off.outcome != "signed":
         return
-    answered = {d.subject_id for d in response.decisions if d.outcome == "answer"}
+    answered = {
+        d.subject_id
+        for d in response.decisions
+        if d.outcome == "answer" and final_of(d.answer) is not None
+    }
     unrecorded = [
         question.id
         for question in request.open_questions
-        if question.state not in SETTLED_STATES
-        and question.id not in answered
-        and question.id not in accepted
+        if question.state not in SETTLED_STATES and question.id not in answered
     ]
     if unrecorded:
         raise ReviewMismatchError(
-            f"The brief was signed with open question(s) {', '.join(unrecorded)} that this "
-            "response neither answers nor accepts as an assumption."
+            f"The brief was signed with open question(s) {', '.join(unrecorded)} "
+            f"{NOT_ANSWERED}. A question about a transaction is settled only by an answer that "
+            "says approve or block; an assumption does not settle it."
         )
 
 

@@ -12,11 +12,10 @@ from datetime import date
 from fsi_common.records import Assumption, Decision, Person, SignOff
 from review_app.drafts import Draft
 from review_app.review_model import ReviewModel
-from utils.review import ReviewRequest, ReviewResponse
+from utils.review import FINAL_DECISIONS, ReviewRequest, ReviewResponse
 
 FACT_OUTCOMES = ("accept", "amend", "reject")
 SIGN_OUTCOMES = ("signed", "returned")
-FINAL_DECISIONS = ("approve", "block")
 Today = Callable[[], str]
 
 
@@ -52,21 +51,6 @@ def compose_amendment(final: str | None, wording: str | None) -> str:
         raise ReviewInputError("Choose approve or block for your own decision.")
     words = _own_words(wording, "your own decision")
     return f"{final.capitalize()}. {words}"
-
-
-def final_of(amendment: str | None) -> str | None:
-    """Read the decision an amendment states.
-
-    Args:
-        amendment: The amendment of an amend decision.
-
-    Returns:
-        ``approve`` or ``block``, or None when the amendment does not open with either.
-    """
-    if not amendment:
-        return None
-    first = amendment.split(".", 1)[0].strip().lower()
-    return first if first in FINAL_DECISIONS else None
 
 
 def decide_assessment(

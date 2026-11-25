@@ -1,8 +1,9 @@
-"""No rule of the product is tuned to a named transaction or customer.
+"""Product code names no transaction id and no customer id.
 
 A check that mentions ``TX-2004`` would pass every test written against the starter's data and
-still be wrong for any other data. Product code names no transaction and no customer; only the
-seed's decisions and the planted faults, which are about the starter's data on purpose, may.
+still be wrong for any other data. Only the seed's decisions and the planted faults, which are
+about the starter's data on purpose, may. The scan reads ids only: a rule keyed on another field,
+such as a merchant's name, is for review to find.
 """
 
 import ast

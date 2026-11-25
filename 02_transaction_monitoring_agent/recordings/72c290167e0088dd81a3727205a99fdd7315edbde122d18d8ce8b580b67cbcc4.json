@@ -1,0 +1,104 @@
+{
+ "meta": {
+  "duration_s": 8.818,
+  "init": {
+   "agents": [],
+   "apiKeySource": "none",
+   "claude_code_version": "2.1.302",
+   "mcp_servers": [],
+   "model": "claude-opus-5-5",
+   "plugins": [],
+   "skills": [],
+   "slash_commands": [],
+   "tools": [
+    "StructuredOutput"
+   ]
+  },
+  "recorded_at": "2026-11-25T11:09:06.162110+00:00"
+ },
+ "request": {
+  "effort": "medium",
+  "format": 2,
+  "messages": [
+   {
+    "content": "You check a fraud agent's reasoning about card transactions.\n\nThis is how our human reviewers judged some of the agent's past decisions:\n- The agent scored 4 because: £22.10 in-person grocery purchase in the home country (GB), within the usual amount range and a usual category. There are no reviewer notes and nothing unusual.\n  The reviewer scored 5: Routine grocery shop at a usual merchant.\n  Verdict: sound\n- The agent scored 18 because: £119.00 online streaming purchase in the home country (GB). Streaming is a usual category and the amount is within the usual range (10-150), though it is on the high side for streaming. There are no reviewer notes and no location anomalies.\n  The reviewer scored 15: Annual streaming plan. Higher than usual, but a usual category.\n  Verdict: sound\n- The agent scored 75 because: £1,250 online luxury goods purchase at 23:40 is about 8x the top of the usual range (10-150) and in a category the customer has never used. Location is the home country (GB) and there are no reviewer notes, so it could be legitimate, but the amount and merchant type make it high risk.\n  The reviewer scored 75: Late-night luxury purchase online, far above the usual spend. Customer later reported it as fraud.\n  Verdict: sound\n- The agent scored 5 because: £7.40 in-person transport purchase in the home country (GB) in a usual category. The amount is slightly below the usual range but is normal for transit fares. There are no reviewer notes and no location anomalies.\n  The reviewer scored 5: Regular commute.\n  Verdict: sound\n\nJudge this decision the same way.\nTransaction: {'transaction_id': 'TX-1008', 'user_id': 'USR-001', 'timestamp': '2026-10-19T12:30', 'merchant': 'StreamFlix', 'category': 'streaming', 'amount': 119.0, 'currency': 'GBP', 'country': 'GB', 'channel': 'online'}\nAgent's score: 18\nAgent's reason: £119.00 online streaming purchase in the home country (GB). Streaming is a usual category and the amount is within the usual range (10-150), though it is on the high side for streaming. There are no reviewer notes and no location anomalies.",
+    "role": "user"
+   }
+  ],
+  "model": "claude-opus-5-5",
+  "schema": {
+   "additionalProperties": false,
+   "properties": {
+    "content": {
+     "description": "Text of the reply; may be empty.",
+     "type": "string"
+    },
+    "tool_calls": {
+     "items": {
+      "anyOf": [
+       {
+        "additionalProperties": false,
+        "description": "",
+        "properties": {
+         "args": {
+          "properties": {
+           "explanation": {
+            "description": "One sentence explaining the verdict",
+            "type": "string"
+           },
+           "sound": {
+            "description": "True if the reasoning is sound and the score is in the right range",
+            "type": "boolean"
+           }
+          },
+          "required": [
+           "sound",
+           "explanation"
+          ],
+          "type": "object"
+         },
+         "name": {
+          "const": "Verdict"
+         }
+        },
+        "required": [
+         "name",
+         "args"
+        ],
+        "type": "object"
+       }
+      ]
+     },
+     "minItems": 1,
+     "type": "array"
+    }
+   },
+   "required": [
+    "content",
+    "tool_calls"
+   ],
+   "type": "object"
+  },
+  "system": ""
+ },
+ "request_sha256": "72c290167e0088dd81a3727205a99fdd7315edbde122d18d8ce8b580b67cbcc4",
+ "response": {
+  "content": "The agent's reasoning is sound. This is a £119.00 online streaming purchase in GB, matching a past case your reviewers marked sound (agent scored 18, reviewer scored 15).\n\n- **Category:** streaming is one the customer normally uses.\n- **Amount:** within their usual £10–150 range. The agent rightly notes it's high for streaming, which fits an annual plan.\n- **Other signals:** home country, midday, no reviewer notes.\n\nA low score of 18 fits. It's slightly above the reviewer's 15 because the amount is unusual for the category, which is reasonable.",
+  "model_reported": "claude-opus-5-5",
+  "tool_calls": [
+   {
+    "args": {
+     "explanation": "A £119 streaming purchase in a usual category, within the usual amount range and in the home country, is correctly scored low risk at 18, in line with the reviewer's 15 for the same purchase.",
+     "sound": true
+    },
+    "name": "Verdict"
+   }
+  ],
+  "usage": {
+   "cache_creation_input_tokens": 1315,
+   "cache_read_input_tokens": 856,
+   "input_tokens": 2,
+   "output_tokens": 606
+  }
+ }
+}

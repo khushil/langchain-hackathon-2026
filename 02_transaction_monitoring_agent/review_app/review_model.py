@@ -15,10 +15,10 @@ from fsi_common.ids import digest_json
 from fsi_common.records import Decision, OpenQuestion, Person
 from fsi_common.records.questions import SETTLED_STATES
 from review_app.drafts import Draft
-from utils.review import CitedFact, ReviewRequest
+from utils.review import NOT_ANSWERED, CitedFact, ReviewRequest
 
 FactKind = Literal["yours", "carried", "needs"]
-QuestionKind = Literal["answered", "assumed", "settled", "open"]
+QuestionKind = Literal["answered", "settled", "open"]
 
 
 @dataclass(frozen=True)
@@ -51,7 +51,7 @@ class QuestionState:
 
     @property
     def settled(self) -> bool:
-        """Whether the question is answered, assumed or already settled."""
+        """Whether the question is answered or already settled; an assumption never settles it."""
         return self.kind != "open"
 
 
@@ -114,13 +114,13 @@ class ReviewModel:
         return AssessmentState("needs", cited.carry.decision, tuple(cited.carry.differences))
 
     def _question_state(self, question: OpenQuestion) -> QuestionState:
+        assumption = self._draft_assumptions.get(question.id)
         if question.id in self._draft_answers:
-            return QuestionState(question, "answered", self._draft_answers[question.id])
-        if question.id in self._draft_assumptions:
-            return QuestionState(question, "assumed", None, self._draft_assumptions[question.id])
+            return QuestionState(question, "answered", self._draft_answers[question.id], assumption)
         if question.state in SETTLED_STATES:
-            return QuestionState(question, "settled", self.earlier.get(question.decision_id or ""))
-        return QuestionState(question, "open")
+            decision = self.earlier.get(question.decision_id or "")
+            return QuestionState(question, "settled", decision, assumption)
+        return QuestionState(question, "open", None, assumption)
 
     @property
     def facts_waiting(self) -> list[CitedFact]:
@@ -162,7 +162,7 @@ class ReviewModel:
 
     @property
     def questions_waiting(self) -> list[OpenQuestion]:
-        """The open questions that are neither answered nor accepted as assumptions."""
+        """The open questions nobody has answered with approve or block."""
         return [s.question for s in self.question_states if not s.settled]
 
     @property
@@ -178,7 +178,7 @@ class ReviewModel:
             if waiting:
                 parts.append(f"{_plural(len(waiting), 'transaction')} without a decision")
             if open_questions:
-                parts.append(f"{_plural(len(open_questions), 'question')} not answered or accepted")
+                parts.append(f"{_plural(len(open_questions), 'question')} {NOT_ANSWERED}")
             return "The brief cannot be signed yet: " + " and ".join(parts) + "."
         if self.rejected_facts:
             return (

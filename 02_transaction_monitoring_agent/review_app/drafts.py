@@ -173,7 +173,7 @@ class DraftStore:
             self._draft(thread_id, decision.reviewer).facts[decision.subject_id] = decision
 
     def put_answer(self, thread_id: str, decision: Decision) -> None:
-        """Keep an answer to a question; it replaces an assumption on the same question.
+        """Keep an answer to a question; an assumption held for the question stays beside it.
 
         Args:
             thread_id: The run.
@@ -184,15 +184,11 @@ class DraftStore:
         """
         with self._lock:
             person, question = decision.reviewer, decision.subject_id
-            with self._transaction():
-                self._drop(thread_id, person, "assumption", question)
-                self._keep(thread_id, person, "answer", question, json.dumps(decision.to_json()))
-            draft = self._draft(thread_id, person)
-            draft.answers[question] = decision
-            draft.assumptions.pop(question, None)
+            self._keep(thread_id, person, "answer", question, json.dumps(decision.to_json()))
+            self._draft(thread_id, person).answers[question] = decision
 
     def put_assumption(self, thread_id: str, person: Person, question_id: str, words: str) -> None:
-        """Keep a person's assumption for a question; it replaces their answer to the question.
+        """Keep a person's assumption for a question; an answer held for it stays beside it.
 
         Args:
             thread_id: The run.
@@ -204,12 +200,8 @@ class DraftStore:
             DraftFileError: If the file cannot be written.
         """
         with self._lock:
-            with self._transaction():
-                self._drop(thread_id, person, "answer", question_id)
-                self._keep(thread_id, person, "assumption", question_id, words)
-            draft = self._draft(thread_id, person)
-            draft.assumptions[question_id] = words
-            draft.answers.pop(question_id, None)
+            self._keep(thread_id, person, "assumption", question_id, words)
+            self._draft(thread_id, person).assumptions[question_id] = words
 
     def clear(self, thread_id: str) -> None:
         """Drop everyone's pending work on a run once it has been submitted.

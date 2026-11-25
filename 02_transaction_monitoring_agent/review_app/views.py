@@ -8,8 +8,7 @@ from datetime import datetime
 
 from fsi_common.app.rendering import long_date
 from fsi_common.records import CheckResult, Decision, Fact, Person
-from review_app.review_route import final_of
-from utils.review import CitedFact, ReviewStatement
+from utils.review import CitedFact, ReviewStatement, final_of
 
 OUTCOME_WORDS = {
     "accept": "Agreed",

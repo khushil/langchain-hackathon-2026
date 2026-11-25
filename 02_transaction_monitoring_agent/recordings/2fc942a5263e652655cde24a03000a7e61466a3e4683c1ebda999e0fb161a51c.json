@@ -1,0 +1,104 @@
+{
+ "meta": {
+  "duration_s": 7.189,
+  "init": {
+   "agents": [],
+   "apiKeySource": "none",
+   "claude_code_version": "2.1.302",
+   "mcp_servers": [],
+   "model": "claude-opus-5-5",
+   "plugins": [],
+   "skills": [],
+   "slash_commands": [],
+   "tools": [
+    "StructuredOutput"
+   ]
+  },
+  "recorded_at": "2026-11-25T11:07:38.822080+00:00"
+ },
+ "request": {
+  "effort": "medium",
+  "format": 2,
+  "messages": [
+   {
+    "content": "You check a fraud agent's reasoning about card transactions.\n\nThis is how our human reviewers judged some of the agent's past decisions:\n\n\nJudge this decision the same way.\nTransaction: {'amount': 21.0, 'channel': 'online', 'country': 'IE', 'user_id': 'USR-002', 'category': 'software', 'currency': 'EUR', 'merchant': 'CodeHub Pro', 'timestamp': '2026-10-08T09:00', 'transaction_id': 'TX-2001'}\nAgent's score: 12\nAgent's reason: Small €21 software purchase matches the customer's usual category and amount range. The merchant is in Ireland rather than Portugal, but online software subscriptions are commonly billed from IE, so this is only a minor flag.",
+    "role": "user"
+   }
+  ],
+  "model": "claude-opus-5-5",
+  "schema": {
+   "additionalProperties": false,
+   "properties": {
+    "content": {
+     "description": "Text of the reply; may be empty.",
+     "type": "string"
+    },
+    "tool_calls": {
+     "items": {
+      "anyOf": [
+       {
+        "additionalProperties": false,
+        "description": "",
+        "properties": {
+         "args": {
+          "properties": {
+           "explanation": {
+            "description": "One sentence explaining the verdict",
+            "type": "string"
+           },
+           "sound": {
+            "description": "True if the reasoning is sound and the score is in the right range",
+            "type": "boolean"
+           }
+          },
+          "required": [
+           "sound",
+           "explanation"
+          ],
+          "type": "object"
+         },
+         "name": {
+          "const": "Verdict"
+         }
+        },
+        "required": [
+         "name",
+         "args"
+        ],
+        "type": "object"
+       }
+      ]
+     },
+     "minItems": 1,
+     "type": "array"
+    }
+   },
+   "required": [
+    "content",
+    "tool_calls"
+   ],
+   "type": "object"
+  },
+  "system": ""
+ },
+ "request_sha256": "2fc942a5263e652655cde24a03000a7e61466a3e4683c1ebda999e0fb161a51c",
+ "response": {
+  "content": "The agent's reasoning holds up and a low score fits. The reviewer examples you meant to include didn't come through, so I couldn't match their standard and judged it on its own merits.",
+  "model_reported": "claude-opus-5-5",
+  "tool_calls": [
+   {
+    "args": {
+     "explanation": "A €21 online purchase in the customer's usual software category is low risk, and Irish billing for software subscriptions is common, so treating the Portugal-versus-Ireland mismatch as minor and scoring 12 makes sense (the customer's history isn't in the transaction data, so that part is unchecked).",
+     "sound": true
+    },
+    "name": "Verdict"
+   }
+  ],
+  "usage": {
+   "cache_creation_input_tokens": 819,
+   "cache_read_input_tokens": 856,
+   "input_tokens": 2,
+   "output_tokens": 399
+  }
+ }
+}

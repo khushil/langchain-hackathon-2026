@@ -16,9 +16,9 @@ from review_app.review_route import (
     check_assumption,
     compose_amendment,
     decide_assessment,
-    final_of,
 )
 from utils import db
+from utils.review import final_of
 
 DANA = Person(**DANA_FIELDS)
 SAM = Person(name="Sam Okafor", role="Fraud Analyst")

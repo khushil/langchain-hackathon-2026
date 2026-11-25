@@ -1,0 +1,104 @@
+{
+ "meta": {
+  "duration_s": 8.04,
+  "init": {
+   "agents": [],
+   "apiKeySource": "none",
+   "claude_code_version": "2.1.302",
+   "mcp_servers": [],
+   "model": "claude-opus-5-5",
+   "plugins": [],
+   "skills": [],
+   "slash_commands": [],
+   "tools": [
+    "StructuredOutput"
+   ]
+  },
+  "recorded_at": "2026-11-25T11:07:38.975608+00:00"
+ },
+ "request": {
+  "effort": "medium",
+  "format": 2,
+  "messages": [
+   {
+    "content": "You check a fraud agent's reasoning about card transactions.\n\nThis is how our human reviewers judged some of the agent's past decisions:\n\n\nJudge this decision the same way.\nTransaction: {'amount': 18.4, 'channel': 'in_person', 'country': 'GB', 'user_id': 'USR-001', 'category': 'groceries', 'currency': 'GBP', 'merchant': 'FreshMart Express', 'timestamp': '2026-10-08T08:12', 'transaction_id': 'TX-1001'}\nAgent's score: 3\nAgent's reason: Small £18.40 in-person grocery purchase in the home country (GB), in a usual category and within the usual amount range. No reviewer notes or anomalies.",
+    "role": "user"
+   }
+  ],
+  "model": "claude-opus-5-5",
+  "schema": {
+   "additionalProperties": false,
+   "properties": {
+    "content": {
+     "description": "Text of the reply; may be empty.",
+     "type": "string"
+    },
+    "tool_calls": {
+     "items": {
+      "anyOf": [
+       {
+        "additionalProperties": false,
+        "description": "",
+        "properties": {
+         "args": {
+          "properties": {
+           "explanation": {
+            "description": "One sentence explaining the verdict",
+            "type": "string"
+           },
+           "sound": {
+            "description": "True if the reasoning is sound and the score is in the right range",
+            "type": "boolean"
+           }
+          },
+          "required": [
+           "sound",
+           "explanation"
+          ],
+          "type": "object"
+         },
+         "name": {
+          "const": "Verdict"
+         }
+        },
+        "required": [
+         "name",
+         "args"
+        ],
+        "type": "object"
+       }
+      ]
+     },
+     "minItems": 1,
+     "type": "array"
+    }
+   },
+   "required": [
+    "content",
+    "tool_calls"
+   ],
+   "type": "object"
+  },
+  "system": ""
+ },
+ "request_sha256": "40fc291c207c340b3806f3fb3af05106c4ac7e0382190548ee5659d1061d2b55",
+ "response": {
+  "content": "The agent's reasoning holds up and a score of 3 is in the right range. One caveat: the reviewer examples you mentioned came through empty, so I judged this on its own merits rather than against their past calls.\n\nIt's a small purchase (£18.40) made in person at a grocery store in the cardholder's home country, during normal morning hours. Nothing in the data points to fraud. The agent says the amount and category are typical for this user, but the transaction record doesn't include any spending history to check that against.",
+  "model_reported": "claude-opus-5-5",
+  "tool_calls": [
+   {
+    "args": {
+     "explanation": "A small in-person grocery purchase in the home country with no warning signs is low risk, so a low score of 3 fits.",
+     "sound": true
+    },
+    "name": "Verdict"
+   }
+  ],
+  "usage": {
+   "cache_creation_input_tokens": 804,
+   "cache_read_input_tokens": 856,
+   "input_tokens": 2,
+   "output_tokens": 508
+  }
+ }
+}

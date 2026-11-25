@@ -117,6 +117,32 @@ The engine's two disagreements are CUST-018 and CUST-021, which the labels mark 
 
 With `MODEL_BACKEND` at its default of `replay`, the saved calls in `01_kyc_agent/recordings/` answer every model call: 78 calls, 52 on Sonnet that read applications and 26 on Opus that write the starter's memo, each at medium effort. `01_kyc_agent/utils/models.py` is the one place a model is chosen, by role: `extract` and `memo`. `make notebook` runs `01_kyc_agent/modules/01_kyc_agent.ipynb` top to bottom on them with no key and no live call. The notebook has 51 cells: the starter's 35, changed only where a model is chosen and where the starter's own sentences were stale, and 16 more that run the workflow, print the counts above, show the three edge cases and stop at the review. `APP_SEED=kyc-onboarding` starts the application with a batch waiting for a reviewer and a batch signed by a fictional reviewer, who decided each of the 25 proposals and answered the questions in her own words through the review routes.
 
+## Transaction monitoring
+
+`02_transaction_monitoring_agent/` carries the starter's transaction monitoring agent and builds on it. The starter's agent looks each card transaction up beside the customer's profile, scores it from 0 to 100 and approves or blocks it, and pauses for a person when it is not confident. This topic adds a second workflow beside it, in which the agent only proposes. Each customer's stream is read into units, one for each transaction and one for the customer's profile, and each proposal becomes a fact whose quote is the transaction's own fields. Plain code checks six things on it: the score is a whole number from 0 to 100, the proposed decision follows the starter's rule (a block from 70, a person asked from 30 to below 70), the two confidence checks of the starter's tool (abroad, and above the customer's usual maximum), and that every quoted field is in the row with that value. A run stops when the counts do not close: the 15 transactions of the starter's data and the 2 customer profiles each end as a fact or on a list of units with no fact, with the reason.
+
+A named person decides every transaction in their own words, through the review route, and signs the brief or returns it. The workflow cannot decide for them: a brief with a transaction undecided, or with one rejected, cannot be signed. A transaction the agent left nothing usable for reaches the reviewer as a question, and a question about a transaction is settled only by an answer that says approve or block; an assumption noted beside it never settles it. A later run on the same customer shows the earlier decisions and their reasons beside the new assessments, carries a decision whose judged content is unchanged and asks again about one that changed. No rule names a transaction or a customer, and a test fails if one does.
+
+### What is measured for transaction monitoring
+
+The starter's `data/analyst_labels.jsonl` holds the analysts' decision, risk score and whether a person was warranted for the 11 transactions before 19 October, and `data/simulated_annotations.jsonl` holds a simulated review for each of the 4 transactions of the week after. The data is the starter's, carried unchanged, and this repository did not make it. Seven measures count the assessments against those labels, each over a stated population; `02_transaction_monitoring_agent/evals/README.md` defines each one, and no scorer calls a model. The table is printed by the first notebook's side-by-side scoring cell, which `make notebook` runs, and a test fails if a figure here is not the line the notebook printed.
+
+| Measure | The starter's agent | This workflow | This workflow, week after |
+| --- | --- | --- | --- |
+| Transactions with an assessment | 11 of 11 labelled transactions | 11 of 11 labelled transactions | 4 of 4 labelled transactions |
+| Decision agrees with the analysts' | 11 of 11 labelled transactions | 11 of 11 labelled transactions | 4 of 4 labelled transactions |
+| Blocks found | 3 of 3 labelled blocks | 3 of 3 labelled blocks | 1 of 1 labelled blocks |
+| Approvals blocked (lower is better) | 0 of 8 labelled approvals | 0 of 8 labelled approvals | 0 of 3 labelled approvals |
+| Scores within 20 points of the analysts' | 11 of 11 labelled transactions | 11 of 11 labelled transactions | 4 of 4 labelled transactions |
+| Ambiguous transactions flagged for a person | 2 of 2 labelled ambiguous transactions | 2 of 2 labelled ambiguous transactions | none in scope (labelled ambiguous transactions) |
+| Clear transactions not flagged | 9 of 9 labelled clear transactions | 9 of 9 labelled clear transactions | 3 of 4 labelled clear transactions |
+
+The starter's agent and this workflow agree on every labelled transaction, because the workflow keeps the starter's agent, tools and instructions and adds the facts, the checks and the review around them. The one figure below full marks is the week after: TX-1009, a late-night luxury purchase the reviewer's score of 75 leaves clear of the ambiguous band, was assessed as a block at a confidence of 0.65, below the 0.7 at which the starter's agent asks, so it is flagged for a person. In the saved run all 15 transactions are accounted for across the 2 runs and 15 of 15 assessments passed every plain-code check. The second notebook's two experiments, the baseline and a confidence threshold of 0.8, score the same on the 11 labelled transactions, so on this data the threshold changes no decision. These are the starter's labels and a run on 15 transactions; they say nothing about other data.
+
+### Running transaction monitoring
+
+With `MODEL_BACKEND` at its default of `replay`, the saved calls in `02_transaction_monitoring_agent/recordings/` answer every model call: 94 calls, 78 on Sonnet that assess transactions and 16 on Opus that judge the starter's reasoning, each at medium effort. `02_transaction_monitoring_agent/utils/models.py` is the one place a model is chosen, by role: `assessor` and `judge`. `make notebook` runs the three notebooks of `02_transaction_monitoring_agent/modules/` top to bottom on them with no key and no live call; the cells that need LangSmith print one sentence saying so and do nothing else, and a test fails if a notebook's outputs are not what a new run gives. `APP_SEED=transaction-monitoring` starts the application with a review waiting for a reviewer and a review signed by a fictional reviewer, who decided the transactions and signed through the review routes in her own words.
+
 ## Checks
 
 ```bash
@@ -223,6 +249,13 @@ Every data file in the repository is listed here. All of it is fictional, genera
 | `01_kyc_agent/evals/data/starter_labels.tsv` | The starter's 25 labels, a risk level and a reason for each application | The starter's, carried unchanged from its experiments script, lines 51 to 77 |
 | `01_kyc_agent/evals/data/examples.jsonl` | One evaluation example for each application | Built by `01_kyc_agent/evals/build_dataset.py` from the labels and the applications |
 | `01_kyc_agent/recordings/` | 78 recorded model calls | Made for this build by running the notebook on the applications |
+| `02_transaction_monitoring_agent/data/transactions.jsonl` | The 15 card transactions of two customers | The starter's, byte for byte; fictional |
+| `02_transaction_monitoring_agent/data/customer_profiles.jsonl` | The 2 customer profiles, with their usual spend | The starter's, byte for byte; fictional |
+| `02_transaction_monitoring_agent/data/analyst_labels.jsonl` | 11 analyst labels: a decision, a score and whether a person was warranted | The starter's, byte for byte; fictional |
+| `02_transaction_monitoring_agent/data/reviewer_answers.jsonl` | The 2 replies the starter's scripted reviewer gives when asked | The starter's, byte for byte; fictional |
+| `02_transaction_monitoring_agent/data/simulated_annotations.jsonl` | The 4 reviews the starter's third notebook simulates for the week after | The starter's, byte for byte; fictional |
+| `02_transaction_monitoring_agent/evals/data/examples.jsonl` | 3 evaluation examples built from those files | Built by `02_transaction_monitoring_agent/evals/build_dataset.py` from the starter's labels, replies and reviews |
+| `02_transaction_monitoring_agent/recordings/` | 94 calls, each holding a request and the answer it received | Made for this build by running the three notebooks on the starter's transactions |
 | `fsi_common/fsi_common/examples/` | 62 example records, valid and planted invalid | Made for this build by `fsi_common.examples.build`; the reviewer in them is invented |
 | `fsi_common/fsi_common/schemas/` | 9 JSON Schemas | Exported from the record types by `fsi_common.export_schemas` |
 | `03_document_summary_agent/data/policies/harbour-mutual-bank/manifest.json` | The manifest of Harbour Mutual Bank's policy set: each document's file, the date written, its SHA-256 digest and its terms | Written for this build; fictional |

@@ -10,6 +10,7 @@ from fsi_common.records import Decision, Person
 from review_app.drafts import Draft
 from review_app.review_model import ReviewModel
 from utils import db
+from utils.review import NOT_ANSWERED
 
 DANA = Person(**DANA_FIELDS)
 SAM = Person(name="Sam Okafor", role="Fraud Analyst")
@@ -129,7 +130,7 @@ def test_the_next_transaction_to_decide_is_found_after_the_current_one_and_wraps
     assert done.next_waiting(first.id) is None
 
 
-def test_an_open_question_is_waiting_until_it_is_answered_or_accepted_as_an_assumption():
+def test_an_open_question_is_waiting_until_it_is_answered_and_an_assumption_does_not_settle_it():
     small = small_request()
     q = question()
     waiting = model_for(small, questions=[q])
@@ -142,15 +143,31 @@ def test_an_open_question_is_waiting_until_it_is_answered_or_accepted_as_an_assu
     assert [s.kind for s in answered.question_states] == ["answered"]
     assert answered.answer().tiles[2].value == "1 of 1"
     assumed = model_for(small, Draft(assumptions={q.id: "Treat it as approved."}), questions=[q])
-    assert [s.kind for s in assumed.question_states] == ["assumed"]
+    assert [s.kind for s in assumed.question_states] == ["open"]
+    assert assumed.question_states[0].assumption == "Treat it as approved."
+    assert assumed.answer().tiles[2].value == "0 of 1"
+    beside = model_for(
+        small, Draft(answers={q.id: answer}, assumptions={q.id: "Words."}), questions=[q]
+    )
+    assert [s.kind for s in beside.question_states] == ["answered"]
+    assert beside.question_states[0].assumption == "Words."
 
 
 def test_the_brief_with_an_unanswered_question_cannot_be_signed_and_says_so():
     small = small_request()
     model = model_for(small, draft_of(*(accept(f) for f in facts(small))), questions=[question()])
     assert model.cannot_sign_because() == (
-        "The brief cannot be signed yet: 1 question not answered or accepted."
+        f"The brief cannot be signed yet: 1 question {NOT_ANSWERED}."
     )
+    assumed = model_for(
+        small,
+        Draft(
+            facts={d.subject_id: d for d in (accept(f) for f in facts(small))},
+            assumptions={question().id: "Treat it as approved."},
+        ),
+        questions=[question()],
+    )
+    assert assumed.cannot_sign_because() == model.cannot_sign_because()
 
 
 def test_a_draft_answer_to_a_question_not_on_the_brief_is_ignored():

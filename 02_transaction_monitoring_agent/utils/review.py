@@ -25,6 +25,11 @@ from fsi_common.records import (
 from fsi_common.records.base import BriefId, Digest, NonBlank, Part, StatementId
 
 STORE_ROOT = "transaction-monitoring"
+FINAL_DECISIONS = ("approve", "block")
+NOT_ANSWERED = "not answered with approve or block"
+"""The words both the engine and the application use for a question nobody has answered with a
+decision: a question about a transaction is settled only by an answer that says approve or block,
+and an assumption alone never settles it."""
 ASSESSMENT_KIND = "transaction_assessment"
 
 
@@ -144,6 +149,22 @@ class ReviewResponse(Part):
             raise ReviewMismatchError(
                 "the sign-off is not for the brief and digest the reviewer was shown"
             )
+
+
+def final_of(words: str | None) -> str | None:
+    """Read the decision a person's words open with.
+
+    Args:
+        words: An amendment or an answer, which the review route writes as ``Approve. <words>`` or
+            ``Block. <words>``.
+
+    Returns:
+        ``approve`` or ``block``, or None when the words do not open with either.
+    """
+    if not words:
+        return None
+    first = words.split(".", 1)[0].strip().lower()
+    return first if first in FINAL_DECISIONS else None
 
 
 def _labels(*labels: str) -> tuple[str, ...]:

@@ -1,0 +1,169 @@
+{
+ "meta": {
+  "duration_s": 2.424,
+  "init": {
+   "agents": [],
+   "apiKeySource": "none",
+   "claude_code_version": "2.1.302",
+   "mcp_servers": [],
+   "model": "claude-sonnet-5-5",
+   "plugins": [],
+   "skills": [],
+   "slash_commands": [],
+   "tools": [
+    "StructuredOutput"
+   ]
+  },
+  "recorded_at": "2026-11-25T11:01:27.271055+00:00"
+ },
+ "request": {
+  "effort": "medium",
+  "format": 2,
+  "messages": [
+   {
+    "content": "New transaction: TX-1004",
+    "role": "user"
+   }
+  ],
+  "model": "claude-sonnet-5-5",
+  "schema": {
+   "additionalProperties": false,
+   "properties": {
+    "content": {
+     "description": "Text of the reply; may be empty.",
+     "type": "string"
+    },
+    "tool_calls": {
+     "items": {
+      "anyOf": [
+       {
+        "additionalProperties": false,
+        "description": "Look up the customer's profile, plus any notes that human reviewers have left about them. The customer is the one this run is about, so no arguments are needed.",
+        "properties": {
+         "args": {
+          "properties": {},
+          "type": "object"
+         },
+         "name": {
+          "const": "get_customer_profile"
+         }
+        },
+        "required": [
+         "name",
+         "args"
+        ],
+        "type": "object"
+       },
+       {
+        "additionalProperties": false,
+        "description": "Look up a transaction's details: merchant, amount, country, time and so on.",
+        "properties": {
+         "args": {
+          "properties": {
+           "transaction_id": {
+            "description": "The ID of the transaction, for example \"TX-1003\".",
+            "type": "string"
+           }
+          },
+          "required": [
+           "transaction_id"
+          ],
+          "type": "object"
+         },
+         "name": {
+          "const": "get_transaction"
+         }
+        },
+        "required": [
+         "name",
+         "args"
+        ],
+        "type": "object"
+       },
+       {
+        "additionalProperties": false,
+        "description": "Record your decision on a transaction. Call this exactly once for every transaction.",
+        "properties": {
+         "args": {
+          "properties": {
+           "confidence": {
+            "description": "How sure you are of your score, from 0 (guessing) to 1 (certain).",
+            "type": "number"
+           },
+           "decision": {
+            "description": "\"approve\" to let the payment through, or \"block\" to stop it.",
+            "enum": [
+             "approve",
+             "block"
+            ],
+            "type": "string"
+           },
+           "reason": {
+            "description": "One or two sentences explaining your score.",
+            "type": "string"
+           },
+           "risk_score": {
+            "description": "How likely the transaction is to be fraud, from 0 (certainly fine) to 100 (certainly fraud).",
+            "type": "integer"
+           },
+           "transaction_id": {
+            "description": "The ID of the transaction you assessed.",
+            "type": "string"
+           }
+          },
+          "required": [
+           "transaction_id",
+           "risk_score",
+           "confidence",
+           "decision",
+           "reason"
+          ],
+          "type": "object"
+         },
+         "name": {
+          "const": "record_decision"
+         }
+        },
+        "required": [
+         "name",
+         "args"
+        ],
+        "type": "object"
+       }
+      ]
+     },
+     "type": "array"
+    }
+   },
+   "required": [
+    "content",
+    "tool_calls"
+   ],
+   "type": "object"
+  },
+  "system": "# Transaction monitor\n\nYou are a fraud analyst monitoring card transactions for one bank customer.\nTransactions arrive one at a time, as a transaction ID. For each new transaction:\n1. Call get_transaction to look up its details.\n2. Call get_customer_profile to see the customer's usual behaviour and any notes from human reviewers.\n3. Compare the transaction with the profile and with the customer's earlier transactions in this conversation.\n4. Call record_decision exactly once.\n5. Reply with one short sentence summarising your decision.\n\nScoring guide:\n- 0-30: normal for this customer.\n- 30-70: unusual, but could easily be legitimate.\n- 70-100: likely fraud, for example impossible travel between countries, or large purchases at high-risk merchants.\n\nSet confidence below 0.7 when the evidence is mixed, for example travel the customer hasn't told us about.\nSet it high when the case is clear either way.\n"
+ },
+ "request_sha256": "5a28a0822513e273ce9bdaf2c8f76a4bf016d84a44453e18de776657e47685d3",
+ "response": {
+  "content": "",
+  "model_reported": "claude-sonnet-5-5",
+  "tool_calls": [
+   {
+    "args": {
+     "transaction_id": "TX-1004"
+    },
+    "name": "get_transaction"
+   },
+   {
+    "args": {},
+    "name": "get_customer_profile"
+   }
+  ],
+  "usage": {
+   "cache_creation_input_tokens": 573,
+   "cache_read_input_tokens": 1740,
+   "input_tokens": 2,
+   "output_tokens": 124
+  }
+ }
+}

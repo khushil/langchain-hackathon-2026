@@ -1,0 +1,104 @@
+{
+ "meta": {
+  "duration_s": 6.586,
+  "init": {
+   "agents": [],
+   "apiKeySource": "none",
+   "claude_code_version": "2.1.302",
+   "mcp_servers": [],
+   "model": "claude-opus-5-5",
+   "plugins": [],
+   "skills": [],
+   "slash_commands": [],
+   "tools": [
+    "StructuredOutput"
+   ]
+  },
+  "recorded_at": "2026-11-25T11:08:59.562648+00:00"
+ },
+ "request": {
+  "effort": "medium",
+  "format": 2,
+  "messages": [
+   {
+    "content": "You check a fraud agent's reasoning about card transactions.\n\nThis is how our human reviewers judged some of the agent's past decisions:\n- The agent scored 4 because: £22.10 in-person grocery purchase in the home country (GB), within the usual amount range and a usual category. There are no reviewer notes and nothing unusual.\n  The reviewer scored 5: Routine grocery shop at a usual merchant.\n  Verdict: sound\n- The agent scored 18 because: £119.00 online streaming purchase in the home country (GB). Streaming is a usual category and the amount is within the usual range (10-150), though it is on the high side for streaming. There are no reviewer notes and no location anomalies.\n  The reviewer scored 15: Annual streaming plan. Higher than usual, but a usual category.\n  Verdict: sound\n- The agent scored 75 because: £1,250 online luxury goods purchase at 23:40 is about 8x the top of the usual range (10-150) and in a category the customer has never used. Location is the home country (GB) and there are no reviewer notes, so it could be legitimate, but the amount and merchant type make it high risk.\n  The reviewer scored 75: Late-night luxury purchase online, far above the usual spend. Customer later reported it as fraud.\n  Verdict: sound\n- The agent scored 5 because: £7.40 in-person transport purchase in the home country (GB) in a usual category. The amount is slightly below the usual range but is normal for transit fares. There are no reviewer notes and no location anomalies.\n  The reviewer scored 5: Regular commute.\n  Verdict: sound\n\nJudge this decision the same way.\nTransaction: {'transaction_id': 'TX-1007', 'user_id': 'USR-001', 'timestamp': '2026-10-19T07:55', 'merchant': 'FreshMart Express', 'category': 'groceries', 'amount': 22.1, 'currency': 'GBP', 'country': 'GB', 'channel': 'in_person'}\nAgent's score: 4\nAgent's reason: £22.10 in-person grocery purchase in the home country (GB), within the usual amount range and a usual category. There are no reviewer notes and nothing unusual.",
+    "role": "user"
+   }
+  ],
+  "model": "claude-opus-5-5",
+  "schema": {
+   "additionalProperties": false,
+   "properties": {
+    "content": {
+     "description": "Text of the reply; may be empty.",
+     "type": "string"
+    },
+    "tool_calls": {
+     "items": {
+      "anyOf": [
+       {
+        "additionalProperties": false,
+        "description": "",
+        "properties": {
+         "args": {
+          "properties": {
+           "explanation": {
+            "description": "One sentence explaining the verdict",
+            "type": "string"
+           },
+           "sound": {
+            "description": "True if the reasoning is sound and the score is in the right range",
+            "type": "boolean"
+           }
+          },
+          "required": [
+           "sound",
+           "explanation"
+          ],
+          "type": "object"
+         },
+         "name": {
+          "const": "Verdict"
+         }
+        },
+        "required": [
+         "name",
+         "args"
+        ],
+        "type": "object"
+       }
+      ]
+     },
+     "minItems": 1,
+     "type": "array"
+    }
+   },
+   "required": [
+    "content",
+    "tool_calls"
+   ],
+   "type": "object"
+  },
+  "system": ""
+ },
+ "request_sha256": "f41580338fb68c7a9c15d03f74e19f934fe8de0e195f9df83fcde80e8d7199b8",
+ "response": {
+  "content": "The agent's reasoning holds up and the score fits. This is a £22.10 in-person grocery purchase at 07:55 in the customer's home country (GB). The amount is in the usual range, the category is a usual one, and there are no reviewer notes or anything else unusual. It's essentially the same as an earlier routine grocery case the reviewer scored 5, so a score of 4 is in line with that.",
+  "model_reported": "claude-opus-5-5",
+  "tool_calls": [
+   {
+    "args": {
+     "explanation": "A routine in-person grocery purchase of a usual amount in the home country with no warning signs is low risk, so a score of 4 fits the reviewer's earlier score of 5 for a similar case.",
+     "sound": true
+    },
+    "name": "Verdict"
+   }
+  ],
+  "usage": {
+   "cache_creation_input_tokens": 1297,
+   "cache_read_input_tokens": 856,
+   "input_tokens": 2,
+   "output_tokens": 293
+  }
+ }
+}

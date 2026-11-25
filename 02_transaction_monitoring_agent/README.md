@@ -50,7 +50,7 @@ A run is one customer's stream, whole or a window of it, which the request gives
 3. Each proposal becomes a fact about its transaction. The quote is the transaction's own fields, copied word for word, and six plain-code checks run on it: the quote is in the transaction's line, every field it names matches the row, the score is a whole number from 0 to 100, the proposed decision follows the starter's rule of blocking from 70, both confidences lie from 0 to 1, and the starter's own checks on the confidence give what was recorded.
 4. Every transaction ends with a fact or on a list of units with no fact, with its reason, and the run stops when the counts do not close. A proposal that fails a check stays on the record with the failed check and stays off the brief; the transaction goes to the reviewer as an open question. So does a transaction the agent recorded nothing for.
 5. The brief has one statement for each proposal that passed, citing the proposal and the profile fields the starter's checks read. The workflow stops at the review step with the brief, each proposal beside its transaction's line, and what reviewers decided about the customer before.
-6. A signed-in person decides each transaction through the reviewer's application: they agree with the proposal, give their own decision (approve or block) or disagree, and write their reason. They answer each open question or accept it as an assumption, and sign the brief or return it. A brief with a disagreement can only be returned.
+6. A signed-in person decides each transaction through the reviewer's application: they agree with the proposal, give their own decision (approve or block) or disagree, and write their reason. They answer each open question with approve or block and their reason, and may note an assumption beside the answer, which never settles the question, and then sign the brief or return it. A brief with a disagreement can only be returned.
 
 The reviewer's decisions are kept in the store under the customer. A later run on the same customer shows them beside the new proposals, carries a decision whose judged content is unchanged, and asks again, naming what changed, when it is not.
 
@@ -71,12 +71,12 @@ The reviewer's decisions are kept in the store under the customer. A later run o
 | --- | --- |
 | `agent.py` | Passes `get_model("assessor")` to `create_agent` in place of `init_chat_model(model)`, and takes an optional `model` so a caller can pass its own |
 | `utils/models.py` | `get_model(role)`; the starter's `model` name is still exported |
-| `scripts/run_experiments.py` | Importing it no longer stops when `LANGSMITH_PROJECT` is unset, because the third notebook imports from it; running it still insists |
+| `scripts/run_experiments.py` | Importing it no longer stops when `LANGSMITH_PROJECT` is unset, because the third notebook imports from it, and the dataset is named `transaction-monitoring-<attendee>`, the name the second notebook makes it under, where the starter's script named it after the project; running it still insists on the project |
 | `langgraph.json` | Registers `transaction_monitoring`, the graph in `workflow/graph.py`, beside the starter's agent |
 | `pyproject.toml` | The starter's dependencies except `managed-deepagents`, with `fsi-common`, `pydantic` and `langgraph-checkpoint-sqlite` added |
 | `modules/01_transaction_monitoring_agent.ipynb` | The starter's 42 cells, changed where a model is chosen and where the agent's graph is drawn, followed by cells that add the facts, the accounting, the review and the scoring |
 | `modules/02_scoring_evals.ipynb` | The starter's 15 cells, changed where a model is chosen, with each step that needs LangSmith printing one sentence and doing nothing without a key, followed by cells that score the same runs without LangSmith |
-| `modules/03_annotation_queue.ipynb` | The starter's 20 cells, changed in the same two ways and with the judge on the `judge` role, followed by cells that read the four simulated reviews from the data and run the judge and the evaluation locally |
+| `modules/03_annotation_queue.ipynb` | The starter's 20 cells, changed in the same two ways and with the judge on the `judge` role, with the cell that puts the runs in the review queue reading each run's project and start time from LangSmith and adding the runs through the queue's items, because LangSmith removes the add-by-run-id call on 31 January 2027, followed by cells that read the four simulated reviews from the data and run the judge and the evaluation locally |
 | `agents.py`, `context/`, `workflow/`, `evals/`, `review_app/`, `recordings/`, `tests/` | Added |
 | `utils/records.py`, `utils/review.py`, `utils/langsmith_key.py` | Added: the topic's fact kinds, the review's payload and resume value with the store namespaces, and the check that a notebook step may write to LangSmith |
 
@@ -98,6 +98,12 @@ One carried file speaks in the agent's name. The starter's decision tool tells t
 
 The starter is [github.com/langchain-samples/fsi-hackathon-london-2026](https://github.com/langchain-samples/fsi-hackathon-london-2026), read at commit `12acee0`. It publishes no licence file; its material is carried here as the event's published starter for teams to build on.
 
+## The saved run
+
+`recordings/` holds 94 saved model calls, 78 on Sonnet that assess transactions and 16 on Opus that judge the starter's reasoning, made by running the three notebooks on the starter's data, into one folder. With `MODEL_BACKEND` at `replay` they answer every model call of the notebooks, the application's seed and the offline file, so none of them needs a key; a request with no saved call stops with the request's hash, and the run is never answered from a guess. The notebooks carry the outputs of a replay with no LangSmith key, so each step that writes to LangSmith prints one sentence saying so, and `make notebook` fails if a notebook's outputs are not what a new replay gives.
+
+`APP_SEED=transaction-monitoring make serve` starts the reviewer's application with two reviews of the first customer: one waiting for a reviewer and one signed by a fictional reviewer through the review routes. `PYTHONPATH=fsi_common:03_document_summary_agent python -m fsi_common.app.offline --topic transaction-monitoring --out build/transaction-monitoring-offline.html`, run from the repository root, writes the topic's pages for that run into one HTML file that opens with no server. `docs/user-guide.md` follows every step.
+
 ## Tests and checks
 
-From the repository root, `make test` runs one pytest line for each member, this topic's after the shared member's and topic 03's. They make no model call: the model is replaced by a scripted stand-in, and tracing is off. `make planted-faults` and `make dataset-check` run the evaluation's checks, `make notebook` runs the notebooks, and `make serve-monitoring` starts the reviewer's application with this topic alone, in a folder of its own for its state. `make gate` runs them all.
+From the repository root, `make test` runs one pytest line for each member, this topic's after the shared member's and topic 03's. They make no model call: the model is replaced by a scripted stand-in, and tracing is off. `make planted-faults` and `make dataset-check` run the evaluation's checks, `make notebook` runs the notebooks, and `make serve` starts the reviewer's application, which serves every built topic, this one at `/transaction-monitoring/`. `make gate` runs them all.

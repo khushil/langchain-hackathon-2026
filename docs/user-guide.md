@@ -187,3 +187,42 @@ This part walks through the second topic of Review desk. You play the compliance
 ### A later batch
 
 15. Click "KYC onboarding" and start a batch from the form "Start a batch" with a few applications ticked, then "Start the batch". On the saved calls it is ready within a few seconds. Decisions about a customer are carried from the batches already signed. In the table, an application whose proposal has not changed shows its earlier decision, for example "Accepted by you, on 24 November 2026, carried from an earlier review", and its page gives who decided, when and why; a question answered before shows "Answered by you" with the answer. An application whose proposal changed since your decision shows "Needs a person", with your earlier decision and "Since then these changed:" naming the part that changed.
+
+## Transaction monitoring
+
+This part walks through the third topic of Review desk. You play the compliance reviewer for a customer's card transactions from the starter's fictional data. The agent has already looked each transaction up beside the customer's profile and proposed an approval or a block with a risk score, and plain code has checked each proposal. Nothing is decided for you: every transaction is decided by a person, in their own words. The seed makes two reviews of the first customer, Priya Shah, on first start: one waiting for a reviewer, which you work through, and one already signed by Dana Whitfield, Head of Compliance, a fictional reviewer, for the six transactions before 19 October.
+
+### Start and sign in
+
+1. Run this from the repository root, adding `PYTHON=/path/to/python` when you did not use `uv sync`:
+
+   ```bash
+   APP_SEED=transaction-monitoring APP_HOST=127.0.0.1 APP_PORT=4821 make serve
+   ```
+
+   Open the address it prints. The home page sentence reads "1 customer review is waiting for a reviewer." and its tile "Transaction monitoring" opens the topic's list.
+2. Click "Sign in", type `Dana Whitfield` as the name and `Head of Compliance` as the role, and sign in. Click "Transaction monitoring" in the top bar. The sentence reads "2 runs so far: 1 waiting for a reviewer, 1 signed.", and the table "Runs, newest first" lists "Priya Shah, whole stream" with its status "Waiting for a reviewer" and "Priya Shah, before 19 October 2026" with the status "Signed", reviewed by "Dana Whitfield, Head of Compliance, 25 November 2026".
+3. The picture above the table shows the 15 transactions of both customers, a lane for each. Days run left to right, the hour of the day runs top to bottom, and each mark is a transaction. A mark's colour says its state, and the key reads "Needs a decision", "Decided earlier, nothing changed" and "Not assessed yet". Hover over a mark, or follow it, to read the transaction. Below the table the form "Assess a customer's transactions" starts a run of your own.
+
+### Read the brief
+
+4. Click "Priya Shah, whole stream". The sentence reads "The brief for Priya Shah has 10 transactions to decide. 4 still need your decision before it can be signed." The tiles read "Transactions" as 10, "Decided" as "6 of 10" and "Questions settled" as "0 of 0". The tabs are "Transactions", "Open questions", "Earlier decisions" and "Sign-off".
+5. The picture shows Priya's ten transactions, the first six marked "Decided earlier, nothing changed" and the last four marked "Needs a decision". Under it each transaction has a statement of the proposal, for example "TX-1009 at LuxWatch Online, 1250.0 GBP in GB (online): proposed block at a risk score of 75 and a confidence of 0.65." followed by the reason the agent gave. The six earlier ones show "Carried: agreed 25 November 2026", because Dana Whitfield decided them on the first review and nothing about them has changed.
+6. Click "Earlier decisions". The table "What reviewers decided about Priya Shah before" lists those six decisions, each with who made it, the date and the reason in the reviewer's own words. "Export CSV" downloads it. Click "Open questions": the page reads "The brief carries no open questions." because every assessment passed its checks.
+
+### Decide a transaction
+
+7. Click the mark for TX-1007, or its statement. The page shows the transaction beside the proposal: the amount, the category, where it was made and the customer's usual spend, then "Proposed decision" as "Approve", "Risk score" as "8 of 100" and "Confidence" as 0.92, with the reason given. The table "Checks" lists six, each marked "Passed", and the line of the transactions table the proposal rests on is shown word for word beside its digest.
+8. Under "Your decision" choose "Agree with the proposal" and click "Record my decision" with "Your reason" empty. It is refused with "Write your reason in your own words." Type `Her usual weekly shop.` in "Your reason" and record it. The tile "Decided" reads "7 of 10". There is no way to agree with many at once: each is decided in your own words.
+9. Open TX-1009, "LuxWatch Online", a block at a confidence of 0.65. Choose "Give my own decision" and record it with neither "Approve" nor "Block" chosen: it is refused with "Choose approve or block for your own decision." Choose "Approve", type `Her own card, at home, a large purchase for her.` in "My words for it" and `The card was used in the UK, as it is every week.` in "Your reason", and record it. Choosing "Disagree" instead records that you reject the proposal.
+10. Decide TX-1008 and TX-1010 with "Agree with the proposal" and your reasons. "Next transaction to decide" opens the next one waiting.
+
+### Sign or return
+
+11. Click "Sign-off". While a transaction is undecided the page reads "The brief cannot be signed yet: 4 transactions without a decision." If you disagreed with a transaction it reads "You disagreed with 1 transaction. Return the brief so that it can be assessed again."
+12. When every transaction is decided the sentence reads "Every transaction and question is settled, so it is ready for you to sign." Click "Sign the brief". The page reads "The brief for Priya Shah was signed by Dana Whitfield, Head of Compliance, on 25 November 2026." and opens the record: "Reviewer", "Role", "Date", "Outcome" as Signed, "Digest signed", and the table "Decisions made on the brief" with a row for each of the 10 transactions, its proposal, your decision, who made it and the reason. "Export CSV" downloads it. To return a brief instead, type why in "Why you are returning the brief, if you return it" and click "Return the brief".
+13. Open the review that was already signed when you started. Its record reads the same way, with six transactions and the fictional reviewer's own words as the reasons.
+
+### A later run
+
+14. Click "Transaction monitoring" and start a run from "Assess a customer's transactions": choose "Priya Shah" and click "Assess the transactions". On the saved calls it is ready within a few seconds. Decisions about a customer are carried from the reviews already signed. On the saved calls every proposal is unchanged, so all ten transactions show their earlier decision, "Carried: agreed", and nothing is left to decide; a transaction whose proposal had changed would be asked again and say what changed.

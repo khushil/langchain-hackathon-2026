@@ -13,9 +13,10 @@ from engine_fakes import (
 from model_fakes import Assessment, assessment_for_score
 
 from fsi_common.bundle_checks import check_bundle
-from fsi_common.records import Brief, Decision, Fact, SignOff
+from fsi_common.records import Assumption, Brief, Decision, Fact, SignOff
 from utils.records import FACT_CONTEXT
 from utils.review import (
+    NOT_ANSWERED,
     ReviewMismatchError,
     ReviewResponse,
     decisions_namespace,
@@ -157,9 +158,95 @@ def test_a_signed_brief_with_an_unanswered_question_is_refused_and_the_run_still
     harness = Harness(ScriptedModels(label_script() | {"TX-1002": None}))
     config = harness.start("USR-001", end=OCT_19)
     request = harness.review_request(config)
-    with pytest.raises(ReviewMismatchError, match="neither answers nor accepts"):
+    with pytest.raises(ReviewMismatchError, match=NOT_ANSWERED):
         harness.resume(config, respond(request, answer_questions=False))
     assert harness.graph.get_state(config).next == ("review",)
+
+
+def assumption_on(request, question, words="Treat it as approved."):
+    return Assumption(question_id=question.id, words=words)
+
+
+def signed_with(request, response, assumptions):
+    sign_off = SignOff.build(
+        brief_id=request.brief_id,
+        brief_digest=request.brief_digest,
+        reviewer=DANA,
+        date=REVIEW_DATE,
+        outcome="signed",
+        assumptions=assumptions,
+        reason=None,
+    )
+    return ReviewResponse(reviewer=DANA, decisions=response.decisions, sign_off=sign_off)
+
+
+def test_an_assumption_alone_never_settles_a_question_about_a_transaction():
+    harness = Harness(ScriptedModels(label_script() | {"TX-1002": None}))
+    config = harness.start("USR-001", end=OCT_19)
+    request = harness.review_request(config)
+    question = request.open_questions[0]
+    response = signed_with(
+        request,
+        respond(request, answer_questions=False),
+        [assumption_on(request, question)],
+    )
+    with pytest.raises(ReviewMismatchError, match=NOT_ANSWERED):
+        harness.resume(config, response)
+    state = harness.graph.get_state(config)
+    assert state.next == ("review",) and not state.values.get("sign_off")
+    assert harness.store.search(sign_offs_namespace("USR-001"), limit=100) == []
+
+
+def test_a_transaction_with_no_proposal_cannot_be_left_undecided_by_an_assumption_on_its_question():
+    harness = Harness(ScriptedModels(label_script() | {"TX-2004": None}))
+    config = harness.start("USR-002")
+    request = harness.review_request(config)
+    assert [q.about.anchor for q in request.open_questions] == ["tx:TX-2004"]
+    response = signed_with(
+        request,
+        respond(request, answer_questions=False),
+        [assumption_on(request, request.open_questions[0])],
+    )
+    assert {d.subject_id for d in response.decisions} == {c.fact.id for c in request.assessments}
+    with pytest.raises(ReviewMismatchError, match=NOT_ANSWERED):
+        harness.resume(config, response)
+    assert harness.graph.get_state(config).next == ("review",)
+
+
+def test_an_answer_that_names_neither_approve_nor_block_does_not_settle_the_question():
+    harness = Harness(ScriptedModels(label_script() | {"TX-1002": None}))
+    config = harness.start("USR-001", end=OCT_19)
+    request = harness.review_request(config)
+    question = request.open_questions[0]
+    vague = Decision.on(
+        question,
+        outcome="answer",
+        answer="Maybe, ask her.",
+        reason="Not sure.",
+        reviewer=DANA,
+        date=REVIEW_DATE,
+    )
+    base = respond(request, answer_questions=False)
+    response = signed_with(
+        request, base.model_copy(update={"decisions": [*base.decisions, vague]}), []
+    )
+    with pytest.raises(ReviewMismatchError, match=NOT_ANSWERED):
+        harness.resume(config, response)
+    assert harness.graph.get_state(config).next == ("review",)
+
+
+def test_an_assumption_beside_an_answer_is_kept_on_the_sign_off_and_the_brief_signs():
+    harness = Harness(ScriptedModels(label_script() | {"TX-1002": None}))
+    config = harness.start("USR-001", end=OCT_19)
+    request = harness.review_request(config)
+    question = request.open_questions[0]
+    response = signed_with(request, respond(request), [assumption_on(request, question)])
+    harness.resume(config, response)
+    values = harness.values(config)
+    assert values["sign_off"]["outcome"] == "signed"
+    assert [a["words"] for a in values["sign_off"]["assumptions"]] == ["Treat it as approved."]
+    held = values["open_questions"][question.id]
+    assert held["state"] == "answered"
 
 
 def test_a_signed_brief_with_no_decision_on_any_assessment_is_refused_and_the_run_still_waits():

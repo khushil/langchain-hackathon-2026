@@ -5,6 +5,7 @@ from engine_fakes import ScriptedModels, label_script
 from review_support import SAM, WINDOW, make_world, marks, record_all, run_path, start_run, text
 
 from fsi_common.records import Decision
+from utils.review import NOT_ANSWERED
 
 
 def fresh():
@@ -165,7 +166,7 @@ def test_a_question_is_answered_in_the_persons_own_words_and_the_brief_can_then_
     unanswered = world.client().post(
         run_path(thread, "sign"), data={"brief_digest": request.brief_digest, "outcome": "signed"}
     )
-    assert "1 question not answered or accepted" in text(unanswered)
+    assert f"1 question {NOT_ANSWERED}" in text(unanswered)
     empty = world.client().post(
         run_path(thread, "answer"),
         data={
@@ -207,11 +208,11 @@ def test_a_question_is_answered_in_the_persons_own_words_and_the_brief_can_then_
     assert next(iter(held["open_questions"].values()))["state"] == "answered"
 
 
-def test_a_question_can_be_accepted_as_an_assumption_in_the_persons_words():
+def test_an_assumption_beside_an_answer_is_kept_but_alone_it_never_lets_the_brief_be_signed():
     world, thread, request = question_world()
     record_all(world, thread)
     question = request.open_questions[0]
-    response = world.client().post(
+    assumed = world.client().post(
         run_path(thread, "assume"),
         data={
             "brief_digest": request.brief_digest,
@@ -219,7 +220,23 @@ def test_a_question_can_be_accepted_as_an_assumption_in_the_persons_words():
             "words": "Treat the commute as approved.",
         },
     )
-    assert response.status_code == 303
+    assert assumed.status_code == 303
+    refused = world.client().post(
+        run_path(thread, "sign"), data={"brief_digest": request.brief_digest, "outcome": "signed"}
+    )
+    assert refused.status_code == 422 and NOT_ANSWERED in text(refused)
+    assert world.runs.status(thread) == "awaiting_review"
+    answered = world.client().post(
+        run_path(thread, "answer"),
+        data={
+            "brief_digest": request.brief_digest,
+            "question_id": question.id,
+            "final": "approve",
+            "answer": "It is her usual commute.",
+            "reason": "I rang her and she confirmed it.",
+        },
+    )
+    assert answered.status_code == 303
     signed = world.client().post(
         run_path(thread, "sign"), data={"brief_digest": request.brief_digest, "outcome": "signed"}
     )

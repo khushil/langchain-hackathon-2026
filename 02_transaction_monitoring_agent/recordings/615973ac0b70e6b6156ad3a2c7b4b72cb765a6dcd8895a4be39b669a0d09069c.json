@@ -1,0 +1,352 @@
+{
+ "meta": {
+  "duration_s": 2.438,
+  "init": {
+   "agents": [],
+   "apiKeySource": "none",
+   "claude_code_version": "2.1.302",
+   "mcp_servers": [],
+   "model": "claude-sonnet-5-5",
+   "plugins": [],
+   "skills": [],
+   "slash_commands": [],
+   "tools": [
+    "StructuredOutput"
+   ]
+  },
+  "recorded_at": "2026-11-25T11:00:56.650312+00:00"
+ },
+ "request": {
+  "effort": "medium",
+  "format": 2,
+  "messages": [
+   {
+    "content": "New transaction: TX-2001",
+    "role": "user"
+   },
+   {
+    "content": "Looking up the transaction and customer profile first.",
+    "role": "assistant",
+    "tool_calls": [
+     {
+      "args": {
+       "transaction_id": "TX-2001"
+      },
+      "id": "call_aa82941b72408f9f934c49a7",
+      "name": "get_transaction"
+     },
+     {
+      "args": {},
+      "id": "call_2b22bb69854c04528d39b87a",
+      "name": "get_customer_profile"
+     }
+    ]
+   },
+   {
+    "content": "{\"transaction_id\": \"TX-2001\", \"user_id\": \"USR-002\", \"timestamp\": \"2026-10-08T09:00\", \"merchant\": \"CodeHub Pro\", \"category\": \"software\", \"amount\": 21.0, \"currency\": \"EUR\", \"country\": \"IE\", \"channel\": \"online\"}",
+    "name": "get_transaction",
+    "role": "tool",
+    "tool_call_id": "call_aa82941b72408f9f934c49a7"
+   },
+   {
+    "content": "{\"user_id\": \"USR-002\", \"name\": \"Tomás Ferreira\", \"home_country\": \"PT\", \"city\": \"Lisbon\", \"currency\": \"EUR\", \"usual_amount_range\": [5, 400], \"usual_categories\": [\"software\", \"electronics\", \"cafes\", \"coworking\"], \"customer_since\": 2024, \"reviewer_notes\": []}",
+    "name": "get_customer_profile",
+    "role": "tool",
+    "tool_call_id": "call_2b22bb69854c04528d39b87a"
+   },
+   {
+    "content": "Approved TX-2001: a €21 software purchase at CodeHub Pro fits the customer's usual category and amount range.",
+    "role": "assistant",
+    "tool_calls": [
+     {
+      "args": {
+       "confidence": 0.85,
+       "decision": "approve",
+       "reason": "Small €21 software purchase matches the customer's usual category and amount range. The merchant is in Ireland rather than Portugal, but online software subscriptions are commonly billed from IE, so this is only a minor flag.",
+       "risk_score": 12,
+       "transaction_id": "TX-2001"
+      },
+      "id": "call_ce135b251c9ba236083424b2",
+      "name": "record_decision"
+     }
+    ]
+   },
+   {
+    "content": "Recorded TX-2001: approve (decided by agent).",
+    "name": "record_decision",
+    "role": "tool",
+    "tool_call_id": "call_ce135b251c9ba236083424b2"
+   },
+   {
+    "content": "TX-2001 is already decided: I approved it as a low-risk purchase. A €21 software charge at CodeHub Pro fits the customer's usual category and amount range.",
+    "role": "assistant"
+   },
+   {
+    "content": "New transaction: TX-2002",
+    "role": "user"
+   },
+   {
+    "content": "Looking up TX-2002 and the customer profile.",
+    "role": "assistant",
+    "tool_calls": [
+     {
+      "args": {
+       "transaction_id": "TX-2002"
+      },
+      "id": "call_31f50e0c899c229546f98d58",
+      "name": "get_transaction"
+     },
+     {
+      "args": {},
+      "id": "call_41d7fd2f3edbecacec9ff2e6",
+      "name": "get_customer_profile"
+     }
+    ]
+   },
+   {
+    "content": "{\"transaction_id\": \"TX-2002\", \"user_id\": \"USR-002\", \"timestamp\": \"2026-10-08T16:20\", \"merchant\": \"Electro Lisboa\", \"category\": \"electronics\", \"amount\": 349.0, \"currency\": \"EUR\", \"country\": \"PT\", \"channel\": \"in_person\"}",
+    "name": "get_transaction",
+    "role": "tool",
+    "tool_call_id": "call_31f50e0c899c229546f98d58"
+   },
+   {
+    "content": "{\"user_id\": \"USR-002\", \"name\": \"Tomás Ferreira\", \"home_country\": \"PT\", \"city\": \"Lisbon\", \"currency\": \"EUR\", \"usual_amount_range\": [5, 400], \"usual_categories\": [\"software\", \"electronics\", \"cafes\", \"coworking\"], \"customer_since\": 2024, \"reviewer_notes\": []}",
+    "name": "get_customer_profile",
+    "role": "tool",
+    "tool_call_id": "call_41d7fd2f3edbecacec9ff2e6"
+   },
+   {
+    "content": "Approved TX-2002: a €349 in-person electronics purchase in Lisbon matches the customer's home city, usual category and amount range.",
+    "role": "assistant",
+    "tool_calls": [
+     {
+      "args": {
+       "confidence": 0.9,
+       "decision": "approve",
+       "reason": "In-person electronics purchase of €349 in Lisbon, the customer's home city. It is within the usual amount range and category. The earlier IE charge was online, so there is no travel conflict.",
+       "risk_score": 8,
+       "transaction_id": "TX-2002"
+      },
+      "id": "call_2a14482abc68756e3de73968",
+      "name": "record_decision"
+     }
+    ]
+   },
+   {
+    "content": "Recorded TX-2002: approve (decided by agent).",
+    "name": "record_decision",
+    "role": "tool",
+    "tool_call_id": "call_2a14482abc68756e3de73968"
+   },
+   {
+    "content": "Approved TX-2002: a €349 in-person electronics purchase in Lisbon fits the customer's home city, usual category and amount range.",
+    "role": "assistant"
+   },
+   {
+    "content": "New transaction: TX-2003",
+    "role": "user"
+   },
+   {
+    "content": "Looking up TX-2003 and the customer profile.",
+    "role": "assistant",
+    "tool_calls": [
+     {
+      "args": {
+       "transaction_id": "TX-2003"
+      },
+      "id": "call_41213cfe83d988f9295f1147",
+      "name": "get_transaction"
+     },
+     {
+      "args": {},
+      "id": "call_cdef89bbffa384d0d61ffe11",
+      "name": "get_customer_profile"
+     }
+    ]
+   },
+   {
+    "content": "{\"transaction_id\": \"TX-2003\", \"user_id\": \"USR-002\", \"timestamp\": \"2026-10-09T09:10\", \"merchant\": \"Café Central\", \"category\": \"cafes\", \"amount\": 4.5, \"currency\": \"EUR\", \"country\": \"PT\", \"channel\": \"in_person\"}",
+    "name": "get_transaction",
+    "role": "tool",
+    "tool_call_id": "call_41213cfe83d988f9295f1147"
+   },
+   {
+    "content": "{\"user_id\": \"USR-002\", \"name\": \"Tomás Ferreira\", \"home_country\": \"PT\", \"city\": \"Lisbon\", \"currency\": \"EUR\", \"usual_amount_range\": [5, 400], \"usual_categories\": [\"software\", \"electronics\", \"cafes\", \"coworking\"], \"customer_since\": 2024, \"reviewer_notes\": []}",
+    "name": "get_customer_profile",
+    "role": "tool",
+    "tool_call_id": "call_cdef89bbffa384d0d61ffe11"
+   },
+   {
+    "content": "Approved TX-2003: a €4.50 in-person café purchase in Lisbon fits the customer's home city and usual category.",
+    "role": "assistant",
+    "tool_calls": [
+     {
+      "args": {
+       "confidence": 0.95,
+       "decision": "approve",
+       "reason": "Small €4.50 in-person café purchase in Portugal, matching the customer's home country and usual category. Amount is slightly below the usual range minimum but trivial, and there is no travel conflict with earlier transactions.",
+       "risk_score": 3,
+       "transaction_id": "TX-2003"
+      },
+      "id": "call_988d6497edb77d78c4d9fd2e",
+      "name": "record_decision"
+     }
+    ]
+   },
+   {
+    "content": "Recorded TX-2003: approve (decided by agent).",
+    "name": "record_decision",
+    "role": "tool",
+    "tool_call_id": "call_988d6497edb77d78c4d9fd2e"
+   },
+   {
+    "content": "Approved TX-2003: a €4.50 in-person café purchase in Lisbon fits the customer's home city and usual category.",
+    "role": "assistant"
+   },
+   {
+    "content": "New transaction: TX-2004",
+    "role": "user"
+   }
+  ],
+  "model": "claude-sonnet-5-5",
+  "schema": {
+   "additionalProperties": false,
+   "properties": {
+    "content": {
+     "description": "Text of the reply; may be empty.",
+     "type": "string"
+    },
+    "tool_calls": {
+     "items": {
+      "anyOf": [
+       {
+        "additionalProperties": false,
+        "description": "Look up the customer's profile, plus any notes that human reviewers have left about them. The customer is the one this run is about, so no arguments are needed.",
+        "properties": {
+         "args": {
+          "properties": {},
+          "type": "object"
+         },
+         "name": {
+          "const": "get_customer_profile"
+         }
+        },
+        "required": [
+         "name",
+         "args"
+        ],
+        "type": "object"
+       },
+       {
+        "additionalProperties": false,
+        "description": "Look up a transaction's details: merchant, amount, country, time and so on.",
+        "properties": {
+         "args": {
+          "properties": {
+           "transaction_id": {
+            "description": "The ID of the transaction, for example \"TX-1003\".",
+            "type": "string"
+           }
+          },
+          "required": [
+           "transaction_id"
+          ],
+          "type": "object"
+         },
+         "name": {
+          "const": "get_transaction"
+         }
+        },
+        "required": [
+         "name",
+         "args"
+        ],
+        "type": "object"
+       },
+       {
+        "additionalProperties": false,
+        "description": "Record your decision on a transaction. Call this exactly once for every transaction.",
+        "properties": {
+         "args": {
+          "properties": {
+           "confidence": {
+            "description": "How sure you are of your score, from 0 (guessing) to 1 (certain).",
+            "type": "number"
+           },
+           "decision": {
+            "description": "\"approve\" to let the payment through, or \"block\" to stop it.",
+            "enum": [
+             "approve",
+             "block"
+            ],
+            "type": "string"
+           },
+           "reason": {
+            "description": "One or two sentences explaining your score.",
+            "type": "string"
+           },
+           "risk_score": {
+            "description": "How likely the transaction is to be fraud, from 0 (certainly fine) to 100 (certainly fraud).",
+            "type": "integer"
+           },
+           "transaction_id": {
+            "description": "The ID of the transaction you assessed.",
+            "type": "string"
+           }
+          },
+          "required": [
+           "transaction_id",
+           "risk_score",
+           "confidence",
+           "decision",
+           "reason"
+          ],
+          "type": "object"
+         },
+         "name": {
+          "const": "record_decision"
+         }
+        },
+        "required": [
+         "name",
+         "args"
+        ],
+        "type": "object"
+       }
+      ]
+     },
+     "type": "array"
+    }
+   },
+   "required": [
+    "content",
+    "tool_calls"
+   ],
+   "type": "object"
+  },
+  "system": "# Transaction monitor\n\nYou are a fraud analyst monitoring card transactions for one bank customer.\nTransactions arrive one at a time, as a transaction ID. For each new transaction:\n1. Call get_transaction to look up its details.\n2. Call get_customer_profile to see the customer's usual behaviour and any notes from human reviewers.\n3. Compare the transaction with the profile and with the customer's earlier transactions in this conversation.\n4. Call record_decision exactly once.\n5. Reply with one short sentence summarising your decision.\n\nScoring guide:\n- 0-30: normal for this customer.\n- 30-70: unusual, but could easily be legitimate.\n- 70-100: likely fraud, for example impossible travel between countries, or large purchases at high-risk merchants.\n\nSet confidence below 0.7 when the evidence is mixed, for example travel the customer hasn't told us about.\nSet it high when the case is clear either way.\n"
+ },
+ "request_sha256": "615973ac0b70e6b6156ad3a2c7b4b72cb765a6dcd8895a4be39b669a0d09069c",
+ "response": {
+  "content": "Looking up TX-2004 and the customer profile.",
+  "model_reported": "claude-sonnet-5-5",
+  "tool_calls": [
+   {
+    "args": {
+     "transaction_id": "TX-2004"
+    },
+    "name": "get_transaction"
+   },
+   {
+    "args": {},
+    "name": "get_customer_profile"
+   }
+  ],
+  "usage": {
+   "cache_creation_input_tokens": 3035,
+   "cache_read_input_tokens": 1740,
+   "input_tokens": 2,
+   "output_tokens": 141
+  }
+ }
+}

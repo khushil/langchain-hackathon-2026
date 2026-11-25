@@ -33,6 +33,7 @@ from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.store.memory import InMemoryStore
 from langsmith import Client, evaluate
 from utils import PROJECT_ROOT, db
+from utils.attendee import ATTENDEE
 from utils.state import OCT_19, MyAgentContext
 from utils.transaction_processing import (
     decision_log,
@@ -45,7 +46,9 @@ load_dotenv(PROJECT_ROOT.parent / ".env")
 # Named after the attendee's LangSmith project from .env (fsi-hackathon-<ATTENDEE_NAME>), so datasets don't collide.
 # Importing this module needs no LangSmith settings, so a notebook can reuse its functions; `main` still insists.
 PROJECT = os.environ.get("LANGSMITH_PROJECT") or "compliance-brief"
-DATASET_NAME = f"{PROJECT}-transaction-monitoring-agent"
+# The second notebook makes the dataset under this name and the third reads it, so it is named once, here, after
+# the attendee and not the project.
+DATASET_NAME = f"transaction-monitoring-{ATTENDEE}"
 
 # Links the dataset, the traced graph and the experiments to the agent. The agent (and its "Agent" tag value) is only
 # created in LangSmith once the agent has been run/traced under this name, so trace it before running this script.

@@ -96,7 +96,7 @@ def respond(
                     Decision.on(
                         question,
                         outcome="answer",
-                        answer="Approve it.",
+                        answer="Approve. It is her usual commute.",
                         reason="Called the customer.",
                         reviewer=reviewer,
                         date=REVIEW_DATE,

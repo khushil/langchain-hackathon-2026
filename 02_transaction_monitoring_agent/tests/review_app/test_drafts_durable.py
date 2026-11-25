@@ -70,7 +70,7 @@ def test_a_later_decision_on_the_same_fact_replaces_the_earlier_one_after_a_rest
     assert DraftStore(path).get("run-1", DANA).facts == {FACT_A.id: later}
 
 
-def test_an_answer_and_an_assumption_on_one_question_replace_each_other_after_a_restart(path):
+def test_an_answer_and_an_assumption_on_one_question_are_both_held_after_a_restart(path):
     answer = Decision.on(
         QUESTION,
         outcome="answer",
@@ -82,9 +82,11 @@ def test_an_answer_and_an_assumption_on_one_question_replace_each_other_after_a_
     first = DraftStore(path)
     first.put_assumption("run-1", DANA, QUESTION.id, "An assumption.")
     first.put_answer("run-1", answer)
+    first.put_assumption("run-1", DANA, QUESTION.id, "A later assumption.")
     first.close()
     held = DraftStore(path).get("run-1", DANA)
-    assert held.answers == {QUESTION.id: answer} and held.assumptions == {}
+    assert held.answers == {QUESTION.id: answer}
+    assert held.assumptions == {QUESTION.id: "A later assumption."}
 
 
 def test_one_persons_work_is_not_seen_by_another_after_a_restart(path):
@@ -175,7 +177,7 @@ def test_a_stored_name_that_is_not_a_person_is_refused_as_a_draft_file_fault_nam
         DraftStore(path)
 
 
-def test_an_answer_that_could_not_be_replaced_by_an_assumption_is_still_the_answer_after_a_restart(
+def test_an_assumption_that_could_not_be_kept_leaves_the_answer_as_it_was_after_a_restart(
     path, monkeypatch
 ):
     answer = Decision.on(

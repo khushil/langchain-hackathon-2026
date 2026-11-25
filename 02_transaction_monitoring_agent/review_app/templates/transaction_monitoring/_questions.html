@@ -7,7 +7,6 @@
     <p class="meta">
       {% if qs.kind == "open" %}{{ ui.badge("needs_person") }}
       {% elif qs.kind == "answered" %}<span class="badge">{{ decision_by(qs.decision, person) }}</span>
-      {% elif qs.kind == "assumed" %}<span class="badge">Accepted by you as an assumption</span>
       {% else %}<span class="badge">{% if qs.decision %}{{ decision_by(qs.decision, person) }}{% else %}Answered in an earlier review{% endif %}</span>{% endif %}
       Ask: {{ q.ask_role }}. Priority: {{ q.priority }}.
     </p>
@@ -43,9 +42,9 @@
       <form method="post" action="/transaction-monitoring/runs/{{ thread }}/assume" data-hook="assume-form">
         <input type="hidden" name="brief_digest" value="{{ brief_digest }}">
         <input type="hidden" name="question_id" value="{{ q.id }}">
-        <label for="words-{{ loop.index }}">Or accept it as an assumption, in your words</label>
+        <label for="words-{{ loop.index }}">Or note an assumption beside your answer, in your words</label>
         <textarea id="words-{{ loop.index }}" name="words" required>{{ typed.get("words", "") }}</textarea>
-        <button class="button button-quiet" type="submit" title="Accept this question as an assumption in your words">Accept as an assumption</button>
+        <button class="button button-quiet" type="submit" title="Note an assumption beside your answer, in your words">Note an assumption</button>
       </form>
     </div>
     {% else %}

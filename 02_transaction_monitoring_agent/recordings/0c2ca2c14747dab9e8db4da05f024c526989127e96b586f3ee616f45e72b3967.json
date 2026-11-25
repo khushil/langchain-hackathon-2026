@@ -1,0 +1,104 @@
+{
+ "meta": {
+  "duration_s": 9.246,
+  "init": {
+   "agents": [],
+   "apiKeySource": "none",
+   "claude_code_version": "2.1.302",
+   "mcp_servers": [],
+   "model": "claude-opus-5-5",
+   "plugins": [],
+   "skills": [],
+   "slash_commands": [],
+   "tools": [
+    "StructuredOutput"
+   ]
+  },
+  "recorded_at": "2026-11-25T11:08:07.707107+00:00"
+ },
+ "request": {
+  "effort": "medium",
+  "format": 2,
+  "messages": [
+   {
+    "content": "You check a fraud agent's reasoning about card transactions.\n\nThis is how our human reviewers judged some of the agent's past decisions:\n\n\nJudge this decision the same way.\nTransaction: {'amount': 1800.0, 'channel': 'in_person', 'country': 'SG', 'user_id': 'USR-002', 'category': 'jewellery', 'currency': 'EUR', 'merchant': 'Lumière Jewellers', 'timestamp': '2026-10-09T09:35', 'transaction_id': 'TX-2004'}\nAgent's score: 97\nAgent's reason: In-person purchase in Singapore only 25 minutes after an in-person café purchase in Lisbon, which is impossible travel. The €1,800 jewellery purchase is also well above the usual €400 maximum and outside the customer's usual categories.",
+    "role": "user"
+   }
+  ],
+  "model": "claude-opus-5-5",
+  "schema": {
+   "additionalProperties": false,
+   "properties": {
+    "content": {
+     "description": "Text of the reply; may be empty.",
+     "type": "string"
+    },
+    "tool_calls": {
+     "items": {
+      "anyOf": [
+       {
+        "additionalProperties": false,
+        "description": "",
+        "properties": {
+         "args": {
+          "properties": {
+           "explanation": {
+            "description": "One sentence explaining the verdict",
+            "type": "string"
+           },
+           "sound": {
+            "description": "True if the reasoning is sound and the score is in the right range",
+            "type": "boolean"
+           }
+          },
+          "required": [
+           "sound",
+           "explanation"
+          ],
+          "type": "object"
+         },
+         "name": {
+          "const": "Verdict"
+         }
+        },
+        "required": [
+         "name",
+         "args"
+        ],
+        "type": "object"
+       }
+      ]
+     },
+     "minItems": 1,
+     "type": "array"
+    }
+   },
+   "required": [
+    "content",
+    "tool_calls"
+   ],
+   "type": "object"
+  },
+  "system": ""
+ },
+ "request_sha256": "0c2ca2c14747dab9e8db4da05f024c526989127e96b586f3ee616f45e72b3967",
+ "response": {
+  "content": "Sound: two in-person purchases in Lisbon and Singapore 25 minutes apart is impossible travel, and the amount (about 4.5x the usual maximum) and unusual category back up a score of 97. I couldn't calibrate against your reviewers because their examples weren't included, and the Lisbon purchase and spending history come from the agent's reason, not the transaction data.",
+  "model_reported": "claude-opus-5-5",
+  "tool_calls": [
+   {
+    "args": {
+     "explanation": "Two in-person purchases in Lisbon and Singapore 25 minutes apart is impossible travel, and the amount (about 4.5x the usual EUR 400 maximum) and unusual high-risk category back up a score of 97.",
+     "sound": true
+    },
+    "name": "Verdict"
+   }
+  ],
+  "usage": {
+   "cache_creation_input_tokens": 837,
+   "cache_read_input_tokens": 856,
+   "input_tokens": 2,
+   "output_tokens": 660
+  }
+ }
+}

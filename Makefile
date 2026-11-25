@@ -14,7 +14,7 @@ export REQUIRE_BROWSER = 1
 # The regulation tests fail, rather than skip, when SS1/23 has not been fetched.
 export REQUIRE_REGULATIONS = 1
 
-.PHONY: serve serve-monitoring offline lint test schemas-check examples-check selftest planted-faults dataset-check regulations-check notebook gate
+.PHONY: serve offline lint test schemas-check examples-check selftest planted-faults dataset-check regulations-check notebook gate
 
 lint:
 	$(PYTHON) -m ruff check .
@@ -64,12 +64,6 @@ notebook:
 APP_STATE_DIR ?= $(CURDIR)/.app-state
 serve:
 	APP_STATE_DIR=$(APP_STATE_DIR) PYTHONPATH=fsi_common:03_document_summary_agent $(PYTHON) -m fsi_common.app
-
-# Transaction monitoring on its own, until the application loads every topic into one process. It keeps
-# its state in its own folder, and APP_SEED=transaction-monitoring starts it with a run signed and a run waiting.
-APP_STATE_DIR_MONITORING ?= $(CURDIR)/.app-state-monitoring
-serve-monitoring:
-	APP_TOPICS=$(CURDIR)/02_transaction_monitoring_agent APP_STATE_DIR=$(APP_STATE_DIR_MONITORING) PYTHONPATH=fsi_common:02_transaction_monitoring_agent $(PYTHON) -m fsi_common.app
 
 # The offline edition: the application's pages for the recorded run, in one HTML file.
 # With several topics built, each is read in a process of its own and one file is written for the topic named.

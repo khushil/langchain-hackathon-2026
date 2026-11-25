@@ -26,7 +26,11 @@ KEY_ORDER_LINE = re.compile(r"^\s{4}(transaction_id|risk_score): .*$")
 
 
 def normal(cell):
-    """The text of a cell with its tool-call argument lines in one order."""
+    """The text of a cell with its tool-call argument lines in one order.
+
+    A record run and a replay run of the stand-in write a tool call's arguments in different orders,
+    so this comparison, between those two runs only, ignores the order of the lines of such a cell.
+    """
     lines = text_of(cell).splitlines()
     return "\n".join(sorted(lines) if any(KEY_ORDER_LINE.match(line) for line in lines) else lines)
 
@@ -51,10 +55,12 @@ def recorded(tmp_path_factory):
 
 @needs_run
 def test_every_notebook_runs_top_to_bottom_in_record_mode_and_again_on_replay(recorded):
-    first, second, _ = recorded
+    first, second, recordings = recorded
     for name in NAMES:
-        assert {m for _, m in first[name].call_log} <= {"record"}
+        assert {m for _, m in first[name].call_log} <= {"record", "reused"}, name
         assert {m for _, m in second[name].call_log} == {"replay"}, name
+    live = sum(m == "record" for name in NAMES for _, m in first[name].call_log)
+    assert live == len(list(recordings.glob("*.json")))
 
 
 @needs_run
