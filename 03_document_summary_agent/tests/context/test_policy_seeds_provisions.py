@@ -13,6 +13,7 @@ import pytest
 from policy_support import read_seeds
 
 from context.regulations import manifest, readers
+from context.regulations.fetch import resolve_cache_dir
 from context.text import contains_word_for_word
 
 KEYS = {"DORA": "DORA", "AI Act": "AI-ACT", "SS1/23": "SS1-23"}
@@ -23,7 +24,7 @@ def _available(key: str) -> bool:
     entry = manifest.load_manifest().get(key)
     if entry.text_file:
         return (manifest.REGULATIONS_DIR / entry.text_file).exists()
-    return (manifest.CACHE_DIR / entry.cache_file).exists()
+    return (resolve_cache_dir() / entry.cache_file).exists()
 
 
 def _read(regulation: str):

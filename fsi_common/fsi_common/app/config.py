@@ -9,7 +9,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass, field
 from pathlib import Path
 
-DEFAULT_HOST = "0.0.0.0"
+DEFAULT_HOST = "127.0.0.1"
 DEFAULT_PORT = 4803
 DEFAULT_CHILD_START_SECONDS = 90.0
 COOKIE_PREFIX = "reviewer"
@@ -53,8 +53,10 @@ class AppConfig:
     def from_env(cls, environ: Mapping[str, str] | None = None) -> AppConfig:
         """Read the settings.
 
-        ``APP_HOST`` and ``APP_PORT`` say where to listen, ``APP_SECRET`` signs sessions (a random
-        one is made for each process when it is absent), ``APP_COOKIE`` names the sign-in cookie
+        ``APP_HOST`` and ``APP_PORT`` say where to listen (this machine only, ``127.0.0.1``, on
+        port ``4803`` when absent; ``APP_HOST=0.0.0.0`` listens on every interface),
+        ``APP_SECRET`` signs sessions (a random one is made for each process when it is absent),
+        ``APP_COOKIE`` names the sign-in cookie
         (``reviewer-`` and the port when it is absent), and ``APP_TOPICS`` lists topic folders
         separated as a path is. Without it every topic folder of the repository that holds a
         ``review_app/plugin.py`` is served. ``APP_SEED`` names the topics whose starting work is

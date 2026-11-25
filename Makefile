@@ -14,7 +14,7 @@ export REQUIRE_BROWSER = 1
 # The regulation tests fail, rather than skip, when SS1/23 has not been fetched.
 export REQUIRE_REGULATIONS = 1
 
-.PHONY: serve offline lint test schemas-check examples-check selftest planted-faults dataset-check policy-measures regulations-check notebook gate
+.PHONY: serve offline lint test schemas-check examples-check selftest planted-faults dataset-check policy-measures regulations-check readme-history readme-history-check notebook gate
 
 lint:
 	$(PYTHON) -m ruff check .
@@ -65,9 +65,10 @@ notebook:
 	NOTEBOOK_RUN=1 MODEL_BACKEND=replay $(PYTHON) -m pytest -q -o "pythonpath=fsi_common 03_document_summary_agent" 03_document_summary_agent/tests/notebook
 	NOTEBOOK_RUN=1 MODEL_BACKEND=replay $(PYTHON) -m pytest -q -o "pythonpath=fsi_common 02_transaction_monitoring_agent" 02_transaction_monitoring_agent/tests/notebook
 
-# The reviewer's application, on APP_HOST and APP_PORT (default 0.0.0.0:4803). Its runs, decisions
-# and drafts are kept in files under APP_STATE_DIR, a folder of the repository that git ignores. One
-# topic is served by the application's own process; two or more are each served by a process of their own.
+# The reviewer's application, on APP_HOST and APP_PORT (default 127.0.0.1:4803, this machine only;
+# APP_HOST=0.0.0.0 listens on every interface). Its runs, decisions and drafts are kept in files
+# under APP_STATE_DIR, a folder of the repository that git ignores. One topic is served by the application's own process;
+# two or more are each served by a process of their own.
 APP_STATE_DIR ?= $(CURDIR)/.app-state
 serve:
 	APP_STATE_DIR=$(APP_STATE_DIR) PYTHONPATH=fsi_common:03_document_summary_agent $(PYTHON) -m fsi_common.app
@@ -84,4 +85,16 @@ offline:
 regulations-check:
 	cd 03_document_summary_agent && PYTHONPATH=../fsi_common:. $(abspath $(PYTHON)) -m context.regulations check
 
-gate: lint regulations-check test schemas-check examples-check selftest planted-faults dataset-check notebook
+# The README's sentence on how long the build took and in how many commits, by kind, must be the one
+# git builds for the commit it names. `make readme-history` rewrites the sentence for the current
+# commit; commit the README alone afterwards. `make readme-history-check STRICT=1`, which a tag's
+# gate runs after that, also fails when a commit since the named one changed more than the README.
+# An export or shallow clone has no history; the check then prints a line starting SKIPPED with the
+# reason and passes.
+readme-history:
+	PYTHONPATH=fsi_common $(PYTHON) -m fsi_common.readme_history --write README.md
+
+readme-history-check:
+	PYTHONPATH=fsi_common $(PYTHON) -m fsi_common.readme_history --check README.md $(if $(STRICT),--strict)
+
+gate: lint regulations-check readme-history-check test schemas-check examples-check selftest planted-faults dataset-check notebook

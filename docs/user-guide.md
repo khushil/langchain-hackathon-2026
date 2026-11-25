@@ -14,6 +14,8 @@ The application keeps its briefs, decisions, sign-offs and drafts in the folder 
 
    To start with the starting work of several topics, name them separated by commas, for example `APP_SEED=compliance-brief,kyc-onboarding`; then the home page counts what waits in each. A name that is not a topic served stops the start and names the topics that are.
 
+   Without `APP_HOST` the application listens on this machine only; to listen on another address, set `APP_HOST` to it, for example `APP_HOST=0.0.0.0` for every interface.
+
    Add `PYTHON=/path/to/python` when you did not use `uv sync`. It prints `Uvicorn running on http://127.0.0.1:4821 (Press CTRL+C to quit)`. Open the address it prints in a browser. If it refuses to start and names a folder, the folder holds briefs made from other recordings or by a start that stopped partway; the message names it, says what it holds and prints the command that starts with a fresh folder beside it, leaving the old folder as it is. Stop the application with Ctrl+C.
 2. The home page leads with what waits for a reviewer, in a sentence such as "1 brief is waiting for a reviewer." Under it is one tile for each workflow that is built, headed by the workflow's name and giving how many items of it are waiting; a tile opens that workflow's list.
 3. Look at the bar along the top. It holds "Review desk", "Compliance brief", "Demo", "About" and "Sign in". The word "Demo" marks that the data is fictional.

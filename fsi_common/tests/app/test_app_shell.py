@@ -185,7 +185,9 @@ def test_two_topics_with_one_name_are_refused(tmp_path):
 
 def test_config_reads_the_environment_with_the_documented_defaults():
     config = AppConfig.from_env({"APP_TOPICS": ""})
-    assert (config.host, config.port) == ("0.0.0.0", 4803)
+    assert (config.host, config.port) == ("127.0.0.1", 4803)
+    assert AppConfig().host == "127.0.0.1"
+    assert AppConfig.from_env({"APP_TOPICS": "", "APP_HOST": "0.0.0.0"}).host == "0.0.0.0"
     custom = AppConfig.from_env(
         {"APP_HOST": "127.0.0.1", "APP_PORT": "5000", "APP_SECRET": "s", "APP_TOPICS": "/a:/b"}
     )
@@ -246,3 +248,9 @@ def test_the_module_serves_on_the_host_and_port_the_environment_names(topic_fold
     finally:
         process.terminate()
         process.wait(timeout=10)
+
+
+def test_make_serve_leaves_the_host_to_the_default():
+    makefile = (Path(__file__).resolve().parents[3] / "Makefile").read_text(encoding="utf-8")
+    recipe = makefile.split("\nserve:\n", 1)[1].split("\n\n", 1)[0]
+    assert "APP_HOST" not in recipe and "0.0.0.0" not in recipe

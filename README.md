@@ -80,7 +80,7 @@ runs it top to bottom on the saved calls with no key and no live call, and ends 
 make serve
 ```
 
-starts the application on `APP_HOST` and `APP_PORT`. Without them it listens on every interface of the machine, on the port the comment above the `serve` target in the `Makefile` names. To keep it to your own machine, start it as `APP_HOST=127.0.0.1 APP_PORT=4821 make serve`, which prints `Uvicorn running on http://127.0.0.1:4821 (Press CTRL+C to quit)`, and open that address. Add `PYTHON=/path/to/python` when you did not use `uv sync`.
+starts the application on `APP_HOST` and `APP_PORT`. Without them it listens on this machine only, at `http://127.0.0.1:4803`. To change the port, start it as `APP_PORT=4821 make serve`, which prints `Uvicorn running on http://127.0.0.1:4821 (Press CTRL+C to quit)`, and open that address. To listen on another address, set `APP_HOST`: `APP_HOST=0.0.0.0 make serve` listens on every interface, so anyone who can reach the machine can reach the sign-in. Add `PYTHON=/path/to/python` when you did not use `uv sync`.
 
 With `MODEL_BACKEND` at its default of `replay`, the application can only start a brief that has saved calls, which is the whole of PS26-4, all ten sections, for Harbour Mutual Bank; a brief on part of the document stops with the reason "No saved answer is held for part of this brief, so it could not be written here." With `MODEL_BACKEND=claude-code` in `.env`, any sections or the whole document can be started and each brief's model calls run on headless Claude Code.
 
@@ -284,9 +284,9 @@ Two independent labelling agents each read every paragraph of PS26-4, working to
 
 ## How it was built
 
-The first build ran from 18:37 to 20:55 UTC on 24 November 2026, 2 hours 17 minutes, in 16 commits; the history since is in `git log`. The record types and the model seam came first and were fixed before anything else was built on them, so that the parts could be built side by side without disagreeing about a record. The repository shows the rest of the method in its tests: a suite for every part, a planted fault for every check, and one command, `make gate`, that runs them all.
+The build up to commit `1f0ba2e` ran from 18:37 UTC on 24 November 2026 to 13:41 UTC on 25 November 2026, 19 hours 3 minutes, in 59 commits (33 feat, 11 fix, 7 build, 7 docs, 1 test). The record types and the model seam came first and were fixed before anything else was built on them, so that the parts could be built side by side without disagreeing about a record. The repository shows the rest of the method in its tests: a suite for every part, a planted fault for every check, and one command, `make gate`, that runs them all.
 
-By commit time, the parts of the first build landed in this order:
+By commit time on 24 November 2026, the first parts landed in this order:
 
 1. 18:37, the workspace layout, the shared records and the model seam.
 2. 18:57, the reference dataset, the code evaluators and the planted faults.
