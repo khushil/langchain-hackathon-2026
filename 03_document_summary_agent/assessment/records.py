@@ -347,6 +347,11 @@ class BundleIndex(Part):
         description="The obligation ids the run assessed; empty means every applicable one. Only "
         "a fake run may narrow it."
     )
+    instructions_digest: str | None = Field(
+        default=None,
+        description="sha256 of the judge's instructions file the run used; None for a fake run "
+        "or a bundle made before the field existed",
+    )
     not_included: list[NotIncluded] = Field(
         default_factory=list,
         description="Regulations the run left out, each with its reason and the commands that "
