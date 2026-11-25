@@ -1,0 +1,42 @@
+{
+ "meta": {
+  "duration_s": 6.518,
+  "init": {
+   "agents": [],
+   "apiKeySource": "none",
+   "claude_code_version": "2.1.302",
+   "mcp_servers": [],
+   "model": "claude-opus-5-5",
+   "plugins": [],
+   "skills": [],
+   "slash_commands": [],
+   "tools": []
+  },
+  "recorded_at": "2026-11-25T08:24:42.510937+00:00"
+ },
+ "request": {
+  "effort": "medium",
+  "format": 2,
+  "messages": [
+   {
+    "content": "\nYou are a KYC compliance analyst. Write a short decision memo (under 120 words) for the audit file.\n\nCustomer profile: {'full_name': 'Isabelle Fontaine', 'date_of_birth': '1968-07-11', 'nationality': 'French', 'occupation': 'Angel investor', 'source_of_funds': 'Proceeds from the sale of her software company ($750,000 deposit)'}\nScreening hits: None\nRisk level: low\nDecision: approve (by system)\nReviewer notes: Low risk, approved automatically.\n\nSay who the customer is, what screening found, the risk level, and the final decision with its reason.\nUse only the facts above.",
+    "role": "user"
+   }
+  ],
+  "model": "claude-opus-5-5",
+  "schema": null,
+  "system": ""
+ },
+ "request_sha256": "e3b7fd223010b297e2651cac4f9528dc765445da61b2679413d6dd1a190b73c1",
+ "response": {
+  "content": "**KYC Decision Memo**\n\n**Customer:** Isabelle Fontaine, French national, born 11 July 1968. Occupation: angel investor.\n\n**Source of Funds:** $750,000 deposit from the proceeds of the sale of her software company.\n\n**Screening:** No hits returned.\n\n**Risk Level:** Low.\n\n**Decision:** Approved automatically by the system. The approval rests on the low-risk rating and the absence of any screening hits. Reviewer notes record: \"Low risk, approved automatically.\"",
+  "model_reported": "claude-opus-5-5",
+  "tool_calls": [],
+  "usage": {
+   "cache_creation_input_tokens": 749,
+   "cache_read_input_tokens": 0,
+   "input_tokens": 2,
+   "output_tokens": 234
+  }
+ }
+}

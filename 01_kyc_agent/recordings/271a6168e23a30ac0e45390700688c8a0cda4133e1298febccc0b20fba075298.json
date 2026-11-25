@@ -1,0 +1,122 @@
+{
+ "meta": {
+  "duration_s": 3.143,
+  "init": {
+   "agents": [],
+   "apiKeySource": "none",
+   "claude_code_version": "2.1.302",
+   "mcp_servers": [],
+   "model": "claude-sonnet-5-5",
+   "plugins": [],
+   "skills": [],
+   "slash_commands": [],
+   "tools": [
+    "StructuredOutput"
+   ]
+  },
+  "recorded_at": "2026-11-25T08:24:56.945865+00:00"
+ },
+ "request": {
+  "effort": "medium",
+  "format": 2,
+  "messages": [
+   {
+    "content": "Extract the customer's details from this account application.\n\nName: Sofia Marchetti. Born 22 September 1992. Italian citizen studying for a master's degree in Madrid. My scholarship and family support pay for everything, about $1,500 a month. I'd like a student current account.",
+    "role": "user"
+   }
+  ],
+  "model": "claude-sonnet-5-5",
+  "schema": {
+   "additionalProperties": false,
+   "properties": {
+    "content": {
+     "description": "Text of the reply; may be empty.",
+     "type": "string"
+    },
+    "tool_calls": {
+     "items": {
+      "anyOf": [
+       {
+        "additionalProperties": false,
+        "description": "Identity details from a customer's account application.\n    ",
+        "properties": {
+         "args": {
+          "properties": {
+           "date_of_birth": {
+            "description": "Date of birth in YYYY-MM-DD format",
+            "type": "string"
+           },
+           "full_name": {
+            "description": "The customer's full name, exactly as written",
+            "type": "string"
+           },
+           "nationality": {
+            "description": "Country of citizenship, e.g. 'British'",
+            "type": "string"
+           },
+           "occupation": {
+            "description": "Job title or role",
+            "type": "string"
+           },
+           "source_of_funds": {
+            "description": "Where the money they will deposit comes from",
+            "type": "string"
+           }
+          },
+          "required": [
+           "full_name",
+           "date_of_birth",
+           "nationality",
+           "occupation",
+           "source_of_funds"
+          ],
+          "type": "object"
+         },
+         "name": {
+          "const": "CustomerProfile"
+         }
+        },
+        "required": [
+         "name",
+         "args"
+        ],
+        "type": "object"
+       }
+      ]
+     },
+     "minItems": 1,
+     "type": "array"
+    }
+   },
+   "required": [
+    "content",
+    "tool_calls"
+   ],
+   "type": "object"
+  },
+  "system": ""
+ },
+ "request_sha256": "271a6168e23a30ac0e45390700688c8a0cda4133e1298febccc0b20fba075298",
+ "response": {
+  "content": "I've extracted the customer's details from the application.",
+  "model_reported": "claude-sonnet-5-5",
+  "tool_calls": [
+   {
+    "args": {
+     "date_of_birth": "1992-09-22",
+     "full_name": "Sofia Marchetti",
+     "nationality": "Italian",
+     "occupation": "Student (master's degree student in Madrid)",
+     "source_of_funds": "Scholarship and family support, about $1,500 a month"
+    },
+    "name": "CustomerProfile"
+   }
+  ],
+  "usage": {
+   "cache_creation_input_tokens": 652,
+   "cache_read_input_tokens": 1008,
+   "input_tokens": 2,
+   "output_tokens": 194
+  }
+ }
+}

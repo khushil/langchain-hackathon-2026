@@ -1,0 +1,42 @@
+{
+ "meta": {
+  "duration_s": 2.702,
+  "init": {
+   "agents": [],
+   "apiKeySource": "none",
+   "claude_code_version": "2.1.302",
+   "mcp_servers": [],
+   "model": "claude-sonnet-5-5",
+   "plugins": [],
+   "skills": [],
+   "slash_commands": [],
+   "tools": []
+  },
+  "recorded_at": "2026-11-25T08:21:32.787722+00:00"
+ },
+ "request": {
+  "effort": "medium",
+  "format": 2,
+  "messages": [
+   {
+    "content": "Say hello to the KYC hackathon in one sentence.",
+    "role": "user"
+   }
+  ],
+  "model": "claude-sonnet-5-5",
+  "schema": null,
+  "system": ""
+ },
+ "request_sha256": "1b4bee741c96ff1c7b76c90f9214860dbc56f2575e8dfc26aaaddb04d0094112",
+ "response": {
+  "content": "Hello, KYC hackathon. Here's to sharper identity checks, smoother onboarding, and a few clever ideas that make compliance a little less painful for everyone. 👋",
+  "model_reported": "claude-sonnet-5-5",
+  "tool_calls": [],
+  "usage": {
+   "cache_creation_input_tokens": 551,
+   "cache_read_input_tokens": 0,
+   "input_tokens": 2,
+   "output_tokens": 60
+  }
+ }
+}

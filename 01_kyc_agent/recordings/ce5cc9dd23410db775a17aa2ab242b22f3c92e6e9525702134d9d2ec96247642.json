@@ -1,0 +1,122 @@
+{
+ "meta": {
+  "duration_s": 2.858,
+  "init": {
+   "agents": [],
+   "apiKeySource": "none",
+   "claude_code_version": "2.1.302",
+   "mcp_servers": [],
+   "model": "claude-sonnet-5-5",
+   "plugins": [],
+   "skills": [],
+   "slash_commands": [],
+   "tools": [
+    "StructuredOutput"
+   ]
+  },
+  "recorded_at": "2026-11-25T08:23:18.128352+00:00"
+ },
+ "request": {
+  "effort": "medium",
+  "format": 2,
+  "messages": [
+   {
+    "content": "Extract the customer's details from this account application.\n\nNew account application. My name is Tomas Verretti, born 4 February 1980. Valdorian citizen. I am a Member of Parliament for a district in southern Valdoria. I will deposit about $120,000 from my salary and the sale of a vehicle.",
+    "role": "user"
+   }
+  ],
+  "model": "claude-sonnet-5-5",
+  "schema": {
+   "additionalProperties": false,
+   "properties": {
+    "content": {
+     "description": "Text of the reply; may be empty.",
+     "type": "string"
+    },
+    "tool_calls": {
+     "items": {
+      "anyOf": [
+       {
+        "additionalProperties": false,
+        "description": "Identity details from a customer's account application.\n    ",
+        "properties": {
+         "args": {
+          "properties": {
+           "date_of_birth": {
+            "description": "Date of birth in YYYY-MM-DD format",
+            "type": "string"
+           },
+           "full_name": {
+            "description": "The customer's full name, exactly as written",
+            "type": "string"
+           },
+           "nationality": {
+            "description": "Country of citizenship, e.g. 'British'",
+            "type": "string"
+           },
+           "occupation": {
+            "description": "Job title or role",
+            "type": "string"
+           },
+           "source_of_funds": {
+            "description": "Where the money they will deposit comes from",
+            "type": "string"
+           }
+          },
+          "required": [
+           "full_name",
+           "date_of_birth",
+           "nationality",
+           "occupation",
+           "source_of_funds"
+          ],
+          "type": "object"
+         },
+         "name": {
+          "const": "CustomerProfile"
+         }
+        },
+        "required": [
+         "name",
+         "args"
+        ],
+        "type": "object"
+       }
+      ]
+     },
+     "minItems": 1,
+     "type": "array"
+    }
+   },
+   "required": [
+    "content",
+    "tool_calls"
+   ],
+   "type": "object"
+  },
+  "system": ""
+ },
+ "request_sha256": "ce5cc9dd23410db775a17aa2ab242b22f3c92e6e9525702134d9d2ec96247642",
+ "response": {
+  "content": "I've extracted the customer details from the application.",
+  "model_reported": "claude-sonnet-5-5",
+  "tool_calls": [
+   {
+    "args": {
+     "date_of_birth": "1980-02-04",
+     "full_name": "Tomas Verretti",
+     "nationality": "Valdorian",
+     "occupation": "Member of Parliament for a district in southern Valdoria",
+     "source_of_funds": "Salary and sale of a vehicle (approximately $120,000 total)"
+    },
+    "name": "CustomerProfile"
+   }
+  ],
+  "usage": {
+   "cache_creation_input_tokens": 659,
+   "cache_read_input_tokens": 1008,
+   "input_tokens": 2,
+   "output_tokens": 204
+  }
+ }
+}

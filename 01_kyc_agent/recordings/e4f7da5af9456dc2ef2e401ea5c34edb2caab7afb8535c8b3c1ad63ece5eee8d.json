@@ -1,0 +1,42 @@
+{
+ "meta": {
+  "duration_s": 4.815,
+  "init": {
+   "agents": [],
+   "apiKeySource": "none",
+   "claude_code_version": "2.1.302",
+   "mcp_servers": [],
+   "model": "claude-opus-5-5",
+   "plugins": [],
+   "skills": [],
+   "slash_commands": [],
+   "tools": []
+  },
+  "recorded_at": "2026-11-25T08:23:38.198310+00:00"
+ },
+ "request": {
+  "effort": "medium",
+  "format": 2,
+  "messages": [
+   {
+    "content": "\nYou are a KYC compliance analyst. Write a short decision memo (under 120 words) for the audit file.\n\nCustomer profile: {'full_name': 'Marta Harlan', 'date_of_birth': '1971-03-17', 'nationality': 'Valdorian', 'occupation': 'Homemaker', 'source_of_funds': \"Husband's salary and family savings, approximately $90,000\"}\nScreening hits: None\nRisk level: low\nDecision: approve (by system)\nReviewer notes: Low risk, approved automatically.\n\nSay who the customer is, what screening found, the risk level, and the final decision with its reason.\nUse only the facts above.",
+    "role": "user"
+   }
+  ],
+  "model": "claude-opus-5-5",
+  "schema": null,
+  "system": ""
+ },
+ "request_sha256": "e4f7da5af9456dc2ef2e401ea5c34edb2caab7afb8535c8b3c1ad63ece5eee8d",
+ "response": {
+  "content": "**KYC Decision Memo**\n\n**Customer:** Marta Harlan, born 17 March 1971, Valdorian national. Occupation: Homemaker. Declared source of funds: husband's salary and family savings, approximately $90,000.\n\n**Screening:** No hits returned.\n\n**Risk Level:** Low.\n\n**Decision:** Approved automatically by the system. The reviewer notes the approval was based on the low risk rating.",
+  "model_reported": "claude-opus-5-5",
+  "tool_calls": [],
+  "usage": {
+   "cache_creation_input_tokens": 744,
+   "cache_read_input_tokens": 0,
+   "input_tokens": 2,
+   "output_tokens": 210
+  }
+ }
+}

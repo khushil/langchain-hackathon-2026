@@ -1,0 +1,42 @@
+{
+ "meta": {
+  "duration_s": 4.886,
+  "init": {
+   "agents": [],
+   "apiKeySource": "none",
+   "claude_code_version": "2.1.302",
+   "mcp_servers": [],
+   "model": "claude-opus-5-5",
+   "plugins": [],
+   "skills": [],
+   "slash_commands": [],
+   "tools": []
+  },
+  "recorded_at": "2026-11-25T08:22:56.721863+00:00"
+ },
+ "request": {
+  "effort": "medium",
+  "format": 2,
+  "messages": [
+   {
+    "content": "\nYou are a KYC compliance analyst. Write a short decision memo (under 120 words) for the audit file.\n\nCustomer profile: {'full_name': 'Lars Eriksson', 'date_of_birth': '1971-12-12', 'nationality': 'Swedish', 'occupation': 'Owner of a small bicycle repair shop', 'source_of_funds': 'Sales revenue from bicycle repair shop (approx. $15,000 per month)'}\nScreening hits: None\nRisk level: low\nDecision: approve (by system)\nReviewer notes: Low risk, approved automatically.\n\nSay who the customer is, what screening found, the risk level, and the final decision with its reason.\nUse only the facts above.",
+    "role": "user"
+   }
+  ],
+  "model": "claude-opus-5-5",
+  "schema": null,
+  "system": ""
+ },
+ "request_sha256": "592d79e49c362f64f4c10f88ea1d7a057cb7cbfb05bed074b45ca791b0c061db",
+ "response": {
+  "content": "**KYC Decision Memo**\n\n**Customer:** Lars Eriksson, Swedish national, born 12 December 1971. He owns a small bicycle repair shop. His stated source of funds is sales revenue from the shop, about $15,000 per month.\n\n**Screening:** No hits were returned.\n\n**Risk Level:** Low.\n\n**Decision:** Approved automatically by the system. The approval rests on the absence of screening hits and the low-risk assessment. The reviewer's note reads: \"Low risk, approved automatically.\"",
+  "model_reported": "claude-opus-5-5",
+  "tool_calls": [],
+  "usage": {
+   "cache_creation_input_tokens": 763,
+   "cache_read_input_tokens": 0,
+   "input_tokens": 2,
+   "output_tokens": 201
+  }
+ }
+}

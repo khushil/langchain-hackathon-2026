@@ -1,0 +1,122 @@
+{
+ "meta": {
+  "duration_s": 3.164,
+  "init": {
+   "agents": [],
+   "apiKeySource": "none",
+   "claude_code_version": "2.1.302",
+   "mcp_servers": [],
+   "model": "claude-sonnet-5-5",
+   "plugins": [],
+   "skills": [],
+   "slash_commands": [],
+   "tools": [
+    "StructuredOutput"
+   ]
+  },
+  "recorded_at": "2026-11-25T08:23:35.023681+00:00"
+ },
+ "request": {
+  "effort": "medium",
+  "format": 2,
+  "messages": [
+   {
+    "content": "Extract the customer's details from this account application.\n\nApplicant: Marta Harlan. Date of birth: 17 March 1971. Valdorian national. I'm a homemaker and my husband is a senior government official in Valdoria. Funds will come from my husband's salary and family savings, about $90,000.",
+    "role": "user"
+   }
+  ],
+  "model": "claude-sonnet-5-5",
+  "schema": {
+   "additionalProperties": false,
+   "properties": {
+    "content": {
+     "description": "Text of the reply; may be empty.",
+     "type": "string"
+    },
+    "tool_calls": {
+     "items": {
+      "anyOf": [
+       {
+        "additionalProperties": false,
+        "description": "Identity details from a customer's account application.\n    ",
+        "properties": {
+         "args": {
+          "properties": {
+           "date_of_birth": {
+            "description": "Date of birth in YYYY-MM-DD format",
+            "type": "string"
+           },
+           "full_name": {
+            "description": "The customer's full name, exactly as written",
+            "type": "string"
+           },
+           "nationality": {
+            "description": "Country of citizenship, e.g. 'British'",
+            "type": "string"
+           },
+           "occupation": {
+            "description": "Job title or role",
+            "type": "string"
+           },
+           "source_of_funds": {
+            "description": "Where the money they will deposit comes from",
+            "type": "string"
+           }
+          },
+          "required": [
+           "full_name",
+           "date_of_birth",
+           "nationality",
+           "occupation",
+           "source_of_funds"
+          ],
+          "type": "object"
+         },
+         "name": {
+          "const": "CustomerProfile"
+         }
+        },
+        "required": [
+         "name",
+         "args"
+        ],
+        "type": "object"
+       }
+      ]
+     },
+     "minItems": 1,
+     "type": "array"
+    }
+   },
+   "required": [
+    "content",
+    "tool_calls"
+   ],
+   "type": "object"
+  },
+  "system": ""
+ },
+ "request_sha256": "db007bbb36bae5513e84dfeb1ff84919d47dd510b166a4b02bc2a8df3b581e60",
+ "response": {
+  "content": "I've extracted the details from the application. The applicant says her husband is a senior government official in Valdoria. That may make her a politically exposed person (PEP) associate, so you may need enhanced due diligence.",
+  "model_reported": "claude-sonnet-5-5",
+  "tool_calls": [
+   {
+    "args": {
+     "date_of_birth": "1971-03-17",
+     "full_name": "Marta Harlan",
+     "nationality": "Valdorian",
+     "occupation": "Homemaker",
+     "source_of_funds": "Husband's salary and family savings, approximately $90,000"
+    },
+    "name": "CustomerProfile"
+   }
+  ],
+  "usage": {
+   "cache_creation_input_tokens": 659,
+   "cache_read_input_tokens": 1008,
+   "input_tokens": 2,
+   "output_tokens": 236
+  }
+ }
+}

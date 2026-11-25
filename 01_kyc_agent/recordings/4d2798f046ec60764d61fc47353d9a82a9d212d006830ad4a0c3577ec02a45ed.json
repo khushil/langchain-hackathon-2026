@@ -1,0 +1,42 @@
+{
+ "meta": {
+  "duration_s": 5.75,
+  "init": {
+   "agents": [],
+   "apiKeySource": "none",
+   "claude_code_version": "2.1.302",
+   "mcp_servers": [],
+   "model": "claude-opus-5-5",
+   "plugins": [],
+   "skills": [],
+   "slash_commands": [],
+   "tools": []
+  },
+  "recorded_at": "2026-11-25T08:23:21.015770+00:00"
+ },
+ "request": {
+  "effort": "medium",
+  "format": 2,
+  "messages": [
+   {
+    "content": "\nYou are a KYC compliance analyst. Write a short decision memo (under 120 words) for the audit file.\n\nCustomer profile: {'full_name': 'Tomas Verretti', 'date_of_birth': '1980-02-04', 'nationality': 'Valdorian', 'occupation': 'Member of Parliament for a district in southern Valdoria', 'source_of_funds': 'Salary and sale of a vehicle (approximately $120,000 total)'}\nScreening hits: [{'list': 'pep', 'matched_name': 'Tomas Veretti', 'score': 0.96, 'details': 'Member of Parliament, Valdoria'}]\nRisk level: high\nDecision: approve (by human)\nReviewer notes: PEP accepted with enhanced monitoring.\n\nSay who the customer is, what screening found, the risk level, and the final decision with its reason.\nUse only the facts above.",
+    "role": "user"
+   }
+  ],
+  "model": "claude-opus-5-5",
+  "schema": null,
+  "system": ""
+ },
+ "request_sha256": "4d2798f046ec60764d61fc47353d9a82a9d212d006830ad4a0c3577ec02a45ed",
+ "response": {
+  "content": "**KYC Decision Memo: Tomas Verretti**\n\n**Customer:** Tomas Verretti, born 1980-02-04, Valdorian national. He is a Member of Parliament for a district in southern Valdoria. His declared source of funds is salary and the sale of a vehicle, approximately $120,000 in total.\n\n**Screening:** One PEP list hit, matched name \"Tomas Veretti\" (score 0.96), described as a Member of Parliament in Valdoria. The matched spelling differs slightly from the customer's name, but the hit is consistent with his declared occupation.\n\n**Risk Level:** High.\n\n**Decision:** Approved by a human reviewer. The reviewer accepted the customer's PEP status and made approval conditional on enhanced monitoring.",
+  "model_reported": "claude-opus-5-5",
+  "tool_calls": [],
+  "usage": {
+   "cache_creation_input_tokens": 827,
+   "cache_read_input_tokens": 0,
+   "input_tokens": 2,
+   "output_tokens": 322
+  }
+ }
+}

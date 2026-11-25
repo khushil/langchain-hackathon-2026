@@ -1,0 +1,42 @@
+{
+ "meta": {
+  "duration_s": 4.881,
+  "init": {
+   "agents": [],
+   "apiKeySource": "none",
+   "claude_code_version": "2.1.302",
+   "mcp_servers": [],
+   "model": "claude-opus-5-5",
+   "plugins": [],
+   "skills": [],
+   "slash_commands": [],
+   "tools": []
+  },
+  "recorded_at": "2026-11-25T08:22:26.178064+00:00"
+ },
+ "request": {
+  "effort": "medium",
+  "format": 2,
+  "messages": [
+   {
+    "content": "\nYou are a KYC compliance analyst. Write a short decision memo (under 120 words) for the audit file.\n\nCustomer profile: {'full_name': 'Omar Haddad', 'date_of_birth': '1983-08-15', 'nationality': 'Canadian', 'occupation': 'Dentist (runs own practice in Toronto)', 'source_of_funds': 'Profits from his own dental practice'}\nScreening hits: None\nRisk level: low\nDecision: approve (by system)\nReviewer notes: Low risk, approved automatically.\n\nSay who the customer is, what screening found, the risk level, and the final decision with its reason.\nUse only the facts above.",
+    "role": "user"
+   }
+  ],
+  "model": "claude-opus-5-5",
+  "schema": null,
+  "system": ""
+ },
+ "request_sha256": "f7260042616e67d245f44d44d7cf659228a42672035e1fadd794efca14d91288",
+ "response": {
+  "content": "**KYC Decision Memo**\n\n**Customer:** Omar Haddad, Canadian national, born 15 August 1983. He is a dentist who runs his own practice in Toronto. His declared source of funds is profits from that dental practice.\n\n**Screening:** No hits returned.\n\n**Risk Level:** Low.\n\n**Decision:** Approved, automatically by the system. The approval reflects the low-risk assessment and clear screening. The reviewer noted the case as low risk and approved automatically. The file records no further rationale.",
+  "model_reported": "claude-opus-5-5",
+  "tool_calls": [],
+  "usage": {
+   "cache_creation_input_tokens": 747,
+   "cache_read_input_tokens": 0,
+   "input_tokens": 2,
+   "output_tokens": 171
+  }
+ }
+}

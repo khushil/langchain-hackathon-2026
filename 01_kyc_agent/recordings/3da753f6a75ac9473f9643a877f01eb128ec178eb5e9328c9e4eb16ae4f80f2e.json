@@ -1,0 +1,42 @@
+{
+ "meta": {
+  "duration_s": 5.192,
+  "init": {
+   "agents": [],
+   "apiKeySource": "none",
+   "claude_code_version": "2.1.302",
+   "mcp_servers": [],
+   "model": "claude-opus-5-5",
+   "plugins": [],
+   "skills": [],
+   "slash_commands": [],
+   "tools": []
+  },
+  "recorded_at": "2026-11-25T08:25:09.038638+00:00"
+ },
+ "request": {
+  "effort": "medium",
+  "format": 2,
+  "messages": [
+   {
+    "content": "\nYou are a KYC compliance analyst. Write a short decision memo (under 120 words) for the audit file.\n\nCustomer profile: {'full_name': 'Lena Brandvold', 'date_of_birth': '1982-01-23', 'nationality': 'Karvonian', 'occupation': 'Charity programme manager', 'source_of_funds': 'Donations collected for community projects, about $200,000 a year'}\nScreening hits: [{'list': 'sanctions', 'matched_name': 'Lena Brandvold', 'score': 1.0, 'date_of_birth_matches': True, 'details': 'Terrorist financing'}]\nRisk level: high\nDecision: reject (by human)\nReviewer notes: Sanctions match.\n\nSay who the customer is, what screening found, the risk level, and the final decision with its reason.\nUse only the facts above.",
+    "role": "user"
+   }
+  ],
+  "model": "claude-opus-5-5",
+  "schema": null,
+  "system": ""
+ },
+ "request_sha256": "3da753f6a75ac9473f9643a877f01eb128ec178eb5e9328c9e4eb16ae4f80f2e",
+ "response": {
+  "content": "**KYC Decision Memo – Audit File**\n\n**Customer:** Lena Brandvold, born 1982-01-23, Karvonian national. Charity programme manager. Stated source of funds is donations collected for community projects, about $200,000 a year.\n\n**Screening:** One sanctions list hit on \"Lena Brandvold\", match score 1.0, date of birth confirmed as matching. Listed reason: terrorist financing.\n\n**Risk level:** High.\n\n**Decision:** Reject. A human reviewer made the decision, citing the sanctions match.\n\n**Rationale:** The name matches exactly and the date of birth also matches, so the hit is treated as a true positive against a terrorist-financing sanctions listing. Onboarding is declined.",
+  "model_reported": "claude-opus-5-5",
+  "tool_calls": [],
+  "usage": {
+   "cache_creation_input_tokens": 812,
+   "cache_read_input_tokens": 0,
+   "input_tokens": 2,
+   "output_tokens": 245
+  }
+ }
+}

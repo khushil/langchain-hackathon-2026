@@ -1,0 +1,122 @@
+{
+ "meta": {
+  "duration_s": 2.877,
+  "init": {
+   "agents": [],
+   "apiKeySource": "none",
+   "claude_code_version": "2.1.302",
+   "mcp_servers": [],
+   "model": "claude-sonnet-5-5",
+   "plugins": [],
+   "skills": [],
+   "slash_commands": [],
+   "tools": [
+    "StructuredOutput"
+   ]
+  },
+  "recorded_at": "2026-11-25T08:21:35.539561+00:00"
+ },
+ "request": {
+  "effort": "medium",
+  "format": 2,
+  "messages": [
+   {
+    "content": "Hello, I'd like to open a private banking account. Name: Dmitri Volkonsky. Born 11 September 1975. Citizenship: Karvonian. Occupation: director of a commodities trading firm. I expect to deposit $2,000,000 from business profits.",
+    "role": "user"
+   }
+  ],
+  "model": "claude-sonnet-5-5",
+  "schema": {
+   "additionalProperties": false,
+   "properties": {
+    "content": {
+     "description": "Text of the reply; may be empty.",
+     "type": "string"
+    },
+    "tool_calls": {
+     "items": {
+      "anyOf": [
+       {
+        "additionalProperties": false,
+        "description": "Identity details from a customer's account application.\n    ",
+        "properties": {
+         "args": {
+          "properties": {
+           "date_of_birth": {
+            "description": "Date of birth in YYYY-MM-DD format",
+            "type": "string"
+           },
+           "full_name": {
+            "description": "The customer's full name, exactly as written",
+            "type": "string"
+           },
+           "nationality": {
+            "description": "Country of citizenship, e.g. 'British'",
+            "type": "string"
+           },
+           "occupation": {
+            "description": "Job title or role",
+            "type": "string"
+           },
+           "source_of_funds": {
+            "description": "Where the money they will deposit comes from",
+            "type": "string"
+           }
+          },
+          "required": [
+           "full_name",
+           "date_of_birth",
+           "nationality",
+           "occupation",
+           "source_of_funds"
+          ],
+          "type": "object"
+         },
+         "name": {
+          "const": "CustomerProfile"
+         }
+        },
+        "required": [
+         "name",
+         "args"
+        ],
+        "type": "object"
+       }
+      ]
+     },
+     "minItems": 1,
+     "type": "array"
+    }
+   },
+   "required": [
+    "content",
+    "tool_calls"
+   ],
+   "type": "object"
+  },
+  "system": ""
+ },
+ "request_sha256": "75c5ad6094c4c3f871c391302682cea4bc33c6d4bc0a516cb4b9216573468e7f",
+ "response": {
+  "content": "Thank you, Mr Volkonsky. I'm submitting your application details now.",
+  "model_reported": "claude-sonnet-5-5",
+  "tool_calls": [
+   {
+    "args": {
+     "date_of_birth": "1975-09-11",
+     "full_name": "Dmitri Volkonsky",
+     "nationality": "Karvonian",
+     "occupation": "Director of a commodities trading firm",
+     "source_of_funds": "Business profits from commodities trading firm (approx. $2,000,000 initial deposit)"
+    },
+    "name": "CustomerProfile"
+   }
+  ],
+  "usage": {
+   "cache_creation_input_tokens": 651,
+   "cache_read_input_tokens": 1008,
+   "input_tokens": 2,
+   "output_tokens": 219
+  }
+ }
+}

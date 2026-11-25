@@ -1,0 +1,42 @@
+{
+ "meta": {
+  "duration_s": 7.248,
+  "init": {
+   "agents": [],
+   "apiKeySource": "none",
+   "claude_code_version": "2.1.302",
+   "mcp_servers": [],
+   "model": "claude-opus-5-5",
+   "plugins": [],
+   "skills": [],
+   "slash_commands": [],
+   "tools": []
+  },
+  "recorded_at": "2026-11-25T08:24:02.972259+00:00"
+ },
+ "request": {
+  "effort": "medium",
+  "format": 2,
+  "messages": [
+   {
+    "content": "\nYou are a KYC compliance analyst. Write a short decision memo (under 120 words) for the audit file.\n\nCustomer profile: {'full_name': 'Ivana Strahov', 'date_of_birth': '1996-03-14', 'nationality': 'British', 'occupation': 'University student', 'source_of_funds': 'Student loan and part-time job at a cafe, about $1,100 a month'}\nScreening hits: [{'list': 'sanctions', 'matched_name': 'Ivana Strahov', 'score': 1.0, 'date_of_birth_matches': False, 'details': 'Ostmark asset freeze'}]\nRisk level: high\nDecision: reject (by human)\nReviewer notes: Sanctions match.\n\nSay who the customer is, what screening found, the risk level, and the final decision with its reason.\nUse only the facts above.",
+    "role": "user"
+   }
+  ],
+  "model": "claude-opus-5-5",
+  "schema": null,
+  "system": ""
+ },
+ "request_sha256": "f904cff398d8fa2023fcf2e5a156e17491e2ed578de1c5446dc1dad068d04683",
+ "response": {
+  "content": "**KYC Decision Memo**\n\n**Customer:** Ivana Strahov, British national, born 1996-03-14. University student; source of funds is a student loan and part-time cafe work (about $1,100/month).\n\n**Screening:** One sanctions-list hit against \"Ivana Strahov\" (Ostmark asset freeze). Name match score 1.0; **date of birth does not match**.\n\n**Risk level:** High.\n\n**Decision:** Reject (human reviewer). Recorded reason: \"Sanctions match.\" The reviewer notes do not address the date-of-birth mismatch.\n\n---\n\n*Note for you (not part of the memo):* The only hit is a name-only match with a non-matching DOB, and the rejection rationale doesn't explain how it was treated as a true match. You may want the reviewer to document that before the file is closed, so the audit trail supports the decision.",
+  "model_reported": "claude-opus-5-5",
+  "tool_calls": [],
+  "usage": {
+   "cache_creation_input_tokens": 811,
+   "cache_read_input_tokens": 0,
+   "input_tokens": 2,
+   "output_tokens": 383
+  }
+ }
+}

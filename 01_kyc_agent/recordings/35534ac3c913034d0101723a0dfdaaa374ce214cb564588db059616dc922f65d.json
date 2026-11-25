@@ -1,0 +1,122 @@
+{
+ "meta": {
+  "duration_s": 3.055,
+  "init": {
+   "agents": [],
+   "apiKeySource": "none",
+   "claude_code_version": "2.1.302",
+   "mcp_servers": [],
+   "model": "claude-sonnet-5-5",
+   "plugins": [],
+   "skills": [],
+   "slash_commands": [],
+   "tools": [
+    "StructuredOutput"
+   ]
+  },
+  "recorded_at": "2026-11-25T08:21:38.542905+00:00"
+ },
+ "request": {
+  "effort": "medium",
+  "format": 2,
+  "messages": [
+   {
+    "content": "Extract the customer's details from this account application.\n\nApplicant: Viktor Harlan. Date of birth: 2 July 1968. Nationality: Valdorian. I currently serve as Deputy Minister of Finance for the Republic of Valdoria. Funds will come from my government salary and the sale of a family property, about $250,000 to start.",
+    "role": "user"
+   }
+  ],
+  "model": "claude-sonnet-5-5",
+  "schema": {
+   "additionalProperties": false,
+   "properties": {
+    "content": {
+     "description": "Text of the reply; may be empty.",
+     "type": "string"
+    },
+    "tool_calls": {
+     "items": {
+      "anyOf": [
+       {
+        "additionalProperties": false,
+        "description": "Identity details from a customer's account application.\n    ",
+        "properties": {
+         "args": {
+          "properties": {
+           "date_of_birth": {
+            "description": "Date of birth in YYYY-MM-DD format",
+            "type": "string"
+           },
+           "full_name": {
+            "description": "The customer's full name, exactly as written",
+            "type": "string"
+           },
+           "nationality": {
+            "description": "Country of citizenship, e.g. 'British'",
+            "type": "string"
+           },
+           "occupation": {
+            "description": "Job title or role",
+            "type": "string"
+           },
+           "source_of_funds": {
+            "description": "Where the money they will deposit comes from",
+            "type": "string"
+           }
+          },
+          "required": [
+           "full_name",
+           "date_of_birth",
+           "nationality",
+           "occupation",
+           "source_of_funds"
+          ],
+          "type": "object"
+         },
+         "name": {
+          "const": "CustomerProfile"
+         }
+        },
+        "required": [
+         "name",
+         "args"
+        ],
+        "type": "object"
+       }
+      ]
+     },
+     "minItems": 1,
+     "type": "array"
+    }
+   },
+   "required": [
+    "content",
+    "tool_calls"
+   ],
+   "type": "object"
+  },
+  "system": ""
+ },
+ "request_sha256": "35534ac3c913034d0101723a0dfdaaa374ce214cb564588db059616dc922f65d",
+ "response": {
+  "content": "I'm extracting the customer's details from the application.",
+  "model_reported": "claude-sonnet-5-5",
+  "tool_calls": [
+   {
+    "args": {
+     "date_of_birth": "1968-07-02",
+     "full_name": "Viktor Harlan",
+     "nationality": "Valdorian",
+     "occupation": "Deputy Minister of Finance, Republic of Valdoria",
+     "source_of_funds": "Government salary and sale of a family property (approximately $250,000 initial deposit)"
+    },
+    "name": "CustomerProfile"
+   }
+  ],
+  "usage": {
+   "cache_creation_input_tokens": 673,
+   "cache_read_input_tokens": 1008,
+   "input_tokens": 2,
+   "output_tokens": 212
+  }
+ }
+}

@@ -1,0 +1,42 @@
+{
+ "meta": {
+  "duration_s": 4.802,
+  "init": {
+   "agents": [],
+   "apiKeySource": "none",
+   "claude_code_version": "2.1.302",
+   "mcp_servers": [],
+   "model": "claude-opus-5-5",
+   "plugins": [],
+   "skills": [],
+   "slash_commands": [],
+   "tools": []
+  },
+  "recorded_at": "2026-11-25T08:22:10.359835+00:00"
+ },
+ "request": {
+  "effort": "medium",
+  "format": 2,
+  "messages": [
+   {
+    "content": "\nYou are a KYC compliance analyst. Write a short decision memo (under 120 words) for the audit file.\n\nCustomer profile: {'full_name': 'Priya Raman', 'date_of_birth': '1988-11-03', 'nationality': 'Indian', 'occupation': 'Nurse (NHS)', 'source_of_funds': 'Salary from NHS employment, approximately £2,800 per month'}\nScreening hits: None\nRisk level: low\nDecision: approve (by system)\nReviewer notes: Low risk, approved automatically.\n\nSay who the customer is, what screening found, the risk level, and the final decision with its reason.\nUse only the facts above.",
+    "role": "user"
+   }
+  ],
+  "model": "claude-opus-5-5",
+  "schema": null,
+  "system": ""
+ },
+ "request_sha256": "2f4b7f5dc1a79e2308bbca2efd4bedafaaecccaccb0410c8b124849a3e37792d",
+ "response": {
+  "content": "**KYC Decision Memo**\n\n**Customer:** Priya Raman, an Indian national born 3 November 1988, works as a nurse with the NHS. Her stated source of funds is her NHS salary of approximately £2,800 per month.\n\n**Screening:** No hits were returned.\n\n**Risk Level:** Low.\n\n**Decision:** Approved automatically by the system. The approval rests on the absence of screening hits, the low risk rating, and a source of funds consistent with her stated occupation. The reviewer recorded: \"Low risk, approved automatically.\"",
+  "model_reported": "claude-opus-5-5",
+  "tool_calls": [],
+  "usage": {
+   "cache_creation_input_tokens": 748,
+   "cache_read_input_tokens": 0,
+   "input_tokens": 2,
+   "output_tokens": 209
+  }
+ }
+}

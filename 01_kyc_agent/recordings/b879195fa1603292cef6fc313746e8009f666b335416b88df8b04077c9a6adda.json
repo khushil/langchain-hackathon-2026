@@ -1,0 +1,42 @@
+{
+ "meta": {
+  "duration_s": 5.921,
+  "init": {
+   "agents": [],
+   "apiKeySource": "none",
+   "claude_code_version": "2.1.302",
+   "mcp_servers": [],
+   "model": "claude-opus-5-5",
+   "plugins": [],
+   "skills": [],
+   "slash_commands": [],
+   "tools": []
+  },
+  "recorded_at": "2026-11-25T08:25:00.116081+00:00"
+ },
+ "request": {
+  "effort": "medium",
+  "format": 2,
+  "messages": [
+   {
+    "content": "\nYou are a KYC compliance analyst. Write a short decision memo (under 120 words) for the audit file.\n\nCustomer profile: {'full_name': 'Sofia Marchetti', 'date_of_birth': '1992-09-22', 'nationality': 'Italian', 'occupation': \"Student (master's degree student in Madrid)\", 'source_of_funds': 'Scholarship and family support, about $1,500 a month'}\nScreening hits: None\nRisk level: low\nDecision: approve (by system)\nReviewer notes: Low risk, approved automatically.\n\nSay who the customer is, what screening found, the risk level, and the final decision with its reason.\nUse only the facts above.",
+    "role": "user"
+   }
+  ],
+  "model": "claude-opus-5-5",
+  "schema": null,
+  "system": ""
+ },
+ "request_sha256": "b879195fa1603292cef6fc313746e8009f666b335416b88df8b04077c9a6adda",
+ "response": {
+  "content": "**KYC Decision Memo**\n\n**Customer:** Sofia Marchetti, Italian national, born 22 September 1992. She is a master's degree student in Madrid. Her source of funds is a scholarship and family support of about $1,500 a month.\n\n**Screening:** No hits.\n\n**Risk Level:** Low.\n\n**Decision:** Approved automatically by the system. The customer has no screening hits, is rated low risk, and her stated source of funds fits her student occupation. Reviewer notes confirm: \"Low risk, approved automatically.\"",
+  "model_reported": "claude-opus-5-5",
+  "tool_calls": [],
+  "usage": {
+   "cache_creation_input_tokens": 752,
+   "cache_read_input_tokens": 0,
+   "input_tokens": 2,
+   "output_tokens": 225
+  }
+ }
+}

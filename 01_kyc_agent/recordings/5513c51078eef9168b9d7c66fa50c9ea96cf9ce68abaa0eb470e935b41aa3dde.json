@@ -1,0 +1,42 @@
+{
+ "meta": {
+  "duration_s": 5.096,
+  "init": {
+   "agents": [],
+   "apiKeySource": "none",
+   "claude_code_version": "2.1.302",
+   "mcp_servers": [],
+   "model": "claude-opus-5-5",
+   "plugins": [],
+   "skills": [],
+   "slash_commands": [],
+   "tools": []
+  },
+  "recorded_at": "2026-11-25T08:21:57.337030+00:00"
+ },
+ "request": {
+  "effort": "medium",
+  "format": 2,
+  "messages": [
+   {
+    "content": "\nYou are a KYC compliance analyst. Write a short decision memo (under 120 words) for the audit file.\n\nCustomer profile: {'full_name': 'Viktor Harlan', 'date_of_birth': '1968-07-02', 'nationality': 'Valdorian', 'occupation': 'Deputy Minister of Finance, Republic of Valdoria', 'source_of_funds': 'Government salary and sale of a family property (approximately $250,000 initial deposit)'}\nScreening hits: [{'list': 'pep', 'matched_name': 'Viktor Harlan', 'score': 1.0, 'details': 'Deputy Minister of Finance, Valdoria'}]\nRisk level: high\nDecision: approve (by human)\nReviewer notes: PEP accepted with enhanced monitoring.\n\nSay who the customer is, what screening found, the risk level, and the final decision with its reason.\nUse only the facts above.",
+    "role": "user"
+   }
+  ],
+  "model": "claude-opus-5-5",
+  "schema": null,
+  "system": ""
+ },
+ "request_sha256": "5513c51078eef9168b9d7c66fa50c9ea96cf9ce68abaa0eb470e935b41aa3dde",
+ "response": {
+  "content": "**KYC Decision Memo: Viktor Harlan**\n\n**Customer:** Viktor Harlan, born 2 July 1968, Valdorian national, currently Deputy Minister of Finance, Republic of Valdoria. Stated source of funds is government salary and the sale of a family property, with an initial deposit of approximately $250,000.\n\n**Screening:** One PEP list hit with an exact name match (score 1.0), confirming the role of Deputy Minister of Finance, Valdoria.\n\n**Risk Level:** High.\n\n**Decision:** Approved by a human reviewer. The reviewer accepted the customer's PEP status on the condition of enhanced ongoing monitoring of the account.",
+  "model_reported": "claude-opus-5-5",
+  "tool_calls": [],
+  "usage": {
+   "cache_creation_input_tokens": 837,
+   "cache_read_input_tokens": 0,
+   "input_tokens": 2,
+   "output_tokens": 255
+  }
+ }
+}

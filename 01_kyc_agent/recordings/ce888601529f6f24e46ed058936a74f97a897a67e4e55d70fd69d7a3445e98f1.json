@@ -1,0 +1,42 @@
+{
+ "meta": {
+  "duration_s": 4.507,
+  "init": {
+   "agents": [],
+   "apiKeySource": "none",
+   "claude_code_version": "2.1.302",
+   "mcp_servers": [],
+   "model": "claude-opus-5-5",
+   "plugins": [],
+   "skills": [],
+   "slash_commands": [],
+   "tools": []
+  },
+  "recorded_at": "2026-11-25T08:22:49.148276+00:00"
+ },
+ "request": {
+  "effort": "medium",
+  "format": 2,
+  "messages": [
+   {
+    "content": "\nYou are a KYC compliance analyst. Write a short decision memo (under 120 words) for the audit file.\n\nCustomer profile: {'full_name': 'Grace Okafor', 'date_of_birth': '1985-04-30', 'nationality': 'British', 'occupation': 'Chartered accountant', 'source_of_funds': 'Salary and annual bonus (about $90,000 a year)'}\nScreening hits: None\nRisk level: low\nDecision: approve (by system)\nReviewer notes: Low risk, approved automatically.\n\nSay who the customer is, what screening found, the risk level, and the final decision with its reason.\nUse only the facts above.",
+    "role": "user"
+   }
+  ],
+  "model": "claude-opus-5-5",
+  "schema": null,
+  "system": ""
+ },
+ "request_sha256": "ce888601529f6f24e46ed058936a74f97a897a67e4e55d70fd69d7a3445e98f1",
+ "response": {
+  "content": "**KYC Decision Memo – Audit File**\n\n**Customer:** Grace Okafor, British national, born 30 April 1985. Occupation: Chartered accountant. Stated source of funds: salary and annual bonus (about $90,000 a year).\n\n**Screening:** No screening hits were returned.\n\n**Risk Level:** Low.\n\n**Decision:** Approved (by system). The reviewer notes the approval was automatic because the case was assessed as low risk with no screening hits.",
+  "model_reported": "claude-opus-5-5",
+  "tool_calls": [],
+  "usage": {
+   "cache_creation_input_tokens": 744,
+   "cache_read_input_tokens": 0,
+   "input_tokens": 2,
+   "output_tokens": 158
+  }
+ }
+}

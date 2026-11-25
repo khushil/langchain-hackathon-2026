@@ -1,0 +1,42 @@
+{
+ "meta": {
+  "duration_s": 5.835,
+  "init": {
+   "agents": [],
+   "apiKeySource": "none",
+   "claude_code_version": "2.1.302",
+   "mcp_servers": [],
+   "model": "claude-opus-5-5",
+   "plugins": [],
+   "skills": [],
+   "slash_commands": [],
+   "tools": []
+  },
+  "recorded_at": "2026-11-25T08:23:12.275635+00:00"
+ },
+ "request": {
+  "effort": "medium",
+  "format": 2,
+  "messages": [
+   {
+    "content": "\nYou are a KYC compliance analyst. Write a short decision memo (under 120 words) for the audit file.\n\nCustomer profile: {'full_name': 'Helga Brandt', 'date_of_birth': '1972-05-18', 'nationality': 'Karvonian', 'occupation': 'Minister of Energy in the Karvonian government', 'source_of_funds': 'Ministerial salary and investment income, about $600,000'}\nScreening hits: [{'list': 'pep', 'matched_name': 'Helga Brandt', 'score': 1.0, 'details': 'Minister of Energy, Karvonia'}]\nRisk level: high\nDecision: approve (by human)\nReviewer notes: PEP accepted with enhanced monitoring.\n\nSay who the customer is, what screening found, the risk level, and the final decision with its reason.\nUse only the facts above.",
+    "role": "user"
+   }
+  ],
+  "model": "claude-opus-5-5",
+  "schema": null,
+  "system": ""
+ },
+ "request_sha256": "ddd7310793ca113865e3474ec36f19d7414fb8aeeb880a669020bb8a558ce2c4",
+ "response": {
+  "content": "**KYC Decision Memo**\n\n**Customer:** Helga Brandt (DOB 1972-05-18), Karvonian national, currently Minister of Energy in the Karvonian government. Declared source of funds is ministerial salary and investment income, about $600,000.\n\n**Screening:** One hit on the PEP list. It is an exact name match (score 1.0) to \"Helga Brandt, Minister of Energy, Karvonia,\" consistent with the customer's stated occupation. This confirms PEP status.\n\n**Risk Level:** High\n\n**Decision:** Approved by a human reviewer. The reviewer accepted the customer as a PEP on the condition of enhanced monitoring. The account must be kept under enhanced ongoing monitoring in line with this approval.",
+  "model_reported": "claude-opus-5-5",
+  "tool_calls": [],
+  "usage": {
+   "cache_creation_input_tokens": 816,
+   "cache_read_input_tokens": 0,
+   "input_tokens": 2,
+   "output_tokens": 299
+  }
+ }
+}

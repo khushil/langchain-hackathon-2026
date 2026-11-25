@@ -1,0 +1,42 @@
+{
+ "meta": {
+  "duration_s": 7.647,
+  "init": {
+   "agents": [],
+   "apiKeySource": "none",
+   "claude_code_version": "2.1.302",
+   "mcp_servers": [],
+   "model": "claude-opus-5-5",
+   "plugins": [],
+   "skills": [],
+   "slash_commands": [],
+   "tools": []
+  },
+  "recorded_at": "2026-11-25T08:24:31.200909+00:00"
+ },
+ "request": {
+  "effort": "medium",
+  "format": 2,
+  "messages": [
+   {
+    "content": "\nYou are a KYC compliance analyst. Write a short decision memo (under 120 words) for the audit file.\n\nCustomer profile: {'full_name': 'Victor Harlan', 'date_of_birth': '1984-10-08', 'nationality': 'American', 'occupation': 'Owner of a plumbing business', 'source_of_funds': 'Customer payments to his plumbing business in Ohio, roughly $20,000 a month'}\nScreening hits: [{'list': 'pep', 'matched_name': 'Viktor Harlan', 'score': 0.92, 'details': 'Deputy Minister of Finance, Valdoria'}]\nRisk level: high\nDecision: approve (by human)\nReviewer notes: PEP accepted with enhanced monitoring.\n\nSay who the customer is, what screening found, the risk level, and the final decision with its reason.\nUse only the facts above.",
+    "role": "user"
+   }
+  ],
+  "model": "claude-opus-5-5",
+  "schema": null,
+  "system": ""
+ },
+ "request_sha256": "36f609dd4282762edb0aaf2b762d920f6c212fb78601d58917ee3d9c80fd8cc1",
+ "response": {
+  "content": "**KYC Decision Memo: Victor Harlan**\n\n**Customer:** Victor Harlan, born 1984-10-08, American national. He owns a plumbing business in Ohio. His source of funds is customer payments to that business, roughly $20,000 per month.\n\n**Screening:** One PEP list hit for \"Viktor Harlan,\" Deputy Minister of Finance, Valdoria, with a match score of 0.92.\n\n**Risk Level:** High.\n\n**Decision:** Approved by a human reviewer. The reviewer accepted the PEP status, with enhanced monitoring as the condition.\n\n**Note for file:** The record does not say whether the match was confirmed as the same person. The customer's nationality, occupation and spelling of his name differ from the matched PEP entry.",
+  "model_reported": "claude-opus-5-5",
+  "tool_calls": [],
+  "usage": {
+   "cache_creation_input_tokens": 823,
+   "cache_read_input_tokens": 0,
+   "input_tokens": 2,
+   "output_tokens": 469
+  }
+ }
+}

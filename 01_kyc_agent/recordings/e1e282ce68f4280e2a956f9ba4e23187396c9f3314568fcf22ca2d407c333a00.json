@@ -1,0 +1,42 @@
+{
+ "meta": {
+  "duration_s": 4.717,
+  "init": {
+   "agents": [],
+   "apiKeySource": "none",
+   "claude_code_version": "2.1.302",
+   "mcp_servers": [],
+   "model": "claude-opus-5-5",
+   "plugins": [],
+   "skills": [],
+   "slash_commands": [],
+   "tools": []
+  },
+  "recorded_at": "2026-11-25T08:23:04.490837+00:00"
+ },
+ "request": {
+  "effort": "medium",
+  "format": 2,
+  "messages": [
+   {
+    "content": "\nYou are a KYC compliance analyst. Write a short decision memo (under 120 words) for the audit file.\n\nCustomer profile: {'full_name': 'Amara Quillon', 'date_of_birth': '1966-10-06', 'nationality': 'Ostmarkian', 'occupation': 'Central Bank Governor of Ostmark', 'source_of_funds': 'Salary and savings built up over career'}\nScreening hits: [{'list': 'pep', 'matched_name': 'Amara Quillon', 'score': 1.0, 'details': 'Central Bank Governor, Ostmark'}]\nRisk level: high\nDecision: approve (by human)\nReviewer notes: PEP accepted with enhanced monitoring.\n\nSay who the customer is, what screening found, the risk level, and the final decision with its reason.\nUse only the facts above.",
+    "role": "user"
+   }
+  ],
+  "model": "claude-opus-5-5",
+  "schema": null,
+  "system": ""
+ },
+ "request_sha256": "e1e282ce68f4280e2a956f9ba4e23187396c9f3314568fcf22ca2d407c333a00",
+ "response": {
+  "content": "**KYC Decision Memo: Amara Quillon**\n\n**Customer:** Amara Quillon, born 1966-10-06, Ostmarkian national. Occupation: Central Bank Governor of Ostmark. Stated source of funds: salary and savings built up over career.\n\n**Screening:** One PEP list hit, matched name \"Amara Quillon\", score 1.0, details \"Central Bank Governor, Ostmark\". This matches the customer's declared occupation, so the customer is confirmed as a Politically Exposed Person.\n\n**Risk Level:** High.\n\n**Decision:** Approved by a human reviewer. Reason: the PEP status was accepted with enhanced monitoring as a condition of onboarding.",
+  "model_reported": "claude-opus-5-5",
+  "tool_calls": [],
+  "usage": {
+   "cache_creation_input_tokens": 811,
+   "cache_read_input_tokens": 0,
+   "input_tokens": 2,
+   "output_tokens": 237
+  }
+ }
+}
