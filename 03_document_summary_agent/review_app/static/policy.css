@@ -11,12 +11,39 @@
 .state-conflict { color: var(--coral-ink); font-weight: 700; }
 .state-none { color: var(--muted); }
 .policy-key, .policy-tally { margin: 2px 0 6px; }
-.policy-grid { width: 100%; }
-.policy-grid .group-row th { background: var(--bg); color: var(--muted); font-size: 0.867rem; text-align: left; }
-.policy-grid .doc-head { vertical-align: bottom; font-size: 0.8rem; max-width: 7.5rem; white-space: normal; overflow-wrap: anywhere; }
+/* The tiles above the policy pages: each takes the width its label needs, and a word is never
+   broken. Three tiles that do not fit side by side wrap onto a second line. */
+@media (min-width: 641px) {
+  .tiles { display: flex; flex-wrap: wrap; }
+}
+.tile-label { overflow-wrap: normal; }
+/* The picture: Obligation and Found keep a fixed share and the document columns divide the rest,
+   each wide enough for its name to read whole. Where that is not so, the names stand upright. */
+.policy-grid { width: 100%; table-layout: fixed; }
+.policy-grid .col-obligation { width: 12rem; }
+.policy-grid .col-found { width: 10rem; }
+.policy-grid .group-row th { background: var(--bg); color: var(--muted); font-size: 0.867rem; text-align: left; white-space: normal; }
+.policy-grid .doc-head { vertical-align: bottom; font-size: 0.8rem; white-space: normal; overflow-wrap: normal; word-break: normal; }
 .policy-grid .doc-title, .policy-grid .doc-version { display: block; font-weight: 600; }
 .policy-grid .doc-version { color: var(--muted); font-weight: 400; }
-.policy-grid .pcell { text-align: center; width: 5rem; }
+.policy-grid .pcell { text-align: center; }
+.policy-grid tbody th[scope="row"] { white-space: normal; }
+@media (max-width: 1099px) {
+  .policy-grid .col-obligation { width: 9rem; }
+  .policy-grid .col-found { width: 8rem; }
+  .policy-grid .doc-head, .policy-grid .pcell { padding-left: 2px; padding-right: 2px; }
+  .policy-grid .doc-head .doc-title, .policy-grid .doc-head .doc-version {
+    display: inline-block; writing-mode: vertical-rl; transform: rotate(180deg); white-space: nowrap;
+  }
+}
+@media (max-width: 640px) {
+  .policy-grid .col-obligation { width: 6.5rem; }
+  .policy-grid .col-found { width: 5.5rem; }
+  .policy-grid .policy-state { white-space: normal; }
+  .policy-grid th, .policy-grid td { padding-left: 4px; padding-right: 4px; }
+  .policy-grid .doc-head, .policy-grid .pcell { padding-left: 1px; padding-right: 1px; }
+  table.data[data-hook="measures"] th { white-space: normal; }
+}
 .pcell.p-blank { background: var(--bg); }
 .pcell.p-partly { background: var(--amber-bg); color: var(--amber-ink); }
 .pcell.p-not, .pcell.p-conflict { background: var(--coral-bg); color: var(--coral-ink); }

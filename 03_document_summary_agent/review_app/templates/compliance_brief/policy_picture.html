@@ -22,6 +22,7 @@
     <div class="table-wrap">
     <table class="data policy-grid" data-hook="picture-table">
       <caption class="visually-hidden">{{ block.name }} obligations that apply, against the documents in force</caption>
+      <colgroup><col class="col-obligation"><col class="col-found">{% for document in picture.documents %}<col>{% endfor %}</colgroup>
       <thead>
         <tr>
           <th scope="col">Obligation</th>
