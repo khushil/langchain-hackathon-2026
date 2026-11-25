@@ -388,3 +388,37 @@ def test_a_structured_response_agent_returns_the_model(tmp_path: Path, fake_runn
     out = summariser.invoke({"messages": [{"role": "user", "content": "Section 1: text"}]})
     assert isinstance(out["structured_response"], SectionSummary)
     assert out["structured_response"].number == "1"
+
+
+def test_record_mode_answers_a_repeated_request_from_its_own_recording(
+    tmp_path: Path, fake_runner
+) -> None:
+    runner = fake_runner(text_reply("First draw"))
+    chat = _model(tmp_path, runner, mode="record")
+    first = chat.invoke("Hello")
+    second = chat.invoke("Hello")
+    assert len(runner.calls) == 1, "a repeated request in one recording was sent to the model again"
+    assert second.content == first.content == "First draw"
+    assert len(list((tmp_path / "recordings").glob("*.json"))) == 1
+
+
+def test_record_mode_answers_a_repeated_request_from_its_own_recording_async(
+    tmp_path: Path, fake_runner
+) -> None:
+    runner = fake_runner(text_reply("First draw"))
+    chat = _model(tmp_path, runner, mode="record")
+
+    async def both() -> tuple:
+        return await asyncio.gather(chat.ainvoke("Hello"), chat.ainvoke("Hello"))
+
+    first, second = asyncio.run(both())
+    assert len(runner.calls) == 1, "two identical requests at once were both sent to the model"
+    assert first.content == second.content == "First draw"
+
+
+def test_record_mode_still_calls_the_model_for_a_new_request(tmp_path: Path, fake_runner) -> None:
+    runner = fake_runner(text_reply("A draw"))
+    chat = _model(tmp_path, runner, mode="record")
+    chat.invoke("Hello")
+    chat.invoke("Goodbye")
+    assert len(runner.calls) == 2

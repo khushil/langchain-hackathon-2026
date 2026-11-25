@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import atexit
 import shutil
 import tempfile
@@ -68,6 +69,22 @@ class CallRecord:
 
 _RECORDS: list[CallRecord] = []
 _RECORDS_LOCK = threading.Lock()
+_RECORD_LOCKS: dict[str, threading.Lock] = {}
+_ARECORD_LOCKS: dict[tuple[int, str], asyncio.Lock] = {}
+
+
+def _record_lock(key: str) -> threading.Lock:
+    """One lock per request hash, so two identical requests in record mode make one call."""
+    with _RECORDS_LOCK:
+        return _RECORD_LOCKS.setdefault(key, threading.Lock())
+
+
+def _arecord_lock(key: str) -> asyncio.Lock:
+    """The same for coroutines, one lock per running loop and request hash."""
+    with _RECORDS_LOCK:
+        return _ARECORD_LOCKS.setdefault((id(asyncio.get_running_loop()), key), asyncio.Lock())
+
+
 _WORKDIR: list[str] = []
 
 
@@ -283,6 +300,17 @@ class ChatClaudeHeadless(BaseChatModel):
         self._log(key, "replay", (datetime.now(UTC).isoformat(), time.monotonic(), 0), 0.0)
         return self._to_result(key, recording.response, "replay")
 
+    def _reuse(self, key: str) -> ChatResult:
+        """In record mode, answer a request this recording already holds, as replay would.
+
+        A recording is one draw of each request: if the same request is sent again in the same
+        recording, a second live call would draw again and overwrite the first, and replay would
+        then give an earlier step the later draw. So a repeated request is answered from the file.
+        """
+        recording = RecordingStore(self.recordings_dir).load(key)
+        self._log(key, "reused", (datetime.now(UTC).isoformat(), time.monotonic(), 0), 0.0)
+        return self._to_result(key, recording.response, "record")
+
     def _generate(
         self,
         messages: list[BaseMessage],
@@ -293,6 +321,17 @@ class ChatClaudeHeadless(BaseChatModel):
         request, key, specs, argv, prompt = self._prepare(messages, stop, kwargs)
         if self.mode == "replay":
             return self._replay(key)
+        if self.mode == "record":
+            with _record_lock(key):
+                if RecordingStore(self.recordings_dir).has(key):
+                    return self._reuse(key)
+                return self._call(key, request, specs, argv, prompt)
+        return self._call(key, request, specs, argv, prompt)
+
+    def _call(
+        self, key: str, request: dict[str, Any], specs: list[ToolSpec], argv: list[str], prompt: str
+    ) -> ChatResult:
+        """Make one live headless call and finish it (recording it in record mode)."""
         runner, argv = self._runner_and_argv(argv)
         with self._gate.slot(), process_gate().slot() as holders:
             started = (datetime.now(UTC).isoformat(), time.monotonic(), holders)
@@ -315,6 +354,17 @@ class ChatClaudeHeadless(BaseChatModel):
         request, key, specs, argv, prompt = self._prepare(messages, stop, kwargs)
         if self.mode == "replay":
             return self._replay(key)
+        if self.mode == "record":
+            async with _arecord_lock(key):
+                if RecordingStore(self.recordings_dir).has(key):
+                    return self._reuse(key)
+                return await self._acall(key, request, specs, argv, prompt)
+        return await self._acall(key, request, specs, argv, prompt)
+
+    async def _acall(
+        self, key: str, request: dict[str, Any], specs: list[ToolSpec], argv: list[str], prompt: str
+    ) -> ChatResult:
+        """Make one live headless call on the event loop and finish it."""
         runner, argv = self._runner_and_argv(argv)
         async with self._gate.aslot(), process_gate().aslot() as holders:
             started = (datetime.now(UTC).isoformat(), time.monotonic(), holders)

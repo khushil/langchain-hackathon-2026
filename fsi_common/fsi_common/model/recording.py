@@ -226,6 +226,10 @@ class RecordingStore:
             raise
         return path
 
+    def has(self, key: str) -> bool:
+        """Say whether a recording exists for a request hash."""
+        return self._path(key).is_file()
+
     def load(self, key: str) -> Recording:
         """Read the recording for a request hash.
 
