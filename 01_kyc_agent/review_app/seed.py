@@ -19,6 +19,7 @@ from starlette.testclient import TestClient
 
 from context.reader import read_applications
 from fsi_common.app import AppConfig, SeedError, create_app
+from fsi_common.app.offline import replay_only
 from fsi_common.app.session import SessionCodec
 from fsi_common.ids import digest_bytes, digest_json
 from fsi_common.records import Person
@@ -26,6 +27,7 @@ from review_app.context import PREFIX, Services, runs_of
 from review_app.seed_fixture import DECISIONS, QUESTIONS
 from utils.models import recordings_dir
 from utils.records import customer_of_anchor
+from workflow.runs import RunNotFoundError
 
 REVIEWER = Person(name="Dana Whitfield", role="Head of Compliance")
 SEED_DATE = "2026-11-24"
@@ -34,19 +36,26 @@ SECRET = b"starting-work"
 SEED_NAME = "kyc-onboarding"
 MARKER_FILE = "seeded.json"
 """The file a finished seed leaves in a state folder: the seed's name and what it was made from."""
+PROGRESS_FILE = "seeding.json"
+"""The file a seed keeps while it works: what it is made from and the batches it has started, so
+a start that finds it knows the batches are its own and finishes the work."""
 WAIT_SECONDS = 180.0
 POLL_SECONDS = 0.1
 
 
 def seed_kyc_onboarding(services: Services) -> None:
-    """Make a batch that waits for a reviewer and a batch that is signed.
+    """Make a batch that waits for a reviewer and a batch that is signed, from the recordings.
 
-    When the services keep their state in a folder, a finished seed leaves a marker there, and a
-    later start that finds the marker matching leaves the batches as they are, so a restart adds
-    no second copy. A folder that holds batches with no marker, or a marker made from other
-    recordings or another fixture, is refused. The waiting batch is made first: the engine carries
-    a signed batch's decisions into later runs on the same customers, so a batch made after the
-    signed one would arrive already decided.
+    Every model call of the seed is answered from the recordings, whatever backend the server
+    runs on, and no trace is sent. When the services keep their state in a folder, the seed notes
+    there what it has started, and a finished seed leaves a marker. A later start that finds the
+    marker matching leaves the batches as they are, so a restart adds no second copy. A later
+    start that finds a seed stopped partway knows the batches are its own and finishes the work:
+    a batch that waits is kept, one that stopped is started again, and what is not recorded
+    yet is recorded through the routes, never over a decision, answer or assumption the
+    reviewer has already recorded on that batch. The waiting batch is made first: the engine
+    carries a signed batch's decisions into later runs on the same customers, so a batch made
+    after the signed one would arrive already decided.
 
     Args:
         services: The run service and held decisions of the topic being served.
@@ -54,20 +63,39 @@ def seed_kyc_onboarding(services: Services) -> None:
     Raises:
         SeedError: If a run stops, the fixture does not match what the batch holds, the review
             route refuses a decision or the sign-off, or the state folder holds batches this seed
-            did not make.
+            did not make from these recordings.
     """
     from review_app.plugin import build_plugin  # the plug-in imports this module for its seed
 
-    if _already_seeded(services):
+    made = _held_progress(services)
+    if made is None:
         return
     shadow = replace(services, today=lambda: SEED_DATE)
     app = create_app(AppConfig(secret=SECRET, topic_folders=()), topics=[build_plugin(shadow)])
     client = TestClient(app, follow_redirects=False)
     client.cookies.set(app.state.cookie_name, SessionCodec(SECRET).encode(REVIEWER))
-    _start_and_wait(client, services)
-    signed = _start_and_wait(client, services)
-    _review_and_sign(client, services, signed)
+    runs = runs_of(services)
+    with replay_only():
+        if _status(runs, made.get("waiting")) != "awaiting_review":
+            made["waiting"] = _start_and_wait(client, services)
+            _write_progress(services, made)
+        if _status(runs, made.get("signed")) not in {"awaiting_review", "signed"}:
+            made["signed"] = _start_and_wait(client, services)
+            _write_progress(services, made)
+        if _status(runs, made["signed"]) == "awaiting_review":
+            _review_and_sign(client, services, made["signed"])
     _write_marker(services)
+    _clear_progress(services)
+
+
+def _status(runs, thread: str | None) -> str:
+    """Say where a batch the seed noted stands; ``missing`` when it is not held."""
+    if thread is None:
+        return "missing"
+    try:
+        return runs.status(thread)
+    except (LookupError, RunNotFoundError):
+        return "missing"
 
 
 def seed_identity() -> str:
@@ -86,24 +114,69 @@ def seed_identity() -> str:
     )
 
 
-def _already_seeded(services: Services) -> bool:
-    """Say whether this state folder was seeded from these recordings; refuse one that was not."""
+def _held_progress(services: Services) -> dict[str, str] | None:
+    """Say what a seed already made in this state folder, or None when the seed is finished.
+
+    Returns:
+        The batches a stopped seed of this fixture and these recordings had started, by role
+        (empty for a fresh folder); None when a finished seed's marker matches.
+
+    Raises:
+        SeedError: If the folder holds batches that this seed did not make from these recordings.
+    """
     folder = services.state_dir
     if folder is None:
-        return False
-    marker = Path(folder) / MARKER_FILE
-    if not marker.exists() and not runs_of(services).list_runs():
-        return False
+        return {}
+    identity = {"seed": SEED_NAME, "digest": seed_identity()}
+    marker, progress = Path(folder) / MARKER_FILE, Path(folder) / PROGRESS_FILE
+    if marker.exists():
+        if _read(marker) == identity:
+            return None
+        raise _not_ours(folder)
+    held = _read(progress) if progress.exists() else None
+    if held is not None and {k: held.get(k) for k in identity} == identity:
+        return dict(held.get("batches", {}))
+    if progress.exists() or runs_of(services).list_runs():
+        raise _not_ours(folder)
+    _write_progress(services, {})
+    return {}
+
+
+def _read(path: Path) -> dict | None:
     try:
-        held = json.loads(marker.read_text())
+        held = json.loads(path.read_text())
     except (OSError, ValueError):
-        held = None
-    if held == {"seed": SEED_NAME, "digest": seed_identity()}:
-        return True
-    raise SeedError(
+        return None
+    return held if isinstance(held, dict) else None
+
+
+def _not_ours(folder: object) -> SeedError:
+    return SeedError(
         f"The state folder {folder} holds batches that this start did not make from these "
-        f"recordings, or a seed that stopped partway; delete the folder {folder} to start afresh."
+        "recordings, so it leaves them as they are. To start with the starting work, serve with "
+        "another APP_STATE_DIR."
     )
+
+
+def _write_progress(services: Services, made: dict[str, str]) -> None:
+    folder = services.state_dir
+    if folder is None:
+        return
+    held = {"seed": SEED_NAME, "digest": seed_identity(), "batches": made}
+    staging = Path(folder) / f"{PROGRESS_FILE}.part"
+    try:
+        staging.write_text(json.dumps(held))
+        os.replace(staging, Path(folder) / PROGRESS_FILE)
+    except OSError as exc:
+        raise SeedError(
+            f"The starting work could not note its progress in {folder}: {exc}"
+        ) from exc
+
+
+def _clear_progress(services: Services) -> None:
+    folder = services.state_dir
+    if folder is not None:
+        (Path(folder) / PROGRESS_FILE).unlink(missing_ok=True)
 
 
 def _write_marker(services: Services) -> None:
@@ -202,7 +275,10 @@ def _review_and_sign(client: TestClient, services: Services, thread: str) -> Non
         for c in s.facts
         if c.fact.kind == "proposal"
     }
+    held = services.drafts.get(thread, REVIEWER)
     for decision in DECISIONS:
+        if proposals[decision.customer] in held.facts:
+            continue
         body = {
             "brief_digest": digest,
             "fact_id": proposals[decision.customer],
@@ -216,7 +292,10 @@ def _review_and_sign(client: TestClient, services: Services, thread: str) -> Non
         )
     ids = {(customer_of_anchor(q.about.anchor), _place(q)): q.id for q in request.open_questions}
     for question in QUESTIONS:
-        base = {"brief_digest": digest, "question_id": ids[(question.customer, question.place)]}
+        question_id = ids[(question.customer, question.place)]
+        if question_id in held.answers or question_id in held.assumptions:
+            continue
+        base = {"brief_digest": digest, "question_id": question_id}
         if question.assumption is not None:
             body, route = {**base, "words": question.assumption}, "assume"
         else:
