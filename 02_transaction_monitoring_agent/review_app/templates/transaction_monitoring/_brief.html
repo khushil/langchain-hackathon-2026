@@ -1,0 +1,78 @@
+{% import "transaction_monitoring/_picture.html" as picture %}
+{% import "transaction_monitoring/_transaction.html" as tx %}
+<div class="exhibit brief-exhibit" data-hook="exhibit">
+  {{ picture.draw(pic, "The transactions of the brief by day and hour", current_tx) }}
+  <div class="review-grid">
+  <section class="pane statements" aria-label="The brief" data-hook="statements">
+    {% for item in statements %}
+    <article class="statement" data-hook="statement">
+      {% if item.heading %}<h2 class="statement-heading">{{ item.heading }}</h2>{% endif %}
+      <p class="statement-text">{{ item.text }}</p>
+      <ul class="cites">
+        <li>
+          <a class="fact-link" href="{{ tx_href(item.tx_id) }}" data-fact="{{ item.fact_id }}" title="Open {{ item.tx_id }} and its source line" {% if current_tx == item.tx_id %}aria-current="true"{% endif %}>{{ item.tx_id }}</a>
+          {{ parts.state_badge(item.state, person) }}
+        </li>
+      </ul>
+    </article>
+    {% endfor %}
+    {% for waiting in unassessed %}
+    <article class="statement" data-hook="statement-unassessed">
+      <p class="statement-text">{{ waiting.words }}</p>
+      <ul class="cites"><li><a class="fact-link" href="{{ waiting.href }}" title="Open the question about {{ waiting.tx_id }}">{{ waiting.tx_id }}</a> {{ ui.badge(waiting.status, waiting.badge) }}</li></ul>
+    </article>
+    {% endfor %}
+  </section>
+  <aside class="pane source" aria-label="The selected transaction" data-hook="source">
+    {% if view %}
+    {% set st = view_state %}
+    {{ tx.line(view) }}
+    {{ tx.assessment(view) }}
+    {{ tx.source_line(view) }}
+    {% if view.cited.carry.outcome == "carried" %}
+    <p class="note" data-hook="carried">{{ decision_line(view.cited.carry.decision, person) }}. Reason given: {{ view.cited.carry.decision.reason }}</p>
+    {% elif view.cited.carry.outcome == "ask_again" %}
+    <div class="note" data-hook="ask-again">
+      <p>{{ decision_line(view.cited.carry.decision, person) }}. Reason given: {{ view.cited.carry.decision.reason }}</p>
+      <p>Since then these changed: {{ view.cited.carry.differences|map("difference_label")|join(", ") }}.</p>
+    </div>
+    {% endif %}
+    {% if st.kind == "yours" %}
+    <p class="note" data-hook="your-decision">Your decision: {{ decision_line(st.decision, person) }}. {% if st.decision.amendment %}Your own decision: {{ sentence_end(st.decision.amendment) }} {% endif %}Your reason: {{ st.decision.reason }}</p>
+    {% endif %}
+    {% if person %}
+    <form method="post" action="/transaction-monitoring/runs/{{ thread }}/decide" class="decision-form" data-hook="decision-form">
+      <input type="hidden" name="brief_digest" value="{{ brief_digest }}">
+      <input type="hidden" name="fact_id" value="{{ view.fact.id }}">
+      {% if form_error and error_target == view.fact.id %}{{ parts.form_problem(form_error) }}{% endif %}
+      <fieldset>
+        <legend>{{ "Change your decision" if st.kind == "yours" else "Your decision" }}</legend>
+        {% for value, label in [("accept", "Agree with the proposal"), ("amend", "Give my own decision"), ("reject", "Disagree")] %}
+        <label class="choice" title="{{ label }} on {{ view.tx_id }}"><input type="radio" name="outcome" value="{{ value }}" {% if form_values.get("outcome") == value %}checked{% endif %} required>{{ label }}</label>
+        {% endfor %}
+      </fieldset>
+      <div class="amend-field">
+        <fieldset>
+          <legend>My own decision</legend>
+          {% for value, label in [("approve", "Approve"), ("block", "Block")] %}
+          <label class="choice" title="{{ label }} {{ view.tx_id }}"><input type="radio" name="final" value="{{ value }}" {% if form_values.get("final") == value %}checked{% endif %}>{{ label }}</label>
+          {% endfor %}
+        </fieldset>
+        <label for="wording">My words for it</label>
+        <textarea id="wording" name="wording">{{ form_values.get("wording", "") }}</textarea>
+      </div>
+      <label for="reason">Your reason</label>
+      <textarea id="reason" name="reason" required>{{ form_values.get("reason", "") }}</textarea>
+      <button class="button" type="submit" title="Record your decision on {{ view.tx_id }}">Record my decision</button>
+      {% if next_href %}<a class="button button-quiet" href="{{ next_href }}" title="Open the next transaction that needs a decision">Next transaction to decide</a>{% endif %}
+    </form>
+    {% else %}
+    <p><a href="{{ sign_in }}" title="Sign in with your name and role to decide">Sign in</a> to decide on this transaction.</p>
+    {% endif %}
+    {% elif raw_row %}
+    <h2 class="source-title" data-hook="transaction-title">{{ raw_row.transaction_id }}, {{ raw_row.merchant }}</h2>
+    <p class="note" data-hook="no-assessment">{{ no_assessment_words }} <a href="{{ questions_href }}" title="Open the open questions">Open the question</a>.</p>
+    {% endif %}
+  </aside>
+  </div>
+</div>

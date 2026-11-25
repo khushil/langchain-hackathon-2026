@@ -1,0 +1,48 @@
+{% macro shape(state, cx, cy, r) %}
+{% if state == "needs" %}<circle class="shape" cx="{{ cx }}" cy="{{ cy }}" r="{{ r }}"/>
+{% elif state == "decided" %}<circle class="shape" cx="{{ cx }}" cy="{{ cy }}" r="{{ r }}"/>
+{% elif state == "carried" %}<circle class="shape" cx="{{ cx }}" cy="{{ cy }}" r="{{ r }}"/><circle class="inner" cx="{{ cx }}" cy="{{ cy }}" r="{{ r - 5 }}"/>
+{% elif state == "rejected" %}<rect class="shape" x="{{ cx - r }}" y="{{ cy - r }}" width="{{ 2 * r }}" height="{{ 2 * r }}" rx="2"/>
+{% elif state == "question" %}<polygon class="shape" points="{{ cx }},{{ cy - r - 1 }} {{ cx + r + 2 }},{{ cy + r }} {{ cx - r - 2 }},{{ cy + r }}"/>
+{% elif state == "answered" %}<rect class="shape" x="{{ cx - r + 2 }}" y="{{ cy - r + 2 }}" width="{{ 2 * r - 4 }}" height="{{ 2 * r - 4 }}" transform="rotate(45 {{ cx }} {{ cy }})"/>
+{% else %}<circle class="shape" cx="{{ cx }}" cy="{{ cy }}" r="{{ r }}"/>
+{% endif %}
+{% endmacro %}
+
+{% macro draw(pic, label, current=none) %}
+<section class="stream" aria-label="{{ label }}" data-hook="stream">
+  <div class="stream-head">
+    <p class="stream-count" data-hook="stream-count">{{ pic.count_line }}</p>
+    <ul class="stream-key" aria-label="What each mark stands for">
+      {% for state, word in pic.key %}
+      <li class="key-item"><svg class="key-mark mark-{{ state }}" width="22" height="22" viewBox="0 0 22 22" aria-hidden="true" focusable="false">{{ shape(state, 11, 11, 8) }}</svg>{{ word }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+  <div class="stream-frame">
+    <svg class="stream-svg" width="{{ pic.width }}" height="{{ pic.height }}" viewBox="0 0 {{ pic.width }} {{ pic.height }}" role="img" aria-label="{{ label }}: {{ pic.count_line }}">
+      {% for lane in pic.lanes %}
+      <text class="lane-name" x="4" y="{{ lane.top - 6 }}">{{ lane.name }}</text>
+      <rect class="lane" x="{{ pic.days[0].x }}" y="{{ lane.top }}" width="{{ pic.width - pic.days[0].x - 8 }}" height="{{ lane.height }}"/>
+      {% for text, share in pic.hours %}
+      <text class="hour" x="4" y="{{ lane.top + 14 + (lane.height - 28) * share }}">{{ text }}</text>
+      <line class="hour-line" x1="{{ pic.days[0].x }}" x2="{{ pic.width - 8 }}" y1="{{ lane.top + 18 + (lane.height - 36) * share }}" y2="{{ lane.top + 18 + (lane.height - 36) * share }}"/>
+      {% endfor %}
+      {% endfor %}
+      {% for day in pic.days %}
+      <text class="axis{% if day.is_break %} axis-break{% endif %}" x="{{ day.x + day.width / 2 }}" y="20" text-anchor="middle">{{ day.label }}</text>
+      {% if not day.is_break %}<line class="day-line" x1="{{ day.x }}" x2="{{ day.x }}" y1="26" y2="{{ pic.height - 6 }}"/>{% endif %}
+      {% endfor %}
+      {% for m in pic.marks %}
+      {% if m.href %}<a href="{{ m.href }}" title="{{ m.title }}" aria-label="{{ m.title }}" data-tx="{{ m.tx_id }}" {% if current == m.tx_id %}aria-current="true"{% endif %}>{% endif %}
+      <g class="mark mark-{{ m.state }}{% if current == m.tx_id %} mark-current{% endif %}" data-hook="mark" data-state="{{ m.state }}">
+        <title>{{ m.title }}</title>
+        {{ shape(m.state, m.x, m.y, 11) }}
+        {% if m.text %}<text class="score" x="{{ m.x }}" y="{{ m.y }}" text-anchor="middle" dominant-baseline="central">{{ m.text }}</text>{% endif %}
+      </g>
+      {% if m.href %}</a>{% endif %}
+      {% endfor %}
+    </svg>
+  </div>
+</section>
+{% endmacro %}

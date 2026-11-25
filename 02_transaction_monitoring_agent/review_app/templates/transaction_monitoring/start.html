@@ -1,0 +1,37 @@
+{% extends "transaction_monitoring/page.html" %}
+{% import "macros.html" as ui %}
+{% import "transaction_monitoring/_picture.html" as picture %}
+{% block main %}
+{{ ui.answer(answer) }}
+<div class="exhibit" data-hook="exhibit">
+  {{ picture.draw(pic, "Every customer's transactions by day and hour") }}
+  {{ ui.table(table) }}
+</div>
+{% if person %}<form method="post" action="/transaction-monitoring/runs" class="panel start-form" aria-labelledby="start-heading">{% else %}<section class="panel start-form" aria-labelledby="start-heading">{% endif %}
+  <h2 id="start-heading">Assess a customer's transactions</h2>
+  {% if problem %}<p class="problem" role="alert" data-hook="form-problem">{{ ui.badge("failed", problem) }}</p>{% endif %}
+  <div class="start-fields">
+    <div>
+      <label for="user_id">Customer</label>
+      <select id="user_id" name="user_id">
+        {% for user_id, name in customers %}
+        <option value="{{ user_id }}"{% if chosen.user_id == user_id %} selected{% endif %}>{{ name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div>
+      <label for="start">From the start of this day</label>
+      <input id="start" name="start" type="date" value="{{ chosen.start or '' }}">
+    </div>
+    <div>
+      <label for="end">Up to the start of this day</label>
+      <input id="end" name="end" type="date" value="{{ chosen.end or '' }}">
+    </div>
+  </div>
+  {% if person %}
+  <button class="button" type="submit" title="Assess the chosen customer's transactions">Assess the transactions</button>
+  {% else %}
+  <p><a href="{{ sign_in }}" title="Sign in with your name and role to start a run">Sign in with your name and role to start a run.</a></p>
+  {% endif %}
+{% if person %}</form>{% else %}</section>{% endif %}
+{% endblock %}

@@ -1,0 +1,14 @@
+{% extends "transaction_monitoring/page.html" %}
+{% import "macros.html" as ui %}
+{% import "transaction_monitoring/_picture.html" as picture %}
+{% block head_extra %}{% if refresh %}<meta http-equiv="refresh" content="3">{% endif %}{% endblock %}
+{% block main %}
+{{ ui.answer(answer) }}
+<div class="exhibit" data-hook="exhibit">
+  {% if error %}
+  <p class="problem" role="alert" data-hook="run-error">{{ ui.badge("failed", "Stopped") }} <span>{{ error }}</span></p>
+  <p><a href="/transaction-monitoring/" title="Go back to the runs and start another">Back to the runs</a></p>
+  {% endif %}
+  {{ picture.draw(pic, "The transactions being assessed") }}
+</div>
+{% endblock %}

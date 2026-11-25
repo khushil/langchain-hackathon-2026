@@ -14,7 +14,7 @@ export REQUIRE_BROWSER = 1
 # The regulation tests fail, rather than skip, when SS1/23 has not been fetched.
 export REQUIRE_REGULATIONS = 1
 
-.PHONY: serve offline lint test schemas-check examples-check selftest planted-faults dataset-check regulations-check notebook gate
+.PHONY: serve serve-monitoring offline lint test schemas-check examples-check selftest planted-faults dataset-check regulations-check notebook gate
 
 lint:
 	$(PYTHON) -m ruff check .
@@ -26,6 +26,7 @@ test: regulations-check
 	$(PYTHON) -m pytest -q -n $(PYTEST_WORKERS) -o "pythonpath=fsi_common" fsi_common/tests
 	$(PYTHON) -m pytest -q -n $(PYTEST_WORKERS) -o "pythonpath=fsi_common 01_kyc_agent" 01_kyc_agent/tests
 	$(PYTHON) -m pytest -q -n $(PYTEST_WORKERS) -o "pythonpath=fsi_common 03_document_summary_agent" 03_document_summary_agent/tests
+	$(PYTHON) -m pytest -q -n $(PYTEST_WORKERS) -o "pythonpath=fsi_common 02_transaction_monitoring_agent" 02_transaction_monitoring_agent/tests
 
 # The record schemas must match what the record types export, byte for byte.
 schemas-check:
@@ -43,16 +44,19 @@ selftest:
 planted-faults:
 	cd 01_kyc_agent && PYTHONPATH=../fsi_common $(abspath $(PYTHON)) -m evals.planted_faults
 	cd 03_document_summary_agent && PYTHONPATH=../fsi_common $(abspath $(PYTHON)) -m evals.planted_faults
+	cd 02_transaction_monitoring_agent && PYTHONPATH=../fsi_common $(abspath $(PYTHON)) -m evals.planted_faults
 
 # The evaluation dataset must be what the reference labels and the document build, byte for byte.
 dataset-check:
 	cd 01_kyc_agent && PYTHONPATH=../fsi_common $(abspath $(PYTHON)) -m evals.build_dataset --check
 	cd 03_document_summary_agent && PYTHONPATH=../fsi_common $(abspath $(PYTHON)) -m evals.build_dataset --check
+	cd 02_transaction_monitoring_agent && PYTHONPATH=../fsi_common $(abspath $(PYTHON)) -m evals.build_dataset --check
 
 # The notebook must run top to bottom on the recorded model calls, with no key and no live call.
 notebook:
 	NOTEBOOK_RUN=1 MODEL_BACKEND=replay $(PYTHON) -m pytest -q -o "pythonpath=fsi_common 01_kyc_agent" 01_kyc_agent/tests/notebook
 	NOTEBOOK_RUN=1 MODEL_BACKEND=replay $(PYTHON) -m pytest -q -o "pythonpath=fsi_common 03_document_summary_agent" 03_document_summary_agent/tests/notebook
+	NOTEBOOK_RUN=1 MODEL_BACKEND=replay $(PYTHON) -m pytest -q -o "pythonpath=fsi_common 02_transaction_monitoring_agent" 02_transaction_monitoring_agent/tests/notebook
 
 # The reviewer's application, on APP_HOST and APP_PORT (default 0.0.0.0:4803). Its runs, decisions
 # and drafts are kept in files under APP_STATE_DIR, a folder of the repository that git ignores. One
@@ -60,6 +64,12 @@ notebook:
 APP_STATE_DIR ?= $(CURDIR)/.app-state
 serve:
 	APP_STATE_DIR=$(APP_STATE_DIR) PYTHONPATH=fsi_common:03_document_summary_agent $(PYTHON) -m fsi_common.app
+
+# Transaction monitoring on its own, until the application loads every topic into one process. It keeps
+# its state in its own folder, and APP_SEED=transaction-monitoring starts it with a run signed and a run waiting.
+APP_STATE_DIR_MONITORING ?= $(CURDIR)/.app-state-monitoring
+serve-monitoring:
+	APP_TOPICS=$(CURDIR)/02_transaction_monitoring_agent APP_STATE_DIR=$(APP_STATE_DIR_MONITORING) PYTHONPATH=fsi_common:02_transaction_monitoring_agent $(PYTHON) -m fsi_common.app
 
 # The offline edition: the application's pages for the recorded run, in one HTML file.
 # With several topics built, each is read in a process of its own and one file is written for the topic named.

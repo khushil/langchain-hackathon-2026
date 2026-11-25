@@ -1,0 +1,9 @@
+{
+  "dependencies": ["."],
+  "graphs": {
+    "transaction_monitoring_agent": "./agent.py:agent",
+    "transaction_monitoring": "./workflow/graph.py:graph"
+  },
+  "env": "../.env",
+  "python_version": "3.13"
+}

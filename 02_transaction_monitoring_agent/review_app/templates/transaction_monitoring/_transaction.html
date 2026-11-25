@@ -1,0 +1,41 @@
+{% import "macros.html" as ui %}
+{% macro line(view) %}
+<h2 class="source-title" data-hook="transaction-title">{{ view.tx_id }}, {{ view.merchant }}</h2>
+<p class="meta">{{ view.when }}</p>
+<dl class="record" data-hook="transaction">
+  <dt>Amount</dt><dd>{{ view.amount }}</dd>
+  <dt>Category</dt><dd>{{ view.category }}</dd>
+  <dt>Where</dt><dd>{{ view.where }}</dd>
+  <dt>Customer's home country</dt><dd>{{ view.home_country }}</dd>
+  <dt>Customer's usual spend</dt><dd>{{ view.usual_spend }}</dd>
+</dl>
+{% endmacro %}
+
+{% macro assessment(view) %}
+<dl class="record" data-hook="assessment">
+  <dt>Proposed decision</dt><dd data-hook="proposed">{{ view.proposed }}</dd>
+  <dt>Risk score</dt><dd data-hook="score">{{ view.score }} of 100</dd>
+  <dt>Confidence</dt>
+  <dd data-hook="confidence">{{ view.confidence }}{% if view.lowered %}, lowered from {{ view.assessor_confidence }}{% endif %}</dd>
+  {% if view.lowered_because %}
+  <dt>Why it was lowered</dt>
+  <dd><ul class="plain">{% for reason in view.lowered_because %}<li>{{ reason|capitalize }}</li>{% endfor %}</ul></dd>
+  {% endif %}
+  <dt>Reason given</dt><dd>{{ view.reason }}</dd>
+  <dt>Checks</dt>
+  <dd>
+    <ul class="plain">
+      {% for label, passed, detail in view.checks %}
+      <li>{% if passed %}<span class="badge">Passed</span>{% else %}{{ ui.badge("failed") }}{% endif %} <span{% if not passed %} title="{{ detail }}"{% endif %}>{{ label }}</span></li>
+      {% endfor %}
+    </ul>
+  </dd>
+</dl>
+{% endmacro %}
+
+{% macro source_line(view) %}
+<div class="meta" data-hook="source-label">The line of the transactions table this rests on</div>
+<p class="line" data-hook="source-line">{% if view.segments %}{% for seg in view.segments %}{% if seg.marked %}<mark>{{ seg.text }}</mark>{% else %}{{ seg.text }}{% endif %}{% endfor %}{% else %}{{ view.cited.unit_text }}{% endif %}</p>
+{% if not view.segments %}<p>{{ ui.badge("failed", "The quoted fields are not in this line") }}</p>{% endif %}
+<div class="meta" data-hook="digest">Table digest <details class="digest-details digest-inline"><summary class="digest" title="{{ view.fact.provenance.as_of }}">{{ view.fact.provenance.as_of[:15] }}…</summary><code class="digest">{{ view.fact.provenance.as_of }}</code></details></div>
+{% endmacro %}

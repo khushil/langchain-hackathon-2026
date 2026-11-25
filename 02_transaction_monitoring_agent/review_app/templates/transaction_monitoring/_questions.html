@@ -1,0 +1,56 @@
+<div class="exhibit" data-hook="exhibit">
+  {% if not model.question_states %}<p class="empty">The brief carries no open questions.</p>{% endif %}
+  {% for qs in model.question_states %}
+  {% set q = qs.question %}
+  <article class="question" data-hook="question">
+    <h2 class="question-text">{{ q.question }}</h2>
+    <p class="meta">
+      {% if qs.kind == "open" %}{{ ui.badge("needs_person") }}
+      {% elif qs.kind == "answered" %}<span class="badge">{{ decision_by(qs.decision, person) }}</span>
+      {% elif qs.kind == "assumed" %}<span class="badge">Accepted by you as an assumption</span>
+      {% else %}<span class="badge">{% if qs.decision %}{{ decision_by(qs.decision, person) }}{% else %}Answered in an earlier review{% endif %}</span>{% endif %}
+      Ask: {{ q.ask_role }}. Priority: {{ q.priority }}.
+    </p>
+    <dl class="record">
+      <dt>Why it is not known</dt><dd>{{ q.why_unknown }}</dd>
+      <dt>What changes with the answer</dt><dd>{{ q.impact }}</dd>
+      {% if qs.decision %}
+      <dt>{{ "Your answer" if qs.kind == "answered" else "Answer" }}</dt><dd>{{ qs.decision.answer }}</dd>
+      <dt>Given by</dt><dd>{{ decision_line(qs.decision, person) }}</dd>
+      <dt>What it rests on</dt><dd>{{ qs.decision.reason }}</dd>
+      {% endif %}
+      {% if qs.assumption %}<dt>Your assumption</dt><dd>{{ qs.assumption }}</dd>{% endif %}
+    </dl>
+    {% if person %}
+    {% set typed = form_values if error_target == q.id else {} %}
+    {% if form_error and error_target == q.id %}{{ parts.form_problem(form_error) }}{% endif %}
+    <div class="question-forms">
+      <form method="post" action="/transaction-monitoring/runs/{{ thread }}/answer" data-hook="answer-form">
+        <input type="hidden" name="brief_digest" value="{{ brief_digest }}">
+        <input type="hidden" name="question_id" value="{{ q.id }}">
+        <fieldset>
+          <legend>My own decision</legend>
+          {% for value, label in [("approve", "Approve"), ("block", "Block")] %}
+          <label class="choice" title="{{ label }} this transaction"><input type="radio" name="final" value="{{ value }}" {% if typed.get("final") == value %}checked{% endif %} required>{{ label }}</label>
+          {% endfor %}
+        </fieldset>
+        <label for="answer-{{ loop.index }}">Your answer</label>
+        <textarea id="answer-{{ loop.index }}" name="answer" required>{{ typed.get("answer", "") }}</textarea>
+        <label for="basis-{{ loop.index }}">What your answer rests on</label>
+        <textarea id="basis-{{ loop.index }}" name="reason" required>{{ typed.get("reason", "") }}</textarea>
+        <button class="button" type="submit" title="Record your answer to this question">Record my answer</button>
+      </form>
+      <form method="post" action="/transaction-monitoring/runs/{{ thread }}/assume" data-hook="assume-form">
+        <input type="hidden" name="brief_digest" value="{{ brief_digest }}">
+        <input type="hidden" name="question_id" value="{{ q.id }}">
+        <label for="words-{{ loop.index }}">Or accept it as an assumption, in your words</label>
+        <textarea id="words-{{ loop.index }}" name="words" required>{{ typed.get("words", "") }}</textarea>
+        <button class="button button-quiet" type="submit" title="Accept this question as an assumption in your words">Accept as an assumption</button>
+      </form>
+    </div>
+    {% else %}
+    <p><a href="{{ sign_in }}" title="Sign in with your name and role to answer">Sign in</a> to answer this question.</p>
+    {% endif %}
+  </article>
+  {% endfor %}
+</div>

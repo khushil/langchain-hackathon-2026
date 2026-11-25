@@ -1,0 +1,56 @@
+{% extends "transaction_monitoring/page.html" %}
+{% import "macros.html" as ui %}
+{% import "transaction_monitoring/_parts.html" as parts %}
+{% import "transaction_monitoring/_picture.html" as picture %}
+{% import "transaction_monitoring/_transaction.html" as tx %}
+{% block main %}
+{{ ui.answer(answer) }}
+{{ parts.tab_bar(tabs_for, "signed") }}
+<div class="exhibit brief-exhibit" data-hook="exhibit">
+  {{ picture.draw(pic, "The transactions of the brief by day and hour", current_tx) }}
+  <div class="review-grid">
+  <section class="pane statements" aria-label="The brief" data-hook="statements">
+    {% for item in statements %}
+    <article class="statement" data-hook="statement">
+      {% if item.heading %}<h2 class="statement-heading">{{ item.heading }}</h2>{% endif %}
+      <p class="statement-text">{{ item.text }}</p>
+      <ul class="cites">
+        <li>
+          <a class="fact-link" href="{{ tx_href(item.tx_id) }}" data-fact="{{ item.fact_id }}" title="Open {{ item.tx_id }} and its source line" {% if current_tx == item.tx_id %}aria-current="true"{% endif %}>{{ item.tx_id }}</a>
+          <span class="badge">{% if item.decision %}{{ decision_by(item.decision, person) }}{% else %}No decision{% endif %}</span>
+        </li>
+      </ul>
+    </article>
+    {% endfor %}
+  </section>
+  <aside class="pane source" aria-label="The selected transaction" data-hook="source">
+    {% if view %}
+    {{ tx.line(view) }}
+    {{ tx.assessment(view) }}
+    {{ tx.source_line(view) }}
+    {% if view_decision %}
+    <p class="note" data-hook="decision-record">{{ decision_line(view_decision, person) }}.{% if view_decision.amendment %} Own decision: {{ sentence_end(view_decision.amendment) }}{% endif %} Reason given: {{ view_decision.reason }}</p>
+    {% endif %}
+    {% endif %}
+  </aside>
+  </div>
+</div>
+<section class="panel" aria-label="The sign-off record">
+  <dl class="record" data-hook="sign-off-record">
+    <dt>Reviewer</dt><dd>{{ sign_off.reviewer.name }}</dd>
+    <dt>Role</dt><dd>{{ sign_off.reviewer.role }}</dd>
+    <dt>Date</dt><dd>{{ sign_off.date|long_date }}</dd>
+    <dt>Outcome</dt><dd>{{ "Signed" if sign_off.outcome == "signed" else "Returned" }}</dd>
+    <dt>{{ "Digest signed" if sign_off.outcome == "signed" else "Digest returned" }}</dt>
+    <dd><details class="digest-details"><summary class="digest" title="{{ sign_off.brief_digest }}">{{ sign_off.brief_digest[:15] }}…</summary><code class="digest">{{ sign_off.brief_digest }}</code></details></dd>
+    {% if sign_off.reason %}<dt>Reason for returning</dt><dd>{{ sign_off.reason }}</dd>{% endif %}
+    {% for assumption in sign_off.assumptions %}
+    <dt>Accepted as an assumption</dt><dd>{{ assumption.words }}</dd>
+    {% endfor %}
+  </dl>
+</section>
+<section class="panel" aria-label="Decisions made on the brief">
+  {% if carried_note %}<p class="meta" data-hook="carried-note">{{ carried_note }}</p>{% endif %}
+  {{ ui.table(table) }}
+</section>
+{% endblock %}

@@ -1,0 +1,15 @@
+{% extends "transaction_monitoring/page.html" %}
+{% import "macros.html" as ui %}
+{% import "transaction_monitoring/_parts.html" as parts %}
+{% block main %}
+<div class="review-page">
+{{ ui.answer(answer) }}
+{{ parts.tab_bar(tabs_for, tab) }}
+{% if form_error and not error_target %}{{ parts.form_problem(form_error) }}{% endif %}
+{% if tab == "brief" %}{% include "transaction_monitoring/_brief.html" %}
+{% elif tab == "questions" %}{% include "transaction_monitoring/_questions.html" %}
+{% elif tab == "history" %}{% include "transaction_monitoring/_history.html" %}
+{% else %}{% include "transaction_monitoring/_signoff.html" %}
+{% endif %}
+</div>
+{% endblock %}

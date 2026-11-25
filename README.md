@@ -11,7 +11,7 @@ The document is the starter's fictional policy statement PS26/4 and the firm is 
 | `fsi_common/` | The record types (sources, source units, facts, open questions, disagreements, decisions, briefs, sign-offs, unit accounting) with their JSON Schemas, examples and validator; the chat model that calls headless Claude Code and records or replays calls; the evaluation runner; the reviewer's application | Built |
 | `03_document_summary_agent/` | The compliance brief topic: the starter's deep agent and section sub-agent, the context layer, the workflow, the evaluations, the application's plug-in, the saved model calls and the notebook | Built |
 | `01_kyc_agent/` | The KYC onboarding topic: the starter's graph, the context layer that reads each application into cited facts and screens it against every list entry, the workflow, the evaluations on the starter's labels, the application's plug-in, the saved model calls and the notebook | Built |
-| `02_transaction_monitoring_agent/` | The starter's transaction monitoring topic | A README only |
+| `02_transaction_monitoring_agent/` | The transaction monitoring topic: the starter's agent and tools, the context layer, the workflow, the evaluations, the application's plug-in and the three notebooks | Built |
 
 `docs/user-guide.md` walks through the reviewer's application step by step. `agents.py` in topic 03 gathers every agent of the topic by name, as the hackathon's submission rules ask.
 
@@ -280,6 +280,17 @@ These are the starter's files for topic 01, adapted:
 - `01_kyc_agent/modules/01_kyc_agent.ipynb` keeps the starter's 35 cells, changed where a model is chosen and where a sentence of the starter's was stale, and adds 16.
 
 This topic's own README replaces the starter's `01_kyc_agent/README.md`.
+
+In topic 02, these files are the starter's, byte for byte:
+
+- `instructions.md`
+- `tools/__init__.py`, `tools/transactions.py`, `tools/customers.py`, `tools/decisions.py`
+- `evals/__init__.py`, `evals/scoring_evals.py`, `scripts/__init__.py`
+- `utils/__init__.py`, `utils/db.py`, `utils/state.py`, `utils/transaction_processing.py`, `utils/attendee.py`
+- `data/transactions.jsonl`, `data/customer_profiles.jsonl`, `data/analyst_labels.jsonl`, `data/reviewer_answers.jsonl`, `data/simulated_annotations.jsonl`
+- `images/architecture.png`, `images/eval_loop.png`
+
+The topic's adapted files are listed in its own README.
 
 The repository's own work, the contract, adapter, context layer, workflow, evaluations and application, is by Khushil Dep.
 
