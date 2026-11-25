@@ -4,6 +4,7 @@
 {% import "compliance_brief/_map.html" as picture %}
 {% block main %}
 {{ ui.answer(answer) }}
+{{ parts.trace_line(trace_view()) }}
 {{ parts.tab_bar(tabs_for, "facts") }}
 <div class="exhibit" data-hook="exhibit">
   {% if map %}{{ picture.draw(map) }}{% endif %}

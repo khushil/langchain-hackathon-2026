@@ -26,6 +26,7 @@ from langchain_core.language_models import BaseChatModel
 from langchain_core.outputs import ChatResult
 from pydantic import ConfigDict, PrivateAttr
 
+from fsi_common.tracing import model_labels
 from utils import PROJECT_ROOT
 
 REPO_ROOT = PROJECT_ROOT.parent
@@ -38,6 +39,8 @@ DEFAULT_BACKEND = "replay"
 BACKEND_MODES = {"claude-code": "live", "record": "record", "replay": "replay"}
 BACKENDS = (*BACKEND_MODES, "langchain")
 MAX_CONCURRENCY = 4
+TOPIC = "kyc"
+"""This topic's key in ``fsi_common.tracing``, which names it on every traced run."""
 DEFAULT_RECORDINGS_DIR = PROJECT_ROOT / "recordings"
 
 
@@ -185,6 +188,11 @@ class DeferredChatModel(BaseChatModel):
                     recordings_dir=self.recordings_dir,
                     max_concurrency=self.max_concurrency,
                 )
+                # ``bind_tools`` and ``with_structured_output`` run the adapter's own model, so
+                # the labels this one carries must be on that one as well.
+                self._resolved = self._resolved.model_copy(
+                    update={"metadata": self.metadata, "tags": self.tags}
+                )
             return self._resolved
 
     def _generate(
@@ -254,10 +262,13 @@ def get_model(role: str) -> BaseChatModel:
 
         return init_chat_model(env.get("MODEL_NAME", model))
     chosen = ROLE_MODELS[role]
+    labels = model_labels(TOPIC, role, model=chosen.model, effort=chosen.effort)
     return DeferredChatModel(
         role=role,
         model=chosen.model,
         effort=chosen.effort,
         mode=BACKEND_MODES[backend],
         recordings_dir=recordings_dir(env),
+        metadata=labels.metadata,
+        tags=labels.tags,
     )

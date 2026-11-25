@@ -13,6 +13,7 @@ from urllib.parse import urlencode
 from starlette.exceptions import HTTPException
 
 from fsi_common.records import Decision
+from fsi_common.tracing import TraceLookup, traced_client
 from review_app.drafts import DraftFileError, DraftStore
 from review_app.service import (
     EngineMissingError,
@@ -53,6 +54,8 @@ class Services:
     today: Callable[[], str] = today
     state_dir: Path | None = None
     """The folder that keeps the state, when the application is durable."""
+    traces: TraceLookup = field(default_factory=lambda: TraceLookup(traced_client))
+    """Reads each batch's trace link and totals from LangSmith; reads nothing with tracing off."""
 
 
 @dataclass(frozen=True)

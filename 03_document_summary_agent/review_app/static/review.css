@@ -142,3 +142,4 @@ main:has(.review-page) { padding-bottom: 10px; }
 
 /* A badge beside a fact wraps inside its line, so a long date is never cut at a narrow window. */
 .cites .badge { white-space: normal; max-width: 100%; }
+.trace { margin: 0 0 10px; font-size: 0.9em; color: var(--muted, inherit); display: flex; gap: 12px; flex-wrap: wrap; }

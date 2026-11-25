@@ -35,7 +35,15 @@ def test_the_configuration_names_the_thread_the_graph_and_the_concurrency_limit(
     assert config["configurable"] == {"thread_id": "t-1"}
     assert config["run_name"] == "kyc-onboarding"
     assert config["max_concurrency"] == MAX_CONCURRENCY
-    assert config["metadata"] == META
+    assert {key: config["metadata"][key] for key in META} == META
+    assert config["metadata"]["topic"] == "01-kyc-onboarding"
+    assert config["metadata"]["thread_id"] == "t-1"
+    assert "topic:01-kyc-onboarding" in config["tags"]
+
+
+def test_a_configuration_rebuilt_from_what_the_registry_kept_is_the_same():
+    config = config_of("t-1", META, run_id="r-1")
+    assert config_of("t-1", config["metadata"], run_id="r-1") == config
 
 
 def test_runs_are_read_back_oldest_first_with_their_request_configuration_and_status(tmp_path):

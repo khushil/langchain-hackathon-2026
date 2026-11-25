@@ -20,3 +20,12 @@
 {% macro form_problem(message) %}
 <p class="problem" role="alert" data-hook="form-problem">{{ ui.badge("failed", message) }}</p>
 {% endmacro %}
+
+{% macro trace_line(trace) %}
+{% if trace %}
+<p class="trace" data-hook="trace">
+  {% if trace.url %}<a href="{{ trace.url }}" target="_blank" rel="noopener" title="Open this batch's trace in LangSmith, every step and its cost">Trace in LangSmith</a>{% endif %}
+  {% if trace.usage and trace.usage.total_tokens %}<span data-hook="trace-usage">{{ "{:,}".format(trace.usage.total_tokens) }} tokens{% if trace.usage.total_cost %}; <span data-hook="trace-cost" title="LangSmith's own estimate from the token counts; it is not a bill">LangSmith estimates {% if trace.usage.total_cost < 0.01 %}under $0.01{% else %}about ${{ "%.2f"|format(trace.usage.total_cost) }}{% endif %}</span>{% endif %}</span>{% endif %}
+</p>
+{% endif %}
+{% endmacro %}

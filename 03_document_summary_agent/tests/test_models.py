@@ -17,6 +17,7 @@ from utils.models import (
     get_model,
 )
 
+LABEL_KEYS = ("topic", "topic_number", "model_role", "model_name", "model_effort")
 ADAPTER_BACKENDS = {"claude-code": "live", "record": "record", "replay": "replay"}
 
 
@@ -51,6 +52,20 @@ def test_every_role_on_every_adapter_backend(
             "max_concurrency": 4,
         }
     ]
+
+
+@pytest.mark.parametrize("role", sorted(ROLE_MODELS))
+def test_every_model_names_its_topic_role_model_and_effort_for_langsmith(model_env, role):
+    chat = get_model(role)
+    chosen = ROLE_MODELS[role]
+    assert {key: chat.metadata[key] for key in LABEL_KEYS} == {
+        "topic": "03-compliance-brief",
+        "topic_number": "03",
+        "model_role": role,
+        "model_name": chosen.model,
+        "model_effort": chosen.effort,
+    }
+    assert chat.tags == ["topic:03-compliance-brief", f"role:{role}"]
 
 
 @pytest.mark.parametrize("role", sorted(ROLE_MODELS))

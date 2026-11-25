@@ -19,6 +19,7 @@ from langsmith.utils import LangSmithError
 
 from context.reader import read_document
 from context.tables import read_tables
+from fsi_common.tracing import resume_tags
 from utils.records import FACT_CONTEXT
 from utils.state import BriefRequest, BriefState, ReviewRequest, ReviewResponse
 from workflow.errors import InvalidRequestError
@@ -331,6 +332,7 @@ class BriefRuns:
         config = {
             **{k: v for k, v in run.config.items() if k != "run_id"},
             "metadata": {**run.config["metadata"], "reviewer": response.reviewer.name},
+            "tags": resume_tags(run.config.get("tags", [])),
         }
         self._execute(run, Command(resume=response.model_dump(mode="json", by_alias=True)), config)
         return self.status(thread_id)

@@ -18,6 +18,7 @@ from langgraph.types import Command
 from langsmith.utils import LangSmithError
 
 from context.reader import read_applications
+from fsi_common.tracing import resume_tags
 from utils.kyc_state import KycRequest, KycState, ReviewRequest, ReviewResponse
 from utils.records import FACT_CONTEXT
 from workflow.errors import InvalidRequestError
@@ -326,6 +327,7 @@ class KycRuns:
         config = {
             **{k: v for k, v in run.config.items() if k != "run_id"},
             "metadata": {**run.config["metadata"], "reviewer": response.reviewer.name},
+            "tags": resume_tags(run.config.get("tags", [])),
         }
         self._execute(run, Command(resume=response.model_dump(mode="json", by_alias=True)), config)
         return self.status(thread_id)

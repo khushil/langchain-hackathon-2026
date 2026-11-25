@@ -177,8 +177,14 @@ def test_the_run_configuration_names_the_run_and_carries_the_applications_and_no
     assert start_config["metadata"] == {
         "customers": 2,
         "applications_digest": digest_bytes(table.read_bytes()),
+        "topic": "01-kyc-onboarding",
+        "topic_number": "01",
+        "thread_id": thread_id,
+        "review_id": thread_id,
     }
+    assert start_config["tags"] == ["topic:01-kyc-onboarding"]
     assert resume_config["metadata"] == {**start_config["metadata"], "reviewer": "Dana Whitfield"}
+    assert resume_config["tags"] == ["topic:01-kyc-onboarding", "stage:review"]
     text = repr(seen).lower()
     assert "key" not in text and "token" not in text and "secret" not in text
 

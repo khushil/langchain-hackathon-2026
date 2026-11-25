@@ -1,8 +1,10 @@
 {% extends "kyc/page.html" %}
 {% import "macros.html" as ui %}
+{% import "kyc/_parts.html" as parts %}
 {% block head_extra %}{% if refresh %}<meta http-equiv="refresh" content="3">{% endif %}{% endblock %}
 {% block main %}
 {{ ui.answer(answer) }}
+{{ parts.trace_line(trace_view()) }}
 <div class="exhibit" data-hook="exhibit">
   {% if error %}
   <p class="problem" role="alert" data-hook="run-error">{{ ui.badge("failed", "Stopped") }} <span>{{ error }}</span></p>

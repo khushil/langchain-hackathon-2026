@@ -17,7 +17,8 @@ from langgraph.store.sqlite import SqliteStore
 from langsmith.utils import LangSmithNotFoundError
 
 from fsi_common.evals.upload import DEFAULT_ENDPOINT
-from utils.models import MAX_CONCURRENCY, tracing_enabled
+from fsi_common.tracing import run_labels
+from utils.models import MAX_CONCURRENCY, TOPIC, tracing_enabled
 from workflow.graph import GRAPH_NAME
 
 RunStatus = Literal["running", "awaiting_review", "signed", "returned", "failed"]
@@ -250,11 +251,13 @@ def config_of(
         The configuration: the thread, the graph's name, the concurrency limit, the metadata and,
         when given, the run id.
     """
+    labels = run_labels(TOPIC, thread_id, metadata)
     config: dict[str, Any] = {
         "configurable": {"thread_id": thread_id},
         "run_name": GRAPH_NAME,
         "max_concurrency": MAX_CONCURRENCY,
-        "metadata": dict(metadata),
+        "metadata": labels.metadata,
+        "tags": labels.tags,
     }
     if run_id is not None:
         config["run_id"] = run_id

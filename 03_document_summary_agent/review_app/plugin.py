@@ -7,12 +7,13 @@ from pathlib import Path
 from starlette.routing import Mount, Route
 
 from fsi_common.app import TopicPlugin
+from fsi_common.tracing import trace_view_global
 from review_app import routes_facts, routes_policies, routes_review, routes_start
 from review_app.context import PREFIX, Services
 from review_app.drafts import DraftStore
 from review_app.naming import Naming
 from review_app.seed import SEED_NAME, seed_compliance_brief
-from review_app.service import BriefRuns, EngineMissingError
+from review_app.service import BriefRuns, EngineMissingError, RunNotFoundError
 from review_app.source_view import (
     check_label,
     decision_by,
@@ -73,6 +74,23 @@ def keep_state_in(services: Services, folder: Path) -> None:
     services.state_dir = folder
 
 
+def trace_of(services: Services, thread_id: str):
+    """Give where a review's first graph run was traced, or None when that is not known.
+
+    Args:
+        services: The run service, library, held decisions and clock.
+        thread_id: The review's thread id.
+
+    Returns:
+        The run's id, project and start time; None for an unknown review or a build without the
+        engine.
+    """
+    try:
+        return services.runs().root_run(thread_id)
+    except (RunNotFoundError, EngineMissingError):
+        return None
+
+
 def build_plugin(services: Services | None = None) -> TopicPlugin:
     """Build the plug-in over a set of services.
 
@@ -112,6 +130,9 @@ def build_plugin(services: Services | None = None) -> TopicPlugin:
             "place_of": naming.place_of,
             "sentence_end": sentence_end,
             "anchor_label_of": naming.place,
+            "trace_view": trace_view_global(
+                services.traces, lambda thread: trace_of(services, thread)
+            ),
         },
         template_filters={"difference_label": difference_label},
         waiting=lambda: count_waiting(services),

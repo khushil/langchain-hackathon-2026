@@ -5,6 +5,7 @@
 {% import "compliance_brief/_map.html" as picture %}
 {% block main %}
 {{ ui.answer(answer) }}
+{{ parts.trace_line(trace_view()) }}
 {{ parts.tab_bar(tabs_for, "signed") }}
 <div class="exhibit review-grid" data-hook="exhibit">
   <section class="pane statements" aria-label="The brief" data-hook="statements">

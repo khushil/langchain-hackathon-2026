@@ -107,3 +107,4 @@ a.cell:hover { background: var(--mark); }
   .entry-key li { grid-template-columns: 1.6rem minmax(0, 1fr); }
   .entry-key .entry-detail { grid-column: 2; }
 }
+.trace { margin: 0 0 10px; font-size: 0.9em; color: var(--muted); display: flex; gap: 12px; flex-wrap: wrap; }

@@ -194,8 +194,19 @@ def test_the_run_configuration_names_the_run_and_carries_the_document_and_no_sec
         "document_id": "PS26-4",
         "firm_id": "FIRM-001",
         "document_digest": digest_bytes(document.read_bytes()),
+        "institution": "FIRM-001",
+        "topic": "03-compliance-brief",
+        "topic_number": "03",
+        "thread_id": thread_id,
+        "review_id": thread_id,
     }
+    assert start_config["tags"] == [
+        "topic:03-compliance-brief",
+        "institution:FIRM-001",
+        "document:PS26-4",
+    ]
     assert resume_config["metadata"] == {**start_config["metadata"], "reviewer": "Dana Whitfield"}
+    assert resume_config["tags"] == [*start_config["tags"], "stage:review"]
     assert resume_config["run_name"] == "compliance-brief"
     text = repr(seen).lower()
     assert "key" not in text and "token" not in text and "secret" not in text

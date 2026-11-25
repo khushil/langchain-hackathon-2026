@@ -3,6 +3,7 @@
 {% import "kyc/_parts.html" as parts %}
 {% block main %}
 {{ ui.answer(answer) }}
+{{ parts.trace_line(trace_view()) }}
 {{ parts.tab_bar(tabs_for, "screenings") }}
 <div class="exhibit" data-hook="exhibit">
   {{ ui.table(table) }}

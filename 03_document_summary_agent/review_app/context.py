@@ -12,6 +12,7 @@ from urllib.parse import urlencode
 from starlette.exceptions import HTTPException
 
 from fsi_common.records import Decision
+from fsi_common.tracing import TraceLookup, traced_client
 from review_app.drafts import DraftFileError, DraftStore
 from review_app.feedback import FeedbackClient, default_client
 from review_app.library import Library, read_library
@@ -51,6 +52,8 @@ class Services:
     """Gives the LangSmith client the decisions on a signed brief go to; None with tracing off."""
     feedback_notes: dict[str, str] = field(default_factory=dict)
     """For each run whose decisions were not all sent, the sentence the signed page shows."""
+    traces: TraceLookup = field(default_factory=lambda: TraceLookup(traced_client))
+    """Reads each brief's trace link and totals from LangSmith; reads nothing with tracing off."""
 
 
 @dataclass(frozen=True)

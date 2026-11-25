@@ -4,6 +4,7 @@
 {% import "kyc/_picture.html" as pic %}
 {% block main %}
 {{ ui.answer(answer) }}
+{{ parts.trace_line(trace_view()) }}
 {{ parts.tab_bar(tabs_for, "signed") }}
 <div class="exhibit" data-hook="exhibit">
   {{ pic.draw(picture) }}
