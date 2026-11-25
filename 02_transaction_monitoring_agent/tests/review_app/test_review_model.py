@@ -16,10 +16,10 @@ DANA = Person(**DANA_FIELDS)
 SAM = Person(name="Sam Okafor", role="Fraud Analyst")
 
 
-def model_for(small=None, draft=None, viewer=DANA, questions=()):
+def model_for(small=None, draft=None, viewer=DANA, questions=(), earlier=None):
     small = small or small_request()
     request = small.request.model_copy(update={"open_questions": list(questions)})
-    return ReviewModel(request, draft or Draft(), viewer=viewer, earlier={})
+    return ReviewModel(request, draft or Draft(), viewer=viewer, earlier=earlier or {})
 
 
 def facts(small):
@@ -137,7 +137,12 @@ def test_an_open_question_is_waiting_until_it_is_answered_and_an_assumption_does
     assert [s.kind for s in waiting.question_states] == ["open"]
     assert waiting.answer().tiles[2].value == "0 of 1"
     answer = Decision.on(
-        q, outcome="answer", answer="Approve it.", reason="Called her.", reviewer=DANA, date=TODAY
+        q,
+        outcome="answer",
+        answer="Approve. It is her.",
+        reason="Called her.",
+        reviewer=DANA,
+        date=TODAY,
     )
     answered = model_for(small, draft_of(answers=[answer]), questions=[q])
     assert [s.kind for s in answered.question_states] == ["answered"]
@@ -151,6 +156,28 @@ def test_an_open_question_is_waiting_until_it_is_answered_and_an_assumption_does
     )
     assert [s.kind for s in beside.question_states] == ["answered"]
     assert beside.question_states[0].assumption == "Words."
+
+
+def test_a_held_answer_that_names_neither_approve_nor_block_leaves_the_question_open():
+    small = small_request()
+    q = question()
+    vague = Decision.on(
+        q, outcome="answer", answer="Maybe, ask her.", reason="Unsure.", reviewer=DANA, date=TODAY
+    )
+    model = model_for(small, draft_of(answers=[vague]), questions=[q])
+    assert [s.kind for s in model.question_states] == ["open"]
+    assert model.answer().tiles[2].value == "0 of 1"
+
+
+def test_a_question_settled_earlier_by_words_that_name_neither_stays_open():
+    small = small_request()
+    q = question()
+    vague = Decision.on(
+        q, outcome="answer", answer="Maybe, ask her.", reason="Unsure.", reviewer=DANA, date=TODAY
+    )
+    settled = q.model_copy(update={"state": "answered", "decision_id": vague.id})
+    model = model_for(small, questions=[settled], earlier={vague.id: vague})
+    assert [s.kind for s in model.question_states] == ["open"]
 
 
 def test_the_brief_with_an_unanswered_question_cannot_be_signed_and_says_so():
@@ -174,7 +201,12 @@ def test_a_draft_answer_to_a_question_not_on_the_brief_is_ignored():
     small = small_request()
     q = question()
     answer = Decision.on(
-        q, outcome="answer", answer="Approve it.", reason="Called her.", reviewer=DANA, date=TODAY
+        q,
+        outcome="answer",
+        answer="Approve. It is her.",
+        reason="Called her.",
+        reviewer=DANA,
+        date=TODAY,
     )
     model = model_for(small, draft_of(answers=[answer]))
     assert model.valid_answers(draft_of(answers=[answer])) == {}

@@ -15,7 +15,7 @@ from fsi_common.ids import digest_json
 from fsi_common.records import Decision, OpenQuestion, Person
 from fsi_common.records.questions import SETTLED_STATES
 from review_app.drafts import Draft
-from utils.review import NOT_ANSWERED, CitedFact, ReviewRequest
+from utils.review import NOT_ANSWERED, CitedFact, ReviewRequest, settles
 
 FactKind = Literal["yours", "carried", "needs"]
 QuestionKind = Literal["answered", "settled", "open"]
@@ -115,11 +115,13 @@ class ReviewModel:
 
     def _question_state(self, question: OpenQuestion) -> QuestionState:
         assumption = self._draft_assumptions.get(question.id)
-        if question.id in self._draft_answers:
-            return QuestionState(question, "answered", self._draft_answers[question.id], assumption)
+        mine = self._draft_answers.get(question.id)
+        if mine is not None and settles(mine):
+            return QuestionState(question, "answered", mine, assumption)
         if question.state in SETTLED_STATES:
-            decision = self.earlier.get(question.decision_id or "")
-            return QuestionState(question, "settled", decision, assumption)
+            earlier = self.earlier.get(question.decision_id or "")
+            if earlier is not None and settles(earlier):
+                return QuestionState(question, "settled", earlier, assumption)
         return QuestionState(question, "open", None, assumption)
 
     @property

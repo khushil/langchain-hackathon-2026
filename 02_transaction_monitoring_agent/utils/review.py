@@ -167,6 +167,30 @@ def final_of(words: str | None) -> str | None:
     return first if first in FINAL_DECISIONS else None
 
 
+def settles(decision: Decision) -> bool:
+    """Say whether a person's decision settles a transaction.
+
+    A transaction is settled by a person's approve or block: agreeing with the proposal, an
+    amendment or an answer that opens with ``Approve.`` or ``Block.``. Disagreeing with a proposal
+    settles nothing, and neither does an amendment or an answer in other words.
+
+    Args:
+        decision: The decision on an assessment or on a question.
+
+    Returns:
+        True when the decision stands as an approve or a block.
+    """
+    match decision.outcome:
+        case "accept":
+            return True
+        case "amend":
+            return final_of(decision.amendment) is not None
+        case "answer":
+            return final_of(decision.answer) is not None
+        case _:
+            return False
+
+
 def _labels(*labels: str) -> tuple[str, ...]:
     for label in labels:
         if not label or "." in label:

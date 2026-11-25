@@ -27,7 +27,7 @@ from utils.review import (
     ReviewRequest,
     ReviewResponse,
     ReviewStatement,
-    final_of,
+    settles,
 )
 from workflow.decisions import latest_by_subject, load_decisions, save_decisions, save_sign_off
 from workflow.errors import UnitNotHeldError
@@ -53,6 +53,7 @@ def _settled_by_earlier(question: OpenQuestion, earlier: Mapping[str, Record]) -
     if (
         decision is not None
         and decision.outcome == "answer"
+        and settles(decision)
         and question.state not in SETTLED_STATES
     ):
         return OpenQuestion.model_validate(
@@ -141,6 +142,14 @@ def _shown(request: ReviewRequest, state: MonitorState) -> dict[str, tuple[str, 
     return shown
 
 
+def _settled_earlier(question: OpenQuestion, earlier: Mapping[str, Record]) -> bool:
+    """Say whether an earlier decision, which the reviewer was shown, settles the question."""
+    if question.state not in SETTLED_STATES:
+        return False
+    decision = earlier.get(question.decision_id or "")
+    return decision is not None and settles(decision)
+
+
 def _check_sign_off_against_questions(response: ReviewResponse, request: ReviewRequest) -> None:
     """Refuse a sign-off that leaves an open question unrecorded, or names one the brief lacks."""
     sign_off = response.sign_off
@@ -156,15 +165,12 @@ def _check_sign_off_against_questions(response: ReviewResponse, request: ReviewR
         )
     if sign_off.outcome != "signed":
         return
-    answered = {
-        d.subject_id
-        for d in response.decisions
-        if d.outcome == "answer" and final_of(d.answer) is not None
-    }
+    answered = {d.subject_id for d in response.decisions if d.outcome == "answer" and settles(d)}
+    earlier = {d.id: d for d in request.history}
     unrecorded = [
         question.id
         for question in request.open_questions
-        if question.state not in SETTLED_STATES and question.id not in answered
+        if question.id not in answered and not _settled_earlier(question, earlier)
     ]
     if unrecorded:
         raise ReviewMismatchError(
@@ -193,6 +199,8 @@ def _check_sign_off_against_assessments(response: ReviewResponse, request: Revie
             waiting.append(cited.fact.subject.anchor)
         elif decision.outcome == "reject":
             rejected.append(cited.fact.subject.anchor)
+        elif not settles(decision):
+            waiting.append(cited.fact.subject.anchor)
     if waiting:
         raise ReviewMismatchError(
             f"The brief was signed with no decision on {', '.join(waiting)}; a signed brief "
@@ -203,6 +211,24 @@ def _check_sign_off_against_assessments(response: ReviewResponse, request: Revie
             f"The brief was signed with {', '.join(rejected)} rejected; a brief with a rejected "
             "assessment can be returned but not signed."
         )
+
+
+def _check_one_decision_each(response: ReviewResponse, request: ReviewRequest) -> None:
+    """Refuse a response with two decisions on one transaction, or an amendment in other words."""
+    names = {c.fact.id: c.fact.subject.anchor for c in request.assessments}
+    names |= {q.id: q.about.anchor for q in request.open_questions}
+    seen: set[str] = set()
+    for decision in response.decisions:
+        name = names.get(decision.subject_id, decision.subject_id)
+        if decision.subject_id in seen:
+            raise ReviewMismatchError(
+                f"The response holds more than one decision on {name}; a transaction has one."
+            )
+        seen.add(decision.subject_id)
+        if decision.outcome == "amend" and not settles(decision):
+            raise ReviewMismatchError(
+                f"Decision {decision.id} amends {name} without saying approve or block."
+            )
 
 
 def validate_response(
@@ -237,6 +263,7 @@ def validate_response(
                 f"Decision {decision.id} is on {decision.subject_id} as it was before it "
                 "changed, not as the reviewer was shown it."
             )
+    _check_one_decision_each(response, request)
     _check_sign_off_against_questions(response, request)
     _check_sign_off_against_assessments(response, request)
 
@@ -268,7 +295,7 @@ def apply_response(
         and cited.carry.decision is not None
         and cited.fact.id not in decided
     ]
-    answers = {d.subject_id: d for d in response.decisions if d.outcome == "answer"}
+    answers = {d.subject_id: d for d in response.decisions if d.outcome == "answer" and settles(d)}
     questions = {}
     for question in request.open_questions:
         answer = answers.get(question.id)

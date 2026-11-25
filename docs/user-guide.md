@@ -225,4 +225,4 @@ This part walks through the third topic of Review desk. You play the compliance 
 
 ### A later run
 
-14. Click "Transaction monitoring" and start a run from "Assess a customer's transactions": choose "Priya Shah" and click "Assess the transactions". On the saved calls it is ready within a few seconds. Decisions about a customer are carried from the reviews already signed. On the saved calls every proposal is unchanged, so all ten transactions show their earlier decision, "Carried: agreed", and nothing is left to decide; a transaction whose proposal had changed would be asked again and say what changed.
+14. Click "Transaction monitoring" and start a run from "Assess a customer's transactions": choose "Priya Shah" and click "Assess the transactions". On the saved calls it is ready within a few seconds. Decisions about a customer are carried from the earlier reviews of that customer, signed or returned. On the saved calls every proposal is unchanged, so all ten transactions show their earlier decision, "Carried: agreed", and nothing is left to decide; a transaction whose proposal had changed would be asked again and say what changed.

@@ -224,4 +224,5 @@ def test_a_later_run_carries_what_a_signed_run_decided(walk):
     )
     assert "On the saved calls every proposal is unchanged, so all ten transactions" in steps()
     assert "Carried: agreed" in steps()
+    assert "carried from the earlier reviews of that customer, signed or returned" in steps()
     assert re.search(r"Assess the transactions", steps())
