@@ -36,7 +36,7 @@ from fsi_common.app.rendering import make_environment
 from fsi_common.app.session import SessionCodec
 from fsi_common.app.shell_pages import about_page, forward, home
 from fsi_common.app.topic_info import TopicInfo, TopicInfoError
-from fsi_common.app.topics import NoTopicsError, SeedError, TopicLoadError, check_distinct
+from fsi_common.app.topics import NoTopicsError, TopicLoadError, check_distinct, seed_name_error
 
 log = logging.getLogger(__name__)
 
@@ -112,7 +112,7 @@ class Shell:
         """Start every topic's process and wait until each has answered or the time is up.
 
         Raises:
-            SeedError: If ``APP_SEED`` names no topic that answered.
+            SeedError: If ``APP_SEED`` names a topic that did not answer.
         """
         # Not in a pool thread: a process is tied to the thread that started it, and a pool
         # thread may end. Popen returns at once, so starting here does not hold the loop.
@@ -146,14 +146,10 @@ class Shell:
                 return
 
     def _check_seed(self, not_started: int) -> None:
-        wanted = self.config.seed
         names = [c.info.name for c in self.children if c.info is not None]
-        if wanted and wanted not in names:
-            more = f" and {not_started} that did not start" if not_started else ""
-            raise SeedError(
-                f"APP_SEED is '{wanted}', which is not a topic served here; "
-                f"topics served: {', '.join(names)}{more}."
-            )
+        unknown = [name for name in self.config.seeds if name not in names]
+        if unknown:
+            raise seed_name_error(unknown, names, not_started=not_started)
 
     async def stop(self) -> None:
         """Stop every process this shell started and close its client."""

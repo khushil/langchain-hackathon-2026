@@ -35,6 +35,12 @@ class AppConfig:
     child_start_seconds: float = DEFAULT_CHILD_START_SECONDS
 
     @property
+    def seeds(self) -> tuple[str, ...]:
+        """The topic names ``APP_SEED`` lists: split at commas, trimmed, each once, in order."""
+        names = (name.strip() for name in self.seed.split(","))
+        return tuple(dict.fromkeys(name for name in names if name))
+
+    @property
     def cookie_name(self) -> str:
         """The name of the sign-in cookie: ``cookie`` when set, else one made from the port.
 
@@ -51,12 +57,12 @@ class AppConfig:
         one is made for each process when it is absent), ``APP_COOKIE`` names the sign-in cookie
         (``reviewer-`` and the port when it is absent), and ``APP_TOPICS`` lists topic folders
         separated as a path is. Without it every topic folder of the repository that holds a
-        ``review_app/plugin.py`` is served. ``APP_SEED`` names a topic whose starting work is made
-        when the application starts; without it the application starts empty. ``APP_STATE_DIR``
-        names a folder in which each topic keeps its runs, decisions and drafts in files, so a
-        restart finds them; without it everything is kept in memory. ``APP_CHILD_START_SECONDS``
-        is how long the shell waits for each topic's process to answer when it starts
-        (``90`` when absent).
+        ``review_app/plugin.py`` is served. ``APP_SEED`` names the topics whose starting work is
+        made when the application starts, one name or several separated by commas; without it
+        the application starts empty. ``APP_STATE_DIR`` names a folder in which each topic keeps
+        its runs, decisions and drafts in files, so a restart finds them; without it everything
+        is kept in memory. ``APP_CHILD_START_SECONDS`` is how long the shell waits for each
+        topic's process to answer when it starts (``90`` when absent).
 
         Args:
             environ: The environment to read; the process's own when absent.

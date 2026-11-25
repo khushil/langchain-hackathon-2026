@@ -24,7 +24,7 @@ if (HERE / "broken.flag").exists():
     raise ImportError("the probe was told to break")
 if (HERE / "slow.flag").exists():
     time.sleep(120)
-STATE = {"folder": "", "seeded": False}
+STATE = {"folder": "", "seeded": False, "made": False}
 
 
 async def index(request):
@@ -92,7 +92,12 @@ def use_state_dir(folder):
 
 
 def seed():
+    # the starting work is made once; a second start on the same folder finds it and reuses it
+    marker = Path(STATE["folder"]) / "seeded.txt"
     STATE["seeded"] = True
+    STATE["made"] = not marker.exists()
+    if STATE["made"]:
+        marker.write_text("seeded once\\n")
 
 
 PLUGIN = TopicPlugin(

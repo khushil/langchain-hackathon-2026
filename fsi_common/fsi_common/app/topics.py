@@ -21,6 +21,38 @@ class SeedError(RuntimeError):
     """The starting work asked for by ``APP_SEED`` cannot be made; the message says why."""
 
 
+def _and(names: Sequence[str]) -> str:
+    return names[0] if len(names) == 1 else ", ".join(names[:-1]) + " and " + names[-1]
+
+
+def seed_name_error(
+    unknown: Sequence[str], served: Sequence[str], *, not_started: int = 0
+) -> SeedError:
+    """Make the error for names in ``APP_SEED`` that no served topic has.
+
+    One name reads as it always has; several are named together, plainly.
+
+    Args:
+        unknown: The names no served topic has, in the order listed.
+        served: The names of the topics served.
+        not_started: How many topics did not start, so cannot be named.
+
+    Returns:
+        The error to raise.
+    """
+    if len(unknown) == 1:
+        more = f" and {not_started} that did not start" if not_started else ""
+        return SeedError(
+            f"APP_SEED is '{unknown[0]}', which is not a topic served here; "
+            f"topics served: {', '.join(served)}{more}."
+        )
+    more = f"; {not_started} did not start" if not_started else ""
+    return SeedError(
+        f"APP_SEED names {_and(unknown)}, which are not topics served here; "
+        f"the topics are {_and(served) if served else 'none'}{more}."
+    )
+
+
 class TopicLoadError(RuntimeError):
     """A topic's plug-in could not be loaded; the message names the folder and the cause."""
 

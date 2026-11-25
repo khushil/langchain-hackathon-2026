@@ -78,7 +78,7 @@ def worker_environment(folder: Path) -> dict[str, str]:
 
 
 def child_environment(
-    config: AppConfig, folder: Path, *, state: Path | None, port: int, fd: int
+    config: AppConfig, folder: Path, *, state: Path | None, port: int, fd: int, seed: str
 ) -> dict[str, str]:
     """Make the environment of a topic's process.
 
@@ -90,6 +90,7 @@ def child_environment(
         state: The topic's own state folder, or None when the shell keeps no state in files.
         port: The loopback port of the socket the process is given.
         fd: The number of that socket in the process.
+        seed: The ``APP_SEED`` the process is given: the names of the topics to seed, or empty.
 
     Returns:
         The environment.
@@ -106,8 +107,8 @@ def child_environment(
             "APP_PARENT_PID": str(os.getpid()),
         }
     )
-    if config.seed:
-        env["APP_SEED"] = config.seed
+    if seed:
+        env["APP_SEED"] = seed
     if state is not None:
         env["APP_STATE_DIR"] = str(state)
     return env
@@ -162,7 +163,12 @@ class TopicChild:
                 listener.listen(LISTEN_BACKLOG)
                 self.port = listener.getsockname()[1]
                 env = child_environment(
-                    config, self.folder, state=self.state, port=self.port, fd=listener.fileno()
+                    config,
+                    self.folder,
+                    state=self.state,
+                    port=self.port,
+                    fd=listener.fileno(),
+                    seed=self._seed_for(config),
                 )
                 self.process = subprocess.Popen(  # noqa: S603 - our own interpreter and module
                     [sys.executable, "-P", "-m", CHILD_MODULE],
@@ -173,6 +179,17 @@ class TopicChild:
             raise ChildStartError(
                 f"The process for {self.folder} could not be started: {exc}"
             ) from exc
+
+    def _seed_for(self, config: AppConfig) -> str:
+        """Say which ``APP_SEED`` this topic's process is given.
+
+        A topic that has answered once is given its own name, when the setting lists it, and no
+        other. Before that its name is not known, so it is given the whole setting and the
+        process takes only its own name from it.
+        """
+        if self.info is None:
+            return config.seed
+        return self.info.name if self.info.name in config.seeds else ""
 
     def ask_to_stop(self) -> None:
         """Send the process the request to finish, if it is running."""

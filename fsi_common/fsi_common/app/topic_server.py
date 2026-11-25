@@ -70,8 +70,9 @@ def topic_answer(plugin: TopicPlugin):
 def create_topic_app(config: AppConfig) -> Starlette:
     """Build the application of the one topic this process serves.
 
-    The topic's starting work is made only when ``APP_SEED`` names this topic, because the shell
-    gives the same setting to every topic's process.
+    The topic's starting work is made only when ``APP_SEED`` lists this topic, because the shell
+    gives the same setting to every topic's process; the application it builds is given this
+    topic's name alone.
 
     Args:
         config: The settings; ``topic_folders`` holds the one topic's folder.
@@ -87,7 +88,7 @@ def create_topic_app(config: AppConfig) -> Starlette:
     if len(config.topic_folders) != 1:
         raise ConfigError("A topic's process serves one topic; APP_TOPICS must name one folder.")
     plugin = load_topic(config.topic_folders[0])
-    seed = config.seed if config.seed == plugin.name else ""
+    seed = plugin.name if plugin.name in config.seeds else ""
     app = create_app(
         replace(config, seed=seed),
         topics=[plugin],

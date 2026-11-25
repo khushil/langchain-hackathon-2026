@@ -63,6 +63,9 @@ def test_the_pages_say_what_the_guide_says_they_say(app):
         "12 for a person to settle. 25 proposals and 14 questions still need your decision "
         "before it is signed.",
         "350 of 350 screenings accounted for: 18 kept as facts and 332 with no likeness",
+        "Applicant",
+        "Sarah Mitchell",
+        "CUST-001",
         "0 of 25",
         "0 of 14",
     )
@@ -72,6 +75,7 @@ def test_the_pages_say_what_the_guide_says_they_say(app):
         "below the floor of 0.60.",
         "Export CSV",
     )
+    assert re.search(r'^6\. Click the tab "Applications"', steps(), re.M), "step 6 names the tab"
     assert_on(
         client.get(f"/kyc/runs/{waiting}/applications/CUST-001").text,
         "Details read from the application",

@@ -23,7 +23,13 @@ from fsi_common.app.session import (
     make_person,
     safe_next,
 )
-from fsi_common.app.topics import SeedError, TopicPlugin, check_distinct, load_topics
+from fsi_common.app.topics import (
+    SeedError,
+    TopicPlugin,
+    check_distinct,
+    load_topics,
+    seed_name_error,
+)
 
 STATIC_DIR = TEMPLATES_DIR.parent / "static"
 
@@ -162,33 +168,37 @@ def create_app(
         for plugin in plugins:
             if plugin.use_state_dir is not None:
                 plugin.use_state_dir(config.state_dir)
-    if config.seed:
-        make_starting_work(plugins, config.seed)
+    if config.seeds:
+        make_starting_work(plugins, config.seeds)
     return app
 
 
-def make_starting_work(plugins: Sequence[TopicPlugin], name: str) -> None:
-    """Make the starting work of the topic ``APP_SEED`` names.
+def make_starting_work(plugins: Sequence[TopicPlugin], names: Sequence[str]) -> None:
+    """Make the starting work of each topic ``APP_SEED`` names.
+
+    Every name is checked before any work is made, so a refused start has made nothing.
 
     Args:
         plugins: The topics served.
-        name: The topic's name.
+        names: The names of the topics to start, as ``AppConfig.seeds`` gives them.
 
     Raises:
-        SeedError: If no served topic has that name, the topic has no starting work, or the
-            topic cannot make it.
+        SeedError: If a name is no served topic's, a topic has no starting work, or a topic
+            cannot make it.
     """
-    chosen = next((p for p in plugins if p.name == name), None)
-    if chosen is None:
-        served = ", ".join(p.name for p in plugins)
-        raise SeedError(
-            f"APP_SEED is '{name}', which is not a topic served here; topics served: {served}."
-        )
-    if chosen.seed is None:
-        raise SeedError(
-            f"The topic '{name}' has no starting work to make, so APP_SEED cannot name it."
-        )
-    chosen.seed()
+    served = [p.name for p in plugins]
+    unknown = [name for name in names if name not in served]
+    if unknown:
+        raise seed_name_error(unknown, served)
+    chosen = [next(p for p in plugins if p.name == name) for name in names]
+    for plugin in chosen:
+        if plugin.seed is None:
+            raise SeedError(
+                f"The topic '{plugin.name}' has no starting work to make, so APP_SEED cannot "
+                "name it."
+            )
+    for plugin in chosen:
+        plugin.seed()
 
 
 __all__ = ["create_app", "current_person", "make_starting_work", "sign_in_address"]
