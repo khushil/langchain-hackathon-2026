@@ -51,12 +51,14 @@ notebook:
 	NOTEBOOK_RUN=1 MODEL_BACKEND=replay $(PYTHON) -m pytest -q -o "pythonpath=fsi_common 03_document_summary_agent" 03_document_summary_agent/tests/notebook
 
 # The reviewer's application, on APP_HOST and APP_PORT (default 0.0.0.0:4803). Its runs, decisions
-# and drafts are kept in files under APP_STATE_DIR, a folder of the repository that git ignores.
+# and drafts are kept in files under APP_STATE_DIR, a folder of the repository that git ignores. One
+# topic is served by the application's own process; two or more are each served by a process of their own.
 APP_STATE_DIR ?= $(CURDIR)/.app-state
 serve:
 	APP_STATE_DIR=$(APP_STATE_DIR) PYTHONPATH=fsi_common:03_document_summary_agent $(PYTHON) -m fsi_common.app
 
 # The offline edition: the application's pages for the recorded run, in one HTML file.
+# With several topics built, each is read in a process of its own and one file is written for the topic named.
 OFFLINE_OUT ?= build/compliance-brief-offline.html
 offline:
 	PYTHONPATH=fsi_common:03_document_summary_agent $(PYTHON) -m fsi_common.app.offline --topic compliance-brief --out $(OFFLINE_OUT)

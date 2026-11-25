@@ -18,16 +18,29 @@ class WaitingCountError(ValueError):
 
 @dataclass(frozen=True)
 class HomeEntry:
-    """One workflow as the home page counts it: where its list is and what waits in it."""
+    """One workflow as the home page counts it: where its list is and what waits in it.
+
+    A workflow whose process did not answer is ``reachable=False``; it has no count, and its
+    list's address is None when it never said where that is.
+    """
 
     title: str
-    href: str
+    href: str | None
     noun: str
     waiting: int | None
+    reachable: bool = True
+    starting: bool = False
 
 
 def _plural(count: int, noun: str) -> str:
-    return f"{count} {noun if count == 1 else noun + 's'}"
+    """Write a count and its noun: "1 brief", "2 briefs", "2 batches", "2 queries"."""
+    if count == 1:
+        return f"{count} {noun}"
+    if noun.endswith(("s", "x", "z", "ch", "sh")):
+        return f"{count} {noun}es"
+    if noun.endswith("y") and noun[-2:-1] not in {"a", "e", "i", "o", "u", ""}:
+        return f"{count} {noun[:-1]}ies"
+    return f"{count} {noun}s"
 
 
 def _joined(parts: list[str]) -> str:
@@ -47,7 +60,7 @@ class HomeSummary:
 
     def sentence(self) -> str:
         """Say what waits for a reviewer, then which workflows could not say."""
-        counted = [e for e in self.entries if e.waiting is not None]
+        counted = [e for e in self.entries if e.reachable and e.waiting is not None]
         by_noun: dict[str, int] = {}
         for entry in counted:
             by_noun[entry.noun] = by_noun.get(entry.noun, 0) + (entry.waiting or 0)
@@ -60,9 +73,17 @@ class HomeSummary:
         elif counted:
             nothing = f"No {next(iter(by_noun))}" if len(by_noun) == 1 else "Nothing"
             sentences.append(f"{nothing} is waiting for a reviewer.")
-        silent = [e.title for e in self.entries if e.waiting is None]
+        silent = [e.title for e in self.entries if e.reachable and e.waiting is None]
         if silent:
             sentences.append(f"{_joined(silent)} cannot say what is waiting.")
+        lost = [e.title for e in self.entries if not e.reachable and not e.starting]
+        if lost:
+            sentences.append(f"{_joined(lost)} could not be reached.")
+        again = [e.title for e in self.entries if not e.reachable and e.starting]
+        if again:
+            sentences.append(
+                f"{_joined(again)} {'is' if len(again) == 1 else 'are'} starting again."
+            )
         return " ".join(sentences)
 
     def tiles(self) -> tuple[Tile, ...]:
@@ -84,7 +105,7 @@ class HomeSummary:
                 label=e.title,
                 value=NOT_AVAILABLE if e.waiting is None else str(e.waiting),
                 status="needs_person" if e.waiting else "normal",
-                title=f"Open the list of {e.title}",
+                title=f"Open the list of {e.title}" if e.href else "",
                 href=e.href,
             )
             for e in self.entries

@@ -4,8 +4,16 @@ import os
 from collections.abc import Iterator
 
 import pytest
+from app_shell_support import stop_open_shells
 
 from fsi_common.app.testing import BrowserMissingError, launch_chromium
+
+
+@pytest.fixture(autouse=True)
+def no_shell_left_running() -> Iterator[None]:
+    """Stop any shell a test started and left running, whatever the test did."""
+    yield
+    stop_open_shells()
 
 
 @pytest.fixture(scope="module")

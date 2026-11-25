@@ -11,6 +11,7 @@ from starlette.responses import HTMLResponse
 
 from fsi_common.app.pages import STATUS_WORDS
 from fsi_common.app.session import current_person
+from fsi_common.app.topic_info import PEERS_HEADER, decode_peers
 from fsi_common.app.topics import TopicPlugin
 
 TEMPLATES_DIR = Path(__file__).parent / "templates"
@@ -59,6 +60,24 @@ def make_environment(topics: list[TopicPlugin]) -> Environment:
     return env
 
 
+def listed_topics(request: Request) -> object:
+    """Return the topics the page header lists.
+
+    A topic's own process lists every topic by the header its shell adds to each request; with no
+    such header, or when the application is not a topic's process, it lists the topics it holds.
+
+    Args:
+        request: The request being answered.
+
+    Returns:
+        The topics, each with a title and a prefix.
+    """
+    state = request.app.state
+    if getattr(state, "lists_peers", False):
+        return decode_peers(request.headers.get(PEERS_HEADER)) or state.topics
+    return state.topics
+
+
 def render(
     request: Request, template: str, context: dict | None = None, *, status: int = 200
 ) -> HTMLResponse:
@@ -77,7 +96,7 @@ def render(
     page = {
         "product_name": PRODUCT_NAME,
         "person": current_person(request),
-        "topics": app_state.topics,
+        "topics": listed_topics(request),
         "path": request.url.path,
         "request": request,
         **(context or {}),

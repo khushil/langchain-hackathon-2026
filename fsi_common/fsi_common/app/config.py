@@ -11,6 +11,7 @@ from pathlib import Path
 
 DEFAULT_HOST = "0.0.0.0"
 DEFAULT_PORT = 4803
+DEFAULT_CHILD_START_SECONDS = 90.0
 COOKIE_PREFIX = "reviewer"
 COOKIE_NAME_PATTERN = re.compile(r"[A-Za-z0-9_-]{1,64}")
 REPOSITORY_ROOT = Path(__file__).resolve().parents[3]
@@ -31,6 +32,7 @@ class AppConfig:
     cookie: str = ""
     seed: str = ""
     state_dir: Path | None = None
+    child_start_seconds: float = DEFAULT_CHILD_START_SECONDS
 
     @property
     def cookie_name(self) -> str:
@@ -52,7 +54,9 @@ class AppConfig:
         ``review_app/plugin.py`` is served. ``APP_SEED`` names a topic whose starting work is made
         when the application starts; without it the application starts empty. ``APP_STATE_DIR``
         names a folder in which each topic keeps its runs, decisions and drafts in files, so a
-        restart finds them; without it everything is kept in memory.
+        restart finds them; without it everything is kept in memory. ``APP_CHILD_START_SECONDS``
+        is how long the shell waits for each topic's process to answer when it starts
+        (``90`` when absent).
 
         Args:
             environ: The environment to read; the process's own when absent.
@@ -61,8 +65,9 @@ class AppConfig:
             The settings.
 
         Raises:
-            ConfigError: If the port is not a whole number from 1 to 65535, or ``APP_COOKIE`` is
-                not a name of letters, digits, hyphens and underscores.
+            ConfigError: If the port is not a whole number from 1 to 65535, ``APP_COOKIE`` is
+                not a name of letters, digits, hyphens and underscores, or
+                ``APP_CHILD_START_SECONDS`` is not a number above nought.
         """
         env = os.environ if environ is None else environ
         raw_port = env.get("APP_PORT", str(DEFAULT_PORT))
@@ -78,14 +83,18 @@ class AppConfig:
                 "APP_COOKIE must be 1 to 64 letters, digits, hyphens or underscores; "
                 f"it is '{cookie}'."
             )
+        raw_wait = env.get("APP_CHILD_START_SECONDS", str(DEFAULT_CHILD_START_SECONDS))
+        try:
+            wait = float(raw_wait)
+        except ValueError as exc:
+            raise ConfigError(
+                f"APP_CHILD_START_SECONDS is '{raw_wait}', which is not a number."
+            ) from exc
+        if not wait > 0:
+            raise ConfigError(f"APP_CHILD_START_SECONDS is {wait}; use a number above nought.")
         state = env.get("APP_STATE_DIR", "").strip()
         secret = env.get("APP_SECRET")
-        listed = env.get("APP_TOPICS")
-        folders = (
-            tuple(Path(item) for item in listed.split(os.pathsep) if item.strip())
-            if listed is not None
-            else built_topic_folders(REPOSITORY_ROOT)
-        )
+        folders = topic_folders_from_env(env)
         return cls(
             host=env.get("APP_HOST", DEFAULT_HOST),
             port=port,
@@ -94,7 +103,23 @@ class AppConfig:
             cookie=cookie,
             seed=env.get("APP_SEED", "").strip(),
             state_dir=Path(state) if state else None,
+            child_start_seconds=wait,
         )
+
+
+def topic_folders_from_env(env: Mapping[str, str]) -> tuple[Path, ...]:
+    """Return the topic folders ``APP_TOPICS`` lists, or every built topic when it is absent.
+
+    Args:
+        env: The environment to read.
+
+    Returns:
+        The folders, in the order listed, or those of ``built_topic_folders`` in name order.
+    """
+    listed = env.get("APP_TOPICS")
+    if listed is None:
+        return built_topic_folders(REPOSITORY_ROOT)
+    return tuple(Path(item) for item in listed.split(os.pathsep) if item.strip())
 
 
 def built_topic_folders(root: Path) -> tuple[Path, ...]:

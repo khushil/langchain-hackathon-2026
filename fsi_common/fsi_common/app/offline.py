@@ -17,6 +17,7 @@ import argparse
 import importlib
 import os
 import re
+import subprocess
 import sys
 from collections import deque
 from collections.abc import Callable, Iterator, Sequence
@@ -30,7 +31,8 @@ from urllib.parse import quote, urlsplit
 from starlette.applications import Starlette
 from starlette.testclient import TestClient
 
-from fsi_common.app.config import REPOSITORY_ROOT, built_topic_folders
+from fsi_common.app.config import topic_folders_from_env
+from fsi_common.app.offline_workers import NOT_THIS_TOPIC, export_in_processes
 from fsi_common.app.topics import _own_copy, _take_package
 from fsi_common.records import Person
 
@@ -530,6 +532,10 @@ def write_topic(
 def main(argv: Sequence[str] | None = None) -> int:
     """Write a topic's offline file: ``--topic NAME --out FILE``.
 
+    With two or more topics built, each folder is read in a process of its own, because topics
+    keep the starter's package names. ``--folder`` is that process's own use: it reads one folder
+    and says, with exit status 3 and the folder's topic name, when the topic is another.
+
     Args:
         argv: The arguments; the process's own when absent.
 
@@ -543,26 +549,61 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--out", required=True, type=Path, help="the HTML file to write")
     parser.add_argument("--reviewer-name", default=DEFAULT_REVIEWER.name)
     parser.add_argument("--reviewer-role", default=DEFAULT_REVIEWER.role)
+    parser.add_argument("--folder", type=Path, help=argparse.SUPPRESS)
     args = parser.parse_args(argv)
     try:
         reviewer = Person(name=args.reviewer_name, role=args.reviewer_role)
-        hooks = [
-            load_hook(f)
-            for f in built_topic_folders(REPOSITORY_ROOT)
+        if args.folder is not None:
+            return _write_if_named(load_hook(args.folder), args, reviewer)
+        folders = [
+            f
+            for f in topic_folders_from_env(os.environ)
             if (f / "review_app" / "offline.py").is_file()
         ]
+        if len(folders) > 1:
+            return _in_processes(folders, args, reviewer)
+        hooks = [load_hook(f) for f in folders]
         chosen = [h for h in hooks if h.name == args.topic]
         if not chosen:
-            names = ", ".join(h.name for h in hooks) or "none"
-            raise OfflineExportError(
-                f"There is no offline topic '{args.topic}'; there is: {names}."
-            )
+            raise OfflineExportError(_no_topic(args.topic, [h.name for h in hooks]))
         done = write_topic(chosen[0], args.out, reviewer=reviewer)
     except (OfflineExportError, ValueError) as exc:
         print(f"The offline file was not written. {exc}", file=sys.stderr)
         return 1
     print(f"Wrote {args.out}: {len(done.addresses)} pages, {done.csv_files} CSV files.")
     return 0
+
+
+def _no_topic(topic: str, names: Sequence[str]) -> str:
+    return f"There is no offline topic '{topic}'; there is: {', '.join(names) or 'none'}."
+
+
+def _write_if_named(hook: OfflineTopic, args: argparse.Namespace, reviewer: Person) -> int:
+    """Work for the one folder of a process: write the file, or name the topic that is here."""
+    if hook.name != args.topic:
+        print(hook.name)
+        return NOT_THIS_TOPIC
+    done = write_topic(hook, args.out, reviewer=reviewer)
+    print(f"Wrote {args.out}: {len(done.addresses)} pages, {done.csv_files} CSV files.")
+    return 0
+
+
+def _in_processes(folders: Sequence[Path], args: argparse.Namespace, reviewer: Person) -> int:
+    try:
+        answer = export_in_processes(
+            folders, topic=args.topic, out=args.out, reviewer=(reviewer.name, reviewer.role)
+        )
+    except subprocess.TimeoutExpired as exc:
+        raise OfflineExportError(
+            f"A topic's export took longer than {exc.timeout:.0f} seconds."
+        ) from exc
+    if answer.written:
+        print(answer.out, end="")
+        return 0
+    if answer.err:
+        print(answer.err, end="", file=sys.stderr)
+        return answer.code
+    raise OfflineExportError(_no_topic(args.topic, answer.names))
 
 
 if __name__ == "__main__":

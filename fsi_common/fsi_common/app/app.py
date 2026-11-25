@@ -9,7 +9,7 @@ from starlette.applications import Starlette
 from starlette.exceptions import HTTPException
 from starlette.requests import Request
 from starlette.responses import RedirectResponse, Response
-from starlette.routing import Mount, Route
+from starlette.routing import BaseRoute, Mount, Route
 from starlette.staticfiles import StaticFiles
 
 from fsi_common.app.config import AppConfig
@@ -112,13 +112,21 @@ def sign_in_address(request: Request) -> str:
 
 
 def create_app(
-    config: AppConfig | None = None, *, topics: Sequence[TopicPlugin] | None = None
+    config: AppConfig | None = None,
+    *,
+    topics: Sequence[TopicPlugin] | None = None,
+    extra_routes: Sequence[BaseRoute] = (),
 ) -> Starlette:
-    """Build the application.
+    """Build the application, with every topic served in this process.
+
+    Topics whose folders share package names (each has a ``utils``) belong in separate processes,
+    which is what ``fsi_common.app.shell`` arranges; this builds one process's application.
 
     Args:
         config: The settings; the environment's when absent.
         topics: The topics to serve; those of the configured folders when absent.
+        extra_routes: Routes added after the shell's own, which a topic's process uses for the
+            answer its shell asks for.
 
     Returns:
         The application.
@@ -137,6 +145,7 @@ def create_app(
         Route("/signin", sign_in, methods=["POST"]),
         Route("/signout", sign_out, methods=["POST"]),
         Mount("/static", StaticFiles(directory=STATIC_DIR), name="static"),
+        *extra_routes,
     ]
     for plugin in plugins:
         mounted = list(plugin.routes)
