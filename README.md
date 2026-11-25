@@ -176,7 +176,7 @@ How the product works is in plain terms. A context layer reads each source into 
 
 ## The data and its terms
 
-Every data file in the repository is listed here. All of it is fictional, generated for this build or made from the starter's fictional documents. No customer data, confidential data or personal data is used.
+Every data file in the repository is listed here. All of it is fictional, generated for this build or made from the starter's fictional documents, except the public regulations in the last rows. No customer data, confidential data or personal data is used.
 
 | Path | What it holds | Source and terms |
 | --- | --- | --- |
@@ -190,6 +190,14 @@ Every data file in the repository is listed here. All of it is fictional, genera
 | `03_document_summary_agent/recordings/` | 26 saved model calls, each holding a request and the answer it received | Made for this build by running the agents on PS26-4 and the firm tables |
 | `fsi_common/fsi_common/examples/` | 62 example records, valid and planted invalid | Made for this build by `fsi_common.examples.build`; the reviewer in them is invented |
 | `fsi_common/fsi_common/schemas/` | 9 JSON Schemas | Exported from the record types by `fsi_common.export_schemas` |
+| `03_document_summary_agent/data/regulations/texts/dora.xhtml` | Regulation (EU) 2022/2554 (DORA), OJ L 333, 27.12.2022, as the Publications Office serves it, unchanged | © European Union. Fetched from `https://publications.europa.eu/resource/celex/32022R2554` on 25 November 2026, digest `sha256:cf50d8f023d23b2a56f535aaee0760eba7f1925ef08a9858c5c31d43d414f46b`; the notice is quoted below the table |
+| `03_document_summary_agent/data/regulations/texts/ai-act.xhtml` | Regulation (EU) 2024/1689 (the AI Act), OJ L, 2024/1689, 12.7.2024, as the Publications Office serves it, unchanged | © European Union. Fetched from `https://publications.europa.eu/resource/celex/32024R1689` on 25 November 2026, digest `sha256:8f0b656302f9864cc87e040c371f209a9d65ae1a6cecc25ca5eb737e872d721a`; the notice is quoted below the table |
+| `03_document_summary_agent/data/regulations/sources.json`, `SOURCES.md` | Where each regulation comes from, when it was fetched, its digest and its terms, including the Prudential Regulation Authority's Supervisory Statement SS1/23, whose text is not held here | Made for this build; the statement is fetched from its publisher by `python -m context.regulations fetch` and checked against its digest |
+| `03_document_summary_agent/data/regulations/expected/` | For each of the three regulations, the anchor, kind and text digest of every unit it reads into: 501, 930 and 154 units | Made for this build by `python -m context.regulations pin`; holds no regulation text |
+
+The Publications Office's copyright notice, <https://op.europa.eu/en/web/about-us/legal-notices/publications-office-of-the-european-union-copyright>, read on 25 November 2026, says: "The editorial content of this website, which is owned by the EU, is licensed under the Creative Commons Attribution 4.0 International licence. This means that you can reuse it provided you acknowledge the source and indicate any changes you have made." It also says: "Most of the publications on this website are freely available, many of them under Creative Commons licences, and can be downloaded and reproduced provided the source is acknowledged." The first quotation leaves out the link label "(external link)" that the notice page shows between its two sentences; no words are missing. The two texts are split into units for reading and no wording is altered. `test_every_source_paragraph_is_found_word_for_word_in_the_units` checks it: every paragraph of each act, with its footnote references and its own number taken out, is found word for word in the units' text, and `data/regulations/SOURCES.md` has the detail. The address of EUR-Lex's legal notice, <https://eur-lex.europa.eu/content/legal-notice/legal-notice.html>, is taken from the Publications Office's notice and was not opened by the builder; it is where a reader checks the terms.
+
+The Prudential Regulation Authority's Supervisory Statement SS1/23 is not held in the repository. `python -m context.regulations fetch` fetches it from its publisher, which needs a network connection and poppler's `pdftotext`, and `make gate` runs its `regulations-check` target, which uses a copy already cached when its digest matches, before the tests, so a clone without a network connection fails at that step.
 
 ## Material from the starter
 

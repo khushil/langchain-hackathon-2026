@@ -11,8 +11,10 @@ export LANGSMITH_TRACING = false
 export LANGCHAIN_TRACING_V2 = false
 # The browser tests fail, rather than skip, when no browser can start.
 export REQUIRE_BROWSER = 1
+# The regulation tests fail, rather than skip, when SS1/23 has not been fetched.
+export REQUIRE_REGULATIONS = 1
 
-.PHONY: serve offline lint test schemas-check examples-check selftest planted-faults dataset-check notebook gate
+.PHONY: serve offline lint test schemas-check examples-check selftest planted-faults dataset-check regulations-check notebook gate
 
 lint:
 	$(PYTHON) -m ruff check .
@@ -20,7 +22,7 @@ lint:
 
 # One pytest run per workspace member, each with its own import path, so topics whose packages
 # share a name (each topic has a `utils`) never meet on one path. A new topic is one more line.
-test:
+test: regulations-check
 	$(PYTHON) -m pytest -q -n $(PYTEST_WORKERS) -o "pythonpath=fsi_common" fsi_common/tests
 	$(PYTHON) -m pytest -q -n $(PYTEST_WORKERS) -o "pythonpath=fsi_common 03_document_summary_agent" 03_document_summary_agent/tests
 
@@ -59,4 +61,10 @@ OFFLINE_OUT ?= build/compliance-brief-offline.html
 offline:
 	PYTHONPATH=fsi_common:03_document_summary_agent $(PYTHON) -m fsi_common.app.offline --topic compliance-brief --out $(OFFLINE_OUT)
 
-gate: lint test schemas-check examples-check selftest planted-faults dataset-check notebook
+# The three regulations must read into the units pinned for their digests, each unit accounted for.
+# DORA and the AI Act are held in the repository; SS1/23 is fetched and cached when absent, and
+# its reader needs poppler's pdftotext.
+regulations-check:
+	cd 03_document_summary_agent && PYTHONPATH=../fsi_common:. $(abspath $(PYTHON)) -m context.regulations check
+
+gate: lint regulations-check test schemas-check examples-check selftest planted-faults dataset-check notebook
