@@ -143,6 +143,31 @@ The starter's agent and this workflow agree on every labelled transaction, becau
 
 With `MODEL_BACKEND` at its default of `replay`, the saved calls in `02_transaction_monitoring_agent/recordings/` answer every model call: 94 calls, 78 on Sonnet that assess transactions and 16 on Opus that judge the starter's reasoning, each at medium effort. `02_transaction_monitoring_agent/utils/models.py` is the one place a model is chosen, by role: `assessor` and `judge`. `make notebook` runs the three notebooks of `02_transaction_monitoring_agent/modules/` top to bottom on them with no key and no live call; the cells that need LangSmith print one sentence saying so and do nothing else, and a test fails if a notebook's outputs are not what a new run gives. `APP_SEED=transaction-monitoring` starts the application with a review waiting for a reviewer and a review signed by a fictional reviewer, who decided the transactions and signed through the review routes in her own words.
 
+## LangSmith in every topic
+
+Every topic traces its runs to LangSmith, and the reviewer's pages link back to the trace. With `LANGSMITH_TRACING=true` and a key, each review shows what it did and what it used.
+
+### What a trace carries
+
+Every run of a review, and every model call inside it, carries labels that LangSmith can filter and group by. They travel beside a model request and are never part of it, so a saved call is found by the same key with or without them, and the recordings in this repository replay unchanged.
+
+| Label | Where | What it holds |
+| --- | --- | --- |
+| `topic`, `topic_number` | every run and model call | the topic, such as `03-compliance-brief` |
+| `institution`, `document_id`, `document_digest` | a review's runs | the firm, the document and the digest of what was read; topic 01 has no institution |
+| `thread_id`, `review_id` | a review's runs | one id for the whole review |
+| `model_role`, `model_name`, `model_effort` | every model call | what the call was for and the model it ran on |
+| tags `topic:`, `institution:`, `document:`, `role:` | runs and model calls | the same labels, for filtering in the project view |
+| tag `stage:review` | the run that resumes after a decision | marks the step after the reviewer's decisions |
+
+In the project's Threads view, a review's first run and the run after the reviewer's decisions appear as one thread, because they share the `thread_id`. A thread appears in LangSmith about a minute after its runs finish.
+
+### From the reviewer's page to the trace
+
+Each page of a brief or a batch shows a line under its heading: a link, Trace in LangSmith, and the tokens the review has used with what LangSmith estimates it cost, for example "48,210 tokens; LangSmith estimates about $0.42". The link opens the exact trace in a new tab, with every step, its input and its output. The totals are added over every run of the review.
+
+The page never waits for LangSmith. It shows what the application already holds and reads the rest in the background, so the first page of a review shows no line and the next page, a few seconds later, shows it. The totals are read again every 30 seconds. With tracing off, or for a review that was not traced, the line is left out, and when LangSmith is slow, refuses a request or limits the rate of requests, the pages answer as usual without it.
+
 ## Checks
 
 ```bash
