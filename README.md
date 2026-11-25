@@ -228,26 +228,28 @@ The seeds give three of the four populations before any run:
 | SS1/23 | 18 | 6 | 12 |
 | All three | 55 | 23 | 32 |
 
-`make policy-measures` runs the planted faults and then prints the figures for the seed matches in `03_document_summary_agent/evals/data/policy_seed_matches.jsonl`; `python -m evals.policy_measures <bundle folder>` prints them for any bundle written by the assessment engine. The file in the repository now is the fake bundle's: eight of the 55 seeds are matched, so the figures below are not the assessment's result, and they are refitted to the recorded run when its file replaces this one. A seed that the run did not match stays in every population it belongs to and is listed after the figures. For the two measures where more is better, that lowers the figure; for the two where less is better, it does not, so `--require-all` makes the command fail when any seed has no match, and a bundle that is not the fake one is held to it without the flag. A match placed on another obligation than its seed's provision stops the run. Each measure has a planted fault that must make it worse, and the command reports 5 of 5 caught. The lines below are what the command prints for the file, and a test ties them to it.
+`make policy-measures` runs the planted faults and then prints the figures for the seed matches in `03_document_summary_agent/evals/data/policy_seed_matches.jsonl`; `python -m evals.policy_measures <bundle folder>` prints them for any bundle written by the assessment engine. The file in the repository is the recorded run's, made on 25 November 2026, and all 55 seeds are matched. A seed that the run did not match stays in every population it belongs to and is listed after the figures. For the two measures where more is better, that lowers the figure; for the two where less is better, it does not, so `--require-all` makes the command fail when any seed has no match, and a bundle that is not the fake one is held to it without the flag. A match placed on another obligation than its seed's provision stops the run. Each measure has a planted fault that must make it worse, and the command reports 5 of 5 caught. The lines below are what the command prints for the file, and a test ties them to it.
 
 ```text
-seeded_gaps_found [DORA]: 3 of 12 seeded gaps
-seeded_gaps_found [AI Act]: 1 of 5 seeded gaps
-seeded_gaps_found [SS1/23]: 1 of 6 seeded gaps
-seeded_gaps_found [all]: 5 of 23 seeded gaps
-same_state [DORA]: 5 of 25 seeds
-same_state [AI Act]: 1 of 12 seeds
-same_state [SS1/23]: 2 of 18 seeds
-same_state [all]: 8 of 55 seeds
-false_gaps [DORA]: 0 of 13 seeds the labels hold as covered
-false_gaps [AI Act]: 0 of 7 seeds the labels hold as covered
-false_gaps [SS1/23]: 0 of 12 seeds the labels hold as covered
-false_gaps [all]: 0 of 32 seeds the labels hold as covered
-wrong_citations [DORA]: 0 of 3 seeds that name clauses and were found as anything but not covered
-wrong_citations [AI Act]: 0 of 1 seeds that name clauses and were found as anything but not covered
-wrong_citations [SS1/23]: 0 of 2 seeds that name clauses and were found as anything but not covered
-wrong_citations [all]: 0 of 6 seeds that name clauses and were found as anything but not covered
+seeded_gaps_found [DORA]: 10 of 12 seeded gaps
+seeded_gaps_found [AI Act]: 5 of 5 seeded gaps
+seeded_gaps_found [SS1/23]: 6 of 6 seeded gaps
+seeded_gaps_found [all]: 21 of 23 seeded gaps
+same_state [DORA]: 13 of 25 seeds
+same_state [AI Act]: 8 of 12 seeds
+same_state [SS1/23]: 12 of 18 seeds
+same_state [all]: 33 of 55 seeds
+false_gaps [DORA]: 8 of 13 seeds the labels hold as covered
+false_gaps [AI Act]: 3 of 7 seeds the labels hold as covered
+false_gaps [SS1/23]: 5 of 12 seeds the labels hold as covered
+false_gaps [all]: 16 of 32 seeds the labels hold as covered
+wrong_citations [DORA]: 1 of 20 seeds that name clauses and were found as anything but not covered
+wrong_citations [AI Act]: 0 of 8 seeds that name clauses and were found as anything but not covered
+wrong_citations [SS1/23]: 0 of 18 seeds that name clauses and were found as anything but not covered
+wrong_citations [all]: 1 of 46 seeds that name clauses and were found as anything but not covered
 ```
+
+The engine finds 21 of the 23 seeded gaps, and it calls 16 of the 32 seeds labelled covered a gap: across the 219 applicable obligations it finds 54 covered, 132 partly covered, 31 not covered and 2 in conflict. One cause is the code that finds candidate clauses, which keeps none of the seed's own clauses for 6 of the 52 seeds that cite clauses in documents in force. Every finding is a proposal that a named reviewer decides, and partly covered is where the engine asks for a reviewer most.
 
 The file holds one line for each seed the run matched: the place it was matched at, the state found, the state seeded and the clauses cited and seeded. It holds no regulation or policy text.
 
@@ -310,7 +312,7 @@ Every data file in the repository is listed here. All of it is fictional, genera
 | `03_document_summary_agent/data/policies/harbour-mutual-bank/model-risk-management-policy-v2.0.md` | Its Model Risk Management Policy, version 2.0 | Written for this build; fictional |
 | `03_document_summary_agent/data/policies/harbour-mutual-bank/ai-use-standard-v1.0.md` | Its Artificial Intelligence Use Standard, version 1.0 | Written for this build; fictional |
 | `03_document_summary_agent/evals/data/policy_seeds.tsv` | 55 seeded cases of the policy set against DORA, the AI Act and SS1/23: for each, the provision with a short quotation of it, the policy clauses that bear on it and the state they leave it in | Written for this build before any engine run read the documents, then compared with a second, blind labelling and settled on written rulings; dated changes are in its header |
-| `03_document_summary_agent/evals/data/policy_seed_matches.jsonl` | The seed matches the policy measures read: for each seed matched, the place it was matched at, the state found, the state seeded and the clauses cited and seeded; no regulation or policy text | The fake bundle's matches, eight of the 55 seeds, until the recorded run's file replaces them; a test ties the policy figures above to it |
+| `03_document_summary_agent/evals/data/policy_seed_matches.jsonl` | The seed matches the policy measures read: for each seed matched, the place it was matched at, the state found, the state seeded and the clauses cited and seeded; no regulation or policy text | The recorded run's matches, all 55 seeds, from the run of 25 November 2026; a test ties the policy figures above to it |
 | `03_document_summary_agent/data/profiles/harbour-mutual-bank.json` | Harbour Mutual Bank's stated profile: its two legal entities, the role each holds under each regulation and its two AI systems, each with the clause of its own documents that says so | Written for this build; fictional |
 | `03_document_summary_agent/evals/data/experiments.json` | The counts of each LangSmith experiment run of the agents on the two datasets | Written by `python -m evals.experiments`; a test ties the experiments table above to it |
 | `03_document_summary_agent/data/assessments/harbour-mutual-bank/recordings/` | 130 recorded judgement calls of the policy assessment of Harbour Mutual Bank against DORA and the AI Act, one call to a file, some tried twice; SS1/23's calls are not held here | Made for this build by the recorded run of 25 November 2026; each request carries one provision of DORA or the AI Act and the bank's fictional clauses |

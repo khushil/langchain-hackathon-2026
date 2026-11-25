@@ -57,7 +57,7 @@ dataset-check:
 # `python -m evals.policy_measures <folder>`.
 policy-measures:
 	cd 03_document_summary_agent && PYTHONPATH=../fsi_common $(abspath $(PYTHON)) -m evals.policy_measures --selftest
-	cd 03_document_summary_agent && PYTHONPATH=../fsi_common $(abspath $(PYTHON)) -m evals.policy_measures --seed-matches evals/data/policy_seed_matches.jsonl
+	cd 03_document_summary_agent && PYTHONPATH=../fsi_common $(abspath $(PYTHON)) -m evals.policy_measures --seed-matches evals/data/policy_seed_matches.jsonl --require-all
 
 # The notebook must run top to bottom on the recorded model calls, with no key and no live call.
 notebook:
