@@ -225,10 +225,13 @@ def test_no_page_shows_a_form_a_button_or_a_sign_out(offline, real):
     page, seen, refused, errors = offline
     for address in real.export.addresses:
         page.goto(url_of(real, real.export.ids[address]))
-        assert page.locator("button").count() == 0, address
-        assert page.locator("form").count() == 0, address
-        assert page.get_by_text("Sign out").count() == 0, address
-        assert page.get_by_text("Record my decision").count() == 0, address
+        controls = page.evaluate("['button', 'form'].map(t => document.querySelectorAll(t).length)")
+        assert controls == [0, 0], address
+    # The file is one document that holds every page, hidden or shown, and a text locator counts
+    # over the whole document whatever page is open, so the two phrases are counted once.
+    # Counting them again at each of the 106 addresses re-scanned 7.5 MB of the same DOM each time.
+    assert page.get_by_text("Sign out").count() == 0
+    assert page.get_by_text("Record my decision").count() == 0
     assert refused == []
 
 
