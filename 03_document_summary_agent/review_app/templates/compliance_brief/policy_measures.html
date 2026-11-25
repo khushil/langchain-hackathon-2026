@@ -1,0 +1,24 @@
+{% extends "compliance_brief/page.html" %}
+{% import "macros.html" as ui %}
+{% import "compliance_brief/policy_parts.html" as parts %}
+{% block styles %}<link rel="stylesheet" href="/compliance-brief/static/review.css"><link rel="stylesheet" href="/compliance-brief/static/policy.css">{% endblock %}
+{% block main %}
+{{ ui.answer(answer) }}
+{{ parts.tabs(tabs_for, "measures") }}
+<div class="exhibit" data-hook="exhibit">
+  <table class="data" data-hook="measures">
+    <caption class="table-caption">The run's findings against the seeded cases</caption>
+    <thead><tr><th scope="col">Figure</th><th scope="col">Result</th><th scope="col">What is counted</th></tr></thead>
+    <tbody>
+      {% for figure in figures %}
+      <tr data-hook="measure" data-measure="{{ figure.key }}">
+        <th scope="row">{{ figure.label }}</th>
+        <td data-hook="result">{{ figure.result }}</td>
+        <td>{{ figure.what }}.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <p class="note" data-hook="proposal">{{ proposal }}</p>
+</div>
+{% endblock %}

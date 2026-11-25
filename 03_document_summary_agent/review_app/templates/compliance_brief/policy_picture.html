@@ -1,0 +1,49 @@
+{% extends "compliance_brief/page.html" %}
+{% import "macros.html" as ui %}
+{% import "compliance_brief/policy_parts.html" as parts %}
+{% block styles %}<link rel="stylesheet" href="/compliance-brief/static/review.css"><link rel="stylesheet" href="/compliance-brief/static/policy.css">{% endblock %}
+{% block main %}
+{{ ui.answer(answer) }}
+{{ parts.tabs(tabs_for, "picture") }}
+<div class="exhibit policy-picture" data-hook="picture">
+  {% for line in left_out %}
+  <p class="note" data-hook="not-included">{{ line.sentence }}</p>
+  <ul class="plain not-included-commands">{% for command in line.commands %}<li><code>{{ command }}</code></li>{% endfor %}</ul>
+  {% endfor %}
+  {% if first_open_gap %}<p class="actions"><a class="button" data-hook="first-open-gap" href="{{ first_open_gap }}" title="Open the first gap in the gap report that has no decision from you">First gap without your decision</a></p>{% endif %}
+  {{ parts.key() }}
+  {% for block in picture.regulations %}
+  <section class="policy-regulation" data-regulation="{{ block.key }}" aria-labelledby="reg-{{ block.key }}">
+    <h2 id="reg-{{ block.key }}" class="policy-heading">{{ block.name }}</h2>
+    <p class="map-count" data-hook="population-line">{{ block.line }}</p>
+    <ul class="map-key policy-tally" aria-label="Found for the obligations that apply">
+      {% for found, count in block.tallies %}<li class="map-key-item">{{ parts.state(found_kind(found), found_word(found)) }} {{ count }}</li>{% endfor %}
+    </ul>
+    <div class="table-wrap">
+    <table class="data policy-grid" data-hook="picture-table">
+      <caption class="visually-hidden">{{ block.name }} obligations that apply, against the documents in force</caption>
+      <thead>
+        <tr>
+          <th scope="col">Obligation</th>
+          <th scope="col">Found</th>
+          {% for document in picture.documents %}<th scope="col" class="doc-head" title="{{ document.label }}"><span class="doc-title">{{ document.title }}</span><span class="doc-version">version {{ document.version }}</span></th>{% endfor %}
+        </tr>
+      </thead>
+      {% for group in block.groups %}
+      <tbody>
+        <tr class="group-row"><th scope="colgroup" colspan="{{ 2 + picture.documents|length }}">{{ group.label }}</th></tr>
+        {% for row in group.rows %}
+        <tr data-obligation="{{ row.obligation_id }}">
+          <th scope="row"><a href="{{ row.href }}" title="Open {{ row.label }} and what the documents state against it">{{ row.label }}</a></th>
+          <td>{{ parts.state(found_kind(row.state), found_word(row.state)) }}</td>
+          {% for cell in row.cells %}<td class="pcell p-{{ cell.kind }}" title="{{ picture.documents[loop.index0].label }}">{% if cell.cited %}{{ parts.mark(cell.kind) }}<span class="visually-hidden">{{ found_word(cell.state) }}</span>{% endif %}</td>{% endfor %}
+        </tr>
+        {% endfor %}
+      </tbody>
+      {% endfor %}
+    </table>
+    </div>
+  </section>
+  {% endfor %}
+</div>
+{% endblock %}

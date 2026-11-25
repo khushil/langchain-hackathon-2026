@@ -9,7 +9,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from datetime import date
 
-from fsi_common.records import Assumption, Decision, Person, SignOff
+from fsi_common.records import Addressed, Assumption, Brief, Decision, Person, SignOff
 from review_app.drafts import Draft
 from review_app.profile import is_profile
 from review_app.review_model import ReviewModel
@@ -244,3 +244,79 @@ def build_response(
     response = ReviewResponse(reviewer=person, decisions=held, sign_off=sign_off)
     response.check_against(request)
     return response
+
+
+def decide_assessment(
+    assessment: Addressed,
+    *,
+    outcome: str,
+    reason: str | None,
+    amendment: str | None,
+    person: Person,
+    on: str,
+) -> Decision:
+    """Build a person's decision on one policy assessment as the page showed it.
+
+    Args:
+        assessment: The assessment decided on; its id is made from its content, so a decision
+            on an assessment that has since changed names another record.
+        outcome: ``accept``, ``amend`` or ``reject``.
+        reason: Why, in the person's words.
+        amendment: For amend, the wording the person gives.
+        person: The signed-in person.
+        on: The date of the decision.
+
+    Returns:
+        The decision, tied to the assessment's digest as shown.
+
+    Raises:
+        ReviewInputError: If the outcome is not one of the three or a required wording is missing.
+    """
+    if outcome not in FACT_OUTCOMES:
+        raise ReviewInputError("Choose accept, amend or reject.")
+    why = _own_words(reason, "your reason")
+    changed = _own_words(amendment, "the amended wording") if outcome == "amend" else None
+    return Decision.on(
+        assessment, outcome=outcome, reason=why, amendment=changed, reviewer=person, date=on
+    )
+
+
+def sign_gap_report(
+    report: Brief,
+    *,
+    outcome: str,
+    reason: str | None,
+    person: Person,
+    on: str,
+) -> SignOff:
+    """Build a person's signature on, or return of, a gap report at the digest they read.
+
+    Args:
+        report: The gap report, a brief.
+        outcome: ``signed`` or ``returned``.
+        reason: For returned, why, in the person's words.
+        person: The signed-in person.
+        on: The date.
+
+    Returns:
+        The sign-off.
+
+    Raises:
+        ReviewInputError: If the outcome is not one of the two or a return has no reason.
+    """
+    if outcome not in SIGN_OUTCOMES:
+        raise ReviewInputError("Choose whether to sign the gap report or return it.")
+    why = (
+        _own_words(reason, "why you are returning the gap report")
+        if outcome == "returned"
+        else None
+    )
+    return SignOff.build(
+        brief_id=report.id,
+        brief_digest=report.content_digest,
+        reviewer=person,
+        date=on,
+        outcome=outcome,
+        assumptions=[],
+        reason=why,
+    )

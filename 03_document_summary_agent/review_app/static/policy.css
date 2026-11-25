@@ -1,0 +1,29 @@
+/* The policy pages: the picture of obligations against documents, and the marks for each state.
+   Grey is the default; amber and coral mean a gap and nothing else. A state is never colour alone:
+   each has its own shape and its own word. */
+.policy-heading { font-size: 1.15rem; margin: 14px 0 2px; }
+.policy-regulation:first-of-type .policy-heading { margin-top: 0; }
+.policy-state { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+.policy-state .icon { width: 14px; height: 14px; flex: none; }
+.state-covered { color: var(--ink); }
+.state-partly { color: var(--amber-ink); }
+.state-not { color: var(--coral-ink); }
+.state-conflict { color: var(--coral-ink); font-weight: 700; }
+.state-none { color: var(--muted); }
+.policy-key, .policy-tally { margin: 2px 0 6px; }
+.policy-grid { width: 100%; }
+.policy-grid .group-row th { background: var(--bg); color: var(--muted); font-size: 0.867rem; text-align: left; }
+.policy-grid .doc-head { vertical-align: bottom; font-size: 0.8rem; max-width: 7.5rem; white-space: normal; overflow-wrap: anywhere; }
+.policy-grid .doc-title, .policy-grid .doc-version { display: block; font-weight: 600; }
+.policy-grid .doc-version { color: var(--muted); font-weight: 400; }
+.policy-grid .pcell { text-align: center; width: 5rem; }
+.pcell.p-blank { background: var(--bg); }
+.pcell.p-partly { background: var(--amber-bg); color: var(--amber-ink); }
+.pcell.p-not, .pcell.p-conflict { background: var(--coral-bg); color: var(--coral-ink); }
+.pcell .icon { width: 14px; height: 14px; }
+.policy-picture .table-wrap { overflow-x: auto; }
+.edge { border-bottom: 1px solid var(--rule); padding: 6px 0; }
+.edge summary { cursor: pointer; }
+.candidates { margin: 10px 0; }
+.candidates summary { cursor: pointer; }
+.clause + .clause { border-top: 1px solid var(--rule); margin-top: 8px; padding-top: 8px; }

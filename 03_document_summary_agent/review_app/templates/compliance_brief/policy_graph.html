@@ -1,0 +1,21 @@
+{% extends "compliance_brief/page.html" %}
+{% import "macros.html" as ui %}
+{% import "compliance_brief/policy_parts.html" as parts %}
+{% block styles %}<link rel="stylesheet" href="/compliance-brief/static/review.css"><link rel="stylesheet" href="/compliance-brief/static/policy.css">{% endblock %}
+{% block main %}
+{{ ui.answer(answer) }}
+{{ parts.tabs(tabs_for, "graph") }}
+<div class="exhibit policy-graph" data-hook="graph">
+  {% for edge in edges %}
+  <details class="edge" data-hook="edge" data-relation="{{ edge.relation }}">
+    <summary>{{ edge.from_name }} {{ edge.words }} {{ edge.to_name }}</summary>
+    <div class="review-grid">
+      <div class="paragraph" data-hook="edge-from"><p class="meta">{{ edge.from_name }}, {{ edge.from_place }}</p><p>{{ edge.from_quote }}</p></div>
+      <div class="paragraph" data-hook="edge-to"><p class="meta">{{ edge.to_name }}, {{ edge.to_place }}</p><p>{{ edge.to_quote }}</p></div>
+    </div>
+  </details>
+  {% else %}
+  <p class="empty">No relation was found.</p>
+  {% endfor %}
+</div>
+{% endblock %}

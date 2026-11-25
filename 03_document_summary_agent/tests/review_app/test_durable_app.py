@@ -266,7 +266,7 @@ def test_a_first_start_that_fails_partway_makes_the_second_start_refuse_the_fold
         with pytest.raises(SeedError, match="not the one the seed's decisions were written for"):
             start(folder)
     assert not (folder / MARKER_FILE).exists()
-    with pytest.raises(SeedError, match=rf"delete the folder {folder}"):
+    with pytest.raises(SeedError, match=rf"The state folder {folder} holds"):
         start(folder)
 
 
@@ -278,13 +278,13 @@ def test_a_finished_seed_leaves_a_marker_naming_the_seed_and_what_it_was_made_fr
 
 def test_a_folder_with_runs_and_no_marker_is_refused_in_words(folder):
     (folder / MARKER_FILE).unlink()
-    with pytest.raises(SeedError, match=rf"delete the folder {folder}"):
+    with pytest.raises(SeedError, match=rf"The state folder {folder} holds"):
         start(folder)
 
 
 def test_a_folder_seeded_from_other_recordings_is_refused_in_words(folder, monkeypatch):
     monkeypatch.setattr(seed_module, "seed_identity", lambda: "sha256:" + "0" * 64)
-    with pytest.raises(SeedError, match=rf"delete the folder {folder}"):
+    with pytest.raises(SeedError, match=rf"The state folder {folder} holds"):
         start(folder)
 
 
@@ -330,7 +330,7 @@ def test_a_folder_seeded_before_a_recording_was_added_is_refused_naming_the_fold
     start(folder).stop()
     start(folder).stop()  # the same recordings: no error and no second copy
     (copy / "added.json").write_text("{}")
-    with pytest.raises(SeedError, match=rf"delete the folder {folder}"):
+    with pytest.raises(SeedError, match=rf"The state folder {folder} holds"):
         start(folder)
 
 
@@ -342,5 +342,5 @@ def test_a_folder_seeded_before_a_recording_changed_is_refused_naming_the_folder
     start(folder).stop()
     changed = sorted(copy.glob("*.json"))[0]
     changed.write_text(changed.read_text() + " ")
-    with pytest.raises(SeedError, match=rf"delete the folder {folder}"):
+    with pytest.raises(SeedError, match=rf"The state folder {folder} holds"):
         start(folder)

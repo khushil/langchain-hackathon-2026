@@ -2,6 +2,7 @@
 {% import "macros.html" as ui %}
 {% block main %}
 {{ ui.answer(answer) }}
+{% if policy_pages is defined and policy_pages() %}<p class="policy-link"><a href="{{ policy_pages() }}" title="Open the Harbour Mutual Bank policy documents set against DORA, the AI Act and SS1/23">Policy assessment</a></p>{% endif %}
 <div class="start-grid">
 <div class="exhibit" data-hook="exhibit">
   {{ ui.table(table) }}

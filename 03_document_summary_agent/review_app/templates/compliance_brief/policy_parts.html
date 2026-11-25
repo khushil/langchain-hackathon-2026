@@ -1,0 +1,65 @@
+{% import "macros.html" as ui %}
+{% macro mark(kind) %}
+{% if kind == "covered" %}<svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="m5 8.2 2.2 2.2L11 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+{% elif kind == "partly" %}<svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 1.5a6.5 6.5 0 0 1 0 13z" fill="currentColor"/></svg>
+{% elif kind == "not" %}<svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M4.5 8h7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+{% elif kind == "conflict" %}<svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M8 1.5 15 14H1z" fill="currentColor" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8 6v4M8 11.6v.8" stroke="#ffffff" stroke-width="1.6" stroke-linecap="round"/></svg>
+{% elif kind == "none" %}<svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><rect x="2.5" y="2.5" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.4" stroke-dasharray="2 2"/></svg>
+{% endif %}
+{% endmacro %}
+
+{% macro state(kind, word) %}
+<span class="policy-state state-{{ kind }}" data-state="{{ kind }}">{{ mark(kind) }}{{ word }}</span>
+{% endmacro %}
+
+{% macro tabs(items, current) %}
+<nav class="tabs" aria-label="Parts of the policy assessment">
+  {% for key, label, href in items %}
+  <a href="{{ href }}" title="Open {{ label|lower }}" {% if key == current %}aria-current="page"{% endif %}>{{ label }}</a>
+  {% endfor %}
+</nav>
+{% endmacro %}
+
+{% macro quote(segments) %}{% for seg in segments %}{% if seg.marked %}<mark>{{ seg.text }}</mark>{% else %}{{ seg.text }}{% endif %}{% endfor %}{% endmacro %}
+
+{% macro key() %}
+<ul class="map-key policy-key" aria-label="What each mark stands for">
+  <li class="map-key-item">{{ state("covered", "Covered") }}</li>
+  <li class="map-key-item">{{ state("partly", "Partly covered") }}</li>
+  <li class="map-key-item">{{ state("not", "Not covered") }}</li>
+  <li class="map-key-item">{{ state("conflict", "In conflict") }}</li>
+  <li class="map-key-item">{{ state("none", "Not assessed") }}</li>
+</ul>
+{% endmacro %}
+
+{% macro plain_table(view) %}
+<div class="table-wrap">
+  <div class="table-tools">
+    <span class="table-caption">{{ view.caption }}</span>
+    <a class="button button-quiet" href="{{ view.export_href }}" title="Download these rows as a CSV file" data-hook="export">Export CSV</a>
+  </div>
+  {% if view.rows %}
+  <table class="data" data-hook="table">
+    <thead>
+      <tr>{% for column in view.columns %}<th scope="col">{{ column.label }}</th>{% endfor %}</tr>
+    </thead>
+    <tbody>
+      {% for row in view.rows %}
+      <tr>
+        {% for column in view.columns %}
+        {% set cell = row[column.key] %}
+        <td data-label="{{ column.label }}">
+          {% if cell.href %}<a href="{{ cell.href }}" title="{{ cell.title or 'Open ' ~ cell.text }}">{{ cell.text }}</a>
+          {% elif cell.status != "normal" %}{{ ui.badge(cell.status, cell.text) }}
+          {% else %}<span {% if cell.title %}title="{{ cell.title }}"{% endif %}>{{ cell.text }}</span>{% endif %}
+        </td>
+        {% endfor %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="empty">{{ view.empty }}</p>
+  {% endif %}
+</div>
+{% endmacro %}

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import dataclasses
 import logging
 import time
 
@@ -10,6 +11,8 @@ from starlette.testclient import TestClient
 
 from fsi_common.app import AppConfig, create_app
 from fsi_common.app.offline import OfflineExportError, OfflineTopic, replay_only
+from fsi_common.app.topics import TopicPlugin
+from review_app import routes_policies
 from review_app.context import PREFIX, Services
 from review_app.plugin import build_plugin
 from review_app.seed import SECTIONS
@@ -20,6 +23,8 @@ FIRM_ID = "FIRM-001"
 WAIT_SECONDS = 120.0
 POLL_SECONDS = 0.1
 SECRET = b"offline-export"
+POLICY_PICTURE = "/policies/{corpus}"
+"""The route path that marks a plug-in as listing the policy pages."""
 
 
 class _FailureCatcher(logging.Handler):
@@ -34,17 +39,44 @@ class _FailureCatcher(logging.Handler):
             self.caught.append(record.exc_info[1])
 
 
+def with_policy_pages(plugin: TopicPlugin, services: Services) -> TopicPlugin:
+    """Give a plug-in the policy pages when it does not list them already.
+
+    The pages read the bundles in the folder ``POLICY_BUNDLES_DIR`` names, which is where an
+    export finds the replayed run of an assessment; they make no model call and no request
+    outside the file. When the folder holds no bundle the start page links to no policy page, so
+    the file holds none.
+
+    Args:
+        plugin: The topic's plug-in.
+        services: The services the pages read their state through.
+
+    Returns:
+        The plug-in itself when it already lists the policy routes; else a copy that lists them
+        and the function the start page asks for the policy pages' address.
+    """
+    if any(getattr(r, "path", "") == POLICY_PICTURE for r in plugin.routes):
+        return plugin
+    link = routes_policies.pages_link(services)
+    return dataclasses.replace(
+        plugin,
+        routes=[*plugin.routes, *routes_policies.routes(services)],
+        template_globals={**plugin.template_globals, "policy_pages": link},
+    )
+
+
 def build_app() -> Starlette:
     """Build the application over a run service of its own, on replayed model calls.
 
     Returns:
-        The application, serving the compliance brief topic.
+        The application, serving the compliance brief topic and, where a replayed assessment is
+        held, its policy pages.
     """
     with replay_only():
         runs = BriefRuns()
     services = Services(runs=lambda: runs)
     config = AppConfig(secret=SECRET, topic_folders=())
-    return create_app(config, topics=[build_plugin(services)])
+    return create_app(config, topics=[with_policy_pages(build_plugin(services), services)])
 
 
 def seed(client: TestClient) -> str:

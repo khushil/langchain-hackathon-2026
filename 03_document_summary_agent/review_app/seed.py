@@ -18,6 +18,7 @@ import time
 from dataclasses import asdict, replace
 from pathlib import Path
 
+from starlette.exceptions import HTTPException
 from starlette.testclient import TestClient
 
 from fsi_common.app import AppConfig, SeedError, create_app
@@ -140,9 +141,48 @@ def _already_seeded(services: Services) -> bool:
         held = None
     if held == {"seed": SEED_NAME, "digest": seed_identity()}:
         return True
-    raise SeedError(
-        f"The state folder {folder} holds briefs that this start did not make from these "
-        f"recordings, or a seed that stopped partway; delete the folder {folder} to start afresh."
+    raise SeedError(_refusal(services, Path(folder)))
+
+
+def fresh_folder(folder: Path) -> Path:
+    """Name a state folder that does not exist yet, beside one that does.
+
+    Args:
+        folder: The folder that is kept as it is.
+
+    Returns:
+        The sibling ``<name>-2``, or the first of ``-3``, ``-4`` and so on that is free.
+    """
+    number = 2
+    while (candidate := folder.with_name(f"{folder.name}-{number}")).exists():
+        number += 1
+    return candidate
+
+
+def _holds(services: Services) -> str:
+    """Say what the services' runs hold, in words: how many briefs and how many are signed."""
+    try:
+        runs = runs_of(services)
+        statuses = [runs.status(t) for t in runs.list_runs()]
+    except HTTPException:  # the engine is not part of this build, so the folder cannot be read
+        return "state that this start cannot read"
+    count = len(statuses)
+    if count == 0:
+        return "no brief, with a seed that stopped partway"
+    signed = sum(s == "signed" for s in statuses)
+    return f"{count} brief{'' if count == 1 else 's'}, {signed} of them signed"
+
+
+def _refusal(services: Services, folder: Path) -> str:
+    """Write the refusal of a folder the seed did not make: what it holds and a fresh folder.
+
+    The words never advise a delete or a move, because the folder may hold a signed brief.
+    """
+    command = f"APP_STATE_DIR={fresh_folder(folder)} APP_SEED={SEED_NAME} make serve"
+    return (
+        f"The state folder {folder} holds {_holds(services)}, which this start did not make from "
+        "these recordings, or a seed that stopped partway. Nothing in it is changed. To start "
+        f"with a fresh folder and keep this one as it is, run `{command}`."
     )
 
 

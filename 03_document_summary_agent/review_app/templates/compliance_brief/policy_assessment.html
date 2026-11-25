@@ -1,0 +1,107 @@
+{% extends "compliance_brief/page.html" %}
+{% import "macros.html" as ui %}
+{% import "compliance_brief/_parts.html" as shared %}
+{% import "compliance_brief/policy_parts.html" as parts %}
+{% block styles %}<link rel="stylesheet" href="/compliance-brief/static/review.css"><link rel="stylesheet" href="/compliance-brief/static/policy.css">{% endblock %}
+{% block main %}
+{% set a = page.assessment %}
+<div class="review-page policy-assessment">
+{{ ui.answer(answer) }}
+{{ parts.tabs(tabs_for, "picture") }}
+{% if form_error %}{{ shared.form_problem(form_error) }}{% endif %}
+<div class="exhibit" data-hook="exhibit">
+  <div class="review-grid">
+  <section class="pane" aria-label="The provision" data-hook="provision">
+    <h2 class="source-title">{{ regulation_name }} {{ page.obligation.label }}</h2>
+    <p class="meta">Applies to {{ page.obligation.applies_to|join(", ") }}{% if page.obligation.applies_from %}, from {{ page.obligation.applies_from|long_date }}{% endif %}.</p>
+    <p class="paragraph" data-hook="provision-words">{{ parts.quote(page.provision) }}</p>
+    {% if a %}
+    <h3>What the documents in force state</h3>
+    <p data-hook="state">{{ parts.state(found_kind(a.state), found_word(a.state)) }}</p>
+    {% if a.gap %}<p class="note" data-hook="gap">{{ a.gap }}</p>{% endif %}
+    {% if a.suggested_wording %}<p class="note" data-hook="suggested-wording">Suggested wording: {{ a.suggested_wording }}</p>{% endif %}
+    {% if page.reason %}<p class="meta" data-hook="judgement-reason">{{ page.reason }}</p>{% endif %}
+    {% endif %}
+  </section>
+  <aside class="pane source" aria-label="The clauses quoted" data-hook="clauses">
+    {% for clause in page.clauses %}
+    <div class="clause" data-hook="clause">
+      <h3 class="source-title">{{ clause.document }}, clause {{ clause.clause }}</h3>
+      <p class="meta">{{ clause.heading }}{% if not clause.in_force %}, a version no longer in force{% endif %}</p>
+      <p class="paragraph">{{ parts.quote(clause.segments) }}</p>
+      {% if not clause.found %}<p>{{ ui.badge("failed", "The quoted words are not in this clause") }}</p>{% endif %}
+    </div>
+    {% else %}
+    <p class="empty" data-hook="no-clause">No clause of the documents in force was found for this provision.</p>
+    {% endfor %}
+  </aside>
+  </div>
+  {% if page.points %}
+  <table class="data" data-hook="points">
+    <caption class="table-caption">The points of the provision</caption>
+    <thead><tr><th scope="col">Point</th><th scope="col">Found</th><th scope="col">What is missing</th><th scope="col">Clauses quoted</th></tr></thead>
+    <tbody>
+      {% for point in page.points %}
+      <tr data-point="{{ point.label }}">
+        <th scope="row">({{ point.label }})</th>
+        <td>{{ parts.state(found_kind(point.state), found_word(point.state)) }}</td>
+        <td>{{ point.gap or "" }}</td>
+        <td>{% for clause in point.clauses %}{{ clause.document }}, clause {{ clause.clause }}{% if not loop.last %}; {% endif %}{% endfor %}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+  <details class="candidates" data-hook="candidates">
+    <summary>{{ page.candidates|selectattr("kept")|list|length }} clauses kept and {{ page.candidates|rejectattr("kept")|list|length }} dropped</summary>
+    <table class="data">
+      <thead><tr><th scope="col">Document</th><th scope="col">Clause</th><th scope="col">Found by</th><th scope="col">Matched</th><th scope="col">Kept</th><th scope="col">Reason</th></tr></thead>
+      <tbody>
+        {% for c in page.candidates %}
+        <tr><td>{{ c.document }}</td><td>{{ c.clause }}</td><td>{{ c.found_by }}</td><td>{{ c.matched }}</td><td>{{ "Kept" if c.kept else "Dropped" }}</td><td>{{ c.reason }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </details>
+  {% if page.checks %}
+  <ul class="plain" data-hook="checks" aria-label="Checks run on the assessment">
+    {% for check in page.checks %}
+    <li>{% if check.outcome == "pass" %}<span class="badge">Passed</span>{% else %}{{ ui.badge("failed") }}{% endif %} {{ check.detail }}</li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+  {% if decision %}
+  <p class="note" data-hook="your-decision">{{ decision_line(decision, person) }}.{% if decision.amendment %} Wording: {{ sentence_end(decision.amendment) }}{% endif %} Reason given: {{ decision.reason }}</p>
+  {% endif %}
+  {% if a %}
+  {% if signed %}
+  <p class="note" data-hook="signed-note">The gap report is signed, so this decision is closed.</p>
+  {% elif person %}
+  <form method="post" action="{{ decide_action }}" class="decision-form" data-hook="decision-form">
+    <input type="hidden" name="assessment_id" value="{{ a.id }}">
+    <fieldset>
+      <legend>{{ "Change your decision" if decision else "Your decision" }}</legend>
+      {% for value, label in [("accept", "Accept"), ("amend", "Amend"), ("reject", "Reject")] %}
+      <label class="choice" title="{{ label }} what the documents are said to state"><input type="radio" name="outcome" value="{{ value }}" {% if form_values.get("outcome") == value %}checked{% endif %} required>{{ label }}</label>
+      {% endfor %}
+    </fieldset>
+    <div class="amend-field">
+      <label for="amendment">Amended wording, if you amend</label>
+      <textarea id="amendment" name="amendment">{{ form_values.get("amendment", "") }}</textarea>
+    </div>
+    <label for="reason">Your reason</label>
+    <textarea id="reason" name="reason" required>{{ form_values.get("reason", "") }}</textarea>
+    <button class="button" type="submit" title="Record your decision on this assessment">Record my decision</button>
+  </form>
+  {% else %}
+  <p><a href="{{ sign_in }}" title="Sign in with your name and role to decide">Sign in</a> to decide on this assessment.</p>
+  {% endif %}
+  {% endif %}
+  <p class="actions">
+    {% if next_open_gap %}<a class="button" data-hook="next-open-gap" href="{{ next_open_gap }}" title="Open the next gap in the gap report that has no decision from you">Next gap without your decision</a>{% endif %}
+    {% if page.previous %}<a class="button button-quiet" href="{{ page.previous }}" title="Open the previous obligation">Previous obligation</a>{% endif %}
+    {% if page.following %}<a class="button button-quiet" href="{{ page.following }}" title="Open the next obligation">Next obligation</a>{% endif %}
+  </p>
+</div>
+</div>
+{% endblock %}

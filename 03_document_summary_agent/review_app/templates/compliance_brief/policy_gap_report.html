@@ -1,0 +1,66 @@
+{% extends "compliance_brief/page.html" %}
+{% import "macros.html" as ui %}
+{% import "compliance_brief/_parts.html" as shared %}
+{% import "compliance_brief/policy_parts.html" as parts %}
+{% block styles %}<link rel="stylesheet" href="/compliance-brief/static/review.css"><link rel="stylesheet" href="/compliance-brief/static/policy.css">{% endblock %}
+{% block main %}
+{{ ui.answer(answer) }}
+{{ parts.tabs(tabs_for, "gap-report") }}
+{% if form_error %}{{ shared.form_problem(form_error) }}{% endif %}
+<div class="exhibit" data-hook="exhibit">
+  <section class="pane statements" aria-label="The gap report" data-hook="statements">
+    {% for s in statements %}
+    <article class="statement" data-hook="statement">
+      <h2 class="statement-heading">{{ s.heading }}</h2>
+      <p class="statement-text">{{ s.text }}</p>
+      <ul class="cites">
+        <li>
+          <a class="fact-link" href="{{ s.href }}" title="Open the provision and the clauses this statement rests on">{{ s.label }}</a>
+          {{ parts.state(found_kind(s.state), found_word(s.state)) }}
+          <span class="badge">{% if s.decision %}{{ decision_by(s.decision, person) }}{% else %}No decision{% endif %}</span>
+        </li>
+      </ul>
+    </article>
+    {% else %}
+    <p class="empty">The gap report holds no statement.</p>
+    {% endfor %}
+    {% for s in unplaced %}
+    <article class="statement" data-hook="unplaced-statement">
+      <h2 class="statement-heading">{{ s.heading or "No heading" }}</h2>
+      <p class="statement-text">{{ s.text }}</p>
+      <p>{{ ui.badge("needs_person", "This statement rests on no assessment, so no one can decide it") }}</p>
+    </article>
+    {% endfor %}
+  </section>
+  {% if sign_off %}
+  <section class="panel" aria-label="The sign-off record">
+    <dl class="record" data-hook="sign-off-record">
+      <dt>Reviewer</dt><dd>{{ sign_off.reviewer.name }}</dd>
+      <dt>Role</dt><dd>{{ sign_off.reviewer.role }}</dd>
+      <dt>Date</dt><dd>{{ sign_off.date|long_date }}</dd>
+      <dt>Outcome</dt><dd>{{ "Signed" if sign_off.outcome == "signed" else "Returned" }}</dd>
+      <dt>{{ "Digest signed" if sign_off.outcome == "signed" else "Digest returned" }}</dt>
+      <dd><details class="digest-details"><summary class="digest" title="{{ sign_off.brief_digest }}">{{ sign_off.brief_digest[:15] }}…</summary><code class="digest">{{ sign_off.brief_digest }}</code></details></dd>
+      {% if sign_off.reason %}<dt>Reason for returning</dt><dd>{{ sign_off.reason }}</dd>{% endif %}
+    </dl>
+  </section>
+  {% endif %}
+  {% if not (sign_off and sign_off.outcome == "signed") %}
+  {% if blocker and blocker != form_error %}<p class="problem" data-hook="blocker">{{ ui.badge("needs_person", blocker) }}</p>{% endif %}
+  {% if person %}
+  <form method="post" action="{{ sign_action }}" class="stack form-narrow" data-hook="signoff-form">
+    <input type="hidden" name="brief_digest" value="{{ report.content_digest }}">
+    <p>You are acting as {{ person.name }}, {{ person.role }}.</p>
+    <label for="return-reason">Why you are returning the gap report, if you return it</label>
+    <textarea id="return-reason" name="reason">{{ form_values.get("reason", "") }}</textarea>
+    <div class="actions">
+      <button class="button" type="submit" name="outcome" value="signed" title="{{ blocker or 'Sign the gap report as fit to act on' }}">Sign the gap report</button>
+      <button class="button button-quiet" type="submit" name="outcome" value="returned" title="Return the gap report with your reason">Return the gap report</button>
+    </div>
+  </form>
+  {% else %}
+  <p><a href="{{ sign_in }}" title="Sign in with your name and role to sign or return the gap report">Sign in</a> to sign or return the gap report.</p>
+  {% endif %}
+  {% endif %}
+</div>
+{% endblock %}

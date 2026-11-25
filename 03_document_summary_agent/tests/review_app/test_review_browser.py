@@ -35,6 +35,7 @@ PAGES = {
 }
 # Routes that answer a form or an export, or lead to another page, and how each is tested.
 FLOW = "test_the_whole_review_through_the_browser"
+POLICY = "policy pages: test_policy_routes.py, test_policy_browser.py"
 CSV = "test_the_csv_of_each_table_holds_the_rows_the_table_shows"
 OTHER_ROUTES = {
     "/signin (POST)": FLOW,
@@ -49,6 +50,17 @@ OTHER_ROUTES = {
     f"{BASE}/runs/{{thread}}/sign": FLOW,
     f"{BASE}/runs/{{thread}}/facts.csv": CSV,
     f"{BASE}/runs/{{thread}}/decisions.csv": CSV,
+    f"{BASE}/policies/{{corpus}}": POLICY,
+    f"{BASE}/policies/{{corpus}}/register": POLICY,
+    f"{BASE}/policies/{{corpus}}/register.csv": POLICY,
+    f"{BASE}/policies/{{corpus}}/clauses": POLICY,
+    f"{BASE}/policies/{{corpus}}/clauses.csv": POLICY,
+    f"{BASE}/policies/{{corpus}}/graph": POLICY,
+    f"{BASE}/policies/{{corpus}}/gap-report": POLICY,
+    f"{BASE}/policies/{{corpus}}/measures": POLICY,
+    f"{BASE}/policies/{{corpus}}/gap-report/sign": POLICY,
+    f"{BASE}/policies/{{corpus}}/obligations/{{key}}/{{anchor:path}}": POLICY,
+    f"{BASE}/policies/{{corpus}}/obligations/{{key}}/{{anchor:path}}/decide": POLICY,
     "/static": "every page loads app.css",
     f"{BASE}/static": "every page loads review.css",
 }

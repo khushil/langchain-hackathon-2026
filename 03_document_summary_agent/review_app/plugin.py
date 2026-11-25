@@ -7,7 +7,7 @@ from pathlib import Path
 from starlette.routing import Mount, Route
 
 from fsi_common.app import TopicPlugin
-from review_app import routes_facts, routes_review, routes_start
+from review_app import routes_facts, routes_policies, routes_review, routes_start
 from review_app.context import PREFIX, Services
 from review_app.drafts import DraftStore
 from review_app.naming import Naming
@@ -90,6 +90,7 @@ def build_plugin(services: Services | None = None) -> TopicPlugin:
         *routes_start.routes(services),
         *routes_review.routes(services),
         *routes_facts.routes(services),
+        *routes_policies.routes(services),
     ]
     return TopicPlugin(
         name=SEED_NAME,
@@ -101,8 +102,9 @@ def build_plugin(services: Services | None = None) -> TopicPlugin:
         routes=routes,
         templates_dir=HERE / "templates",
         static_dir=HERE / "static",
-        about=ABOUT,
+        about=(*ABOUT, *routes_policies.about_lines(services)),
         template_globals={
+            "policy_pages": routes_policies.pages_link(services),
             "attribute_rows": naming.attribute_rows,
             "check_label": check_label,
             "decision_by": decision_by,

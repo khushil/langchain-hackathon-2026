@@ -7,6 +7,8 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import pytest
+from policy_pages_support import BASE as POLICY
+from policy_pages_support import write_fake
 from review_fixtures import make_client
 from review_helpers import BASE, RUN, runs_for_every_page
 from review_table_fakes import tables_review
@@ -16,6 +18,7 @@ from review_app.plugin import build_plugin  # noqa: F401  (the plug-in is part o
 
 EX = build_examples()
 HERE = Path(__file__).parent
+POLICY_BUNDLE: dict = {}
 SHELL = Path(__file__).resolve().parents[3] / "fsi_common" / "tests" / "app"
 ROUTES = "test_review_routes.py"
 SHELL_TESTS = "test_app_shell.py"
@@ -23,6 +26,38 @@ PAGES = "test_review_pages.py"
 START = "test_start_pages.py"
 PEOPLE = "test_review_people.py"
 THIS_LOOP = "test_every_route_of_the_application_answers_the_request_its_state_needs"
+
+
+@pytest.fixture(scope="module", autouse=True)
+def _bundle_the_policy_routes_read(tmp_path_factory):
+    """Hold the fake bundle where the plug-in's own policy routes read it, as a served one would."""
+    bundle, root = write_fake(tmp_path_factory.mktemp("policy-bundles"))
+    patch = pytest.MonkeyPatch()
+    patch.setenv("POLICY_BUNDLES_DIR", str(root))
+    POLICY_BUNDLE["bundle"] = bundle
+    yield
+    patch.undo()
+    POLICY_BUNDLE.clear()
+
+
+def _a_gap_path() -> tuple[object, str]:
+    gap = next(a for a in POLICY_BUNDLE["bundle"].assessments if a.state != "covered")
+    key, _, anchor = gap.obligation_id.partition(" ")
+    return gap, f"{POLICY}/obligations/{key}/{anchor}"
+
+
+def _decide_a_gap(c, r):
+    gap, path = _a_gap_path()
+    body = {"assessment_id": gap.id, "outcome": "accept", "reason": "Read both texts."}
+    return c.post(f"{path}/decide", data=body)
+
+
+def _sign_the_gap_report(c, r):
+    digest = POLICY_BUNDLE["bundle"].gap_report.content_digest
+    return c.post(
+        f"{POLICY}/gap-report/sign",
+        data={"brief_digest": digest, "outcome": "returned", "reason": "Reread."},
+    )
 
 
 @dataclass(frozen=True)
@@ -58,6 +93,50 @@ def _post_profile(c, runs):
             "reason": "The tables say this.",
         },
     )
+
+
+def policy_routes() -> dict:
+    """Return the eleven policy routes, each with the request that reaches it."""
+    every = "test_every_page_of_the_contract_renders_from_the_fake_bundle"
+    csv = "test_the_csv_exports_hold_every_row_in_the_order_shown"
+    prefix = "GET " + POLICY.replace("harbour-mutual-bank", "{corpus}")
+
+    def page(suffix: str, test: str = every, file: str = "test_policy_routes.py") -> Reach:
+        return Reach(lambda c, r: c.get(POLICY + suffix), frozenset({200}), (HERE / file, test))
+
+    return {
+        prefix: page(""),
+        f"{prefix}/register": page("/register"),
+        f"{prefix}/register.csv": page("/register.csv", csv),
+        f"{prefix}/clauses": page("/clauses"),
+        f"{prefix}/clauses.csv": page("/clauses.csv", csv),
+        f"{prefix}/graph": page("/graph"),
+        f"{prefix}/gap-report": page("/gap-report"),
+        f"{prefix}/measures": page(
+            "/measures", "test_the_measures_page_gives_four_figures_each_with_its_denominator"
+        ),
+        f"{prefix}/obligations/{{key}}/{{anchor:path}}": Reach(
+            lambda c, r: c.get(_a_gap_path()[1]),
+            frozenset({200}),
+            (HERE / "test_policy_routes.py", every),
+        ),
+        f"POST {prefix.removeprefix('GET ')}/obligations/{{key}}/{{anchor:path}}/decide": Reach(
+            _decide_a_gap,
+            frozenset({303}),
+            (
+                HERE / "test_policy_routes.py",
+                "test_accepting_records_the_signed_in_persons_decision_and_the_page_shows_it",
+            ),
+        ),
+        f"POST {prefix.removeprefix('GET ')}/gap-report/sign": Reach(
+            _sign_the_gap_report,
+            frozenset({303}),
+            (
+                HERE / "test_policy_routes.py",
+                "test_a_return_needs_the_reason_and_leaves_the_decisions_open",
+            ),
+        ),
+    }
 
 
 def table():
@@ -220,6 +299,7 @@ def table():
             frozenset({200}),
             (HERE / PAGES, signing),
         ),
+        **policy_routes(),
         f"GET {BASE}/static (files)": Reach(
             lambda c, r: c.get(f"{BASE}/static/review.css"),
             frozenset({200}),

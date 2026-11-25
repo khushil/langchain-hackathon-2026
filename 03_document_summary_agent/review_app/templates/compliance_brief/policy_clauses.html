@@ -1,0 +1,11 @@
+{% extends "compliance_brief/page.html" %}
+{% import "macros.html" as ui %}
+{% import "compliance_brief/policy_parts.html" as parts %}
+{% block styles %}<link rel="stylesheet" href="/compliance-brief/static/review.css"><link rel="stylesheet" href="/compliance-brief/static/policy.css">{% endblock %}
+{% block main %}
+{{ ui.answer(answer) }}
+{{ parts.tabs(tabs_for, "clauses") }}
+<div class="exhibit" data-hook="exhibit">
+  {{ parts.plain_table(table) }}
+</div>
+{% endblock %}
